@@ -53,9 +53,9 @@ public final class PointsContract {
         public static final String COLUMN_M0 = "m0";
         public static final String COLUMN_X0 = "x0";
         public static final String COLUMN_Y0 = "y0";
-        public static final String COLUMN_K0 = "k0";
         public static final String COLUMN_P1 = "p1";
         public static final String COLUMN_P2 = "p2";
+        public static final String COLUMN_SF = "sf";
 
         public static final int TYPE_UTM = 1;
         public static final int TYPE_SPCS = 2;
@@ -88,9 +88,9 @@ public final class PointsContract {
         public static final String COLUMN_M0 = "m0";
         public static final String COLUMN_X0 = "x0";
         public static final String COLUMN_Y0 = "y0";
-        public static final String COLUMN_K0 = "k0";
         public static final String COLUMN_P1 = "p1";
         public static final String COLUMN_P2 = "p2";
+        public static final String COLUMN_SF = "sf";
 
         public static final int UNITS_METER = 1;
         public static final int UNITS_SFT = 2;
