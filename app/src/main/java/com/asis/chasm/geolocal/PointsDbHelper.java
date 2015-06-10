@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import com.asis.chasm.geolocal.PointsContract.*;
 
 /**
- * Created by Charlie on 6/3/2015.
+ * Helper for the points database.
  */
 
 public class PointsDbHelper extends SQLiteOpenHelper {
@@ -39,9 +39,9 @@ public class PointsDbHelper extends SQLiteOpenHelper {
                     + CoordSystems.COLUMN_M0 + " REAL" + COMMA_SEP
                     + CoordSystems.COLUMN_X0 + " REAL" + COMMA_SEP
                     + CoordSystems.COLUMN_Y0 + " REAL" + COMMA_SEP
-                    + CoordSystems.COLUMN_K0 + " REAL" + COMMA_SEP
                     + CoordSystems.COLUMN_P1 + " REAL" + COMMA_SEP
-                    + CoordSystems.COLUMN_P2 + " REAL"
+                    + CoordSystems.COLUMN_P2 + " REAL" + COMMA_SEP
+                    + CoordSystems.COLUMN_SF + " INTEGER"
                     + ")";
 
     private static final String SQL_CREATE_TRANSFORM =
@@ -60,9 +60,9 @@ public class PointsDbHelper extends SQLiteOpenHelper {
                     + Transform.COLUMN_M0 + " REAL" + COMMA_SEP
                     + Transform.COLUMN_X0 + " REAL" + COMMA_SEP
                     + Transform.COLUMN_Y0 + " REAL" + COMMA_SEP
-                    + Transform.COLUMN_K0 + " REAL" + COMMA_SEP
                     + Transform.COLUMN_P1 + " REAL" + COMMA_SEP
-                    + Transform.COLUMN_P2 + " REAL"
+                    + Transform.COLUMN_P2 + " REAL" + COMMA_SEP
+                    + Transform.COLUMN_SF + " INTEGER"
                     + ")";
 
     private static final String SQL_DROP_POINTS =
