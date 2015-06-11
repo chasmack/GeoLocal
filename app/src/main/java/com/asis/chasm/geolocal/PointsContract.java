@@ -12,7 +12,7 @@ public final class PointsContract {
 
     private PointsContract() {}
 
-    public static final String AUTHORITY = "com.asis.chasm.geolocal.provider";
+    public static final String AUTHORITY = "com.asis.chasm.provider.Points";
 
     public static abstract class Points implements BaseColumns {
 

@@ -1,9 +1,13 @@
 package com.asis.chasm.geolocal;
 
 /**
- * Created by Charlie on 6/11/2015.
+ * Local point with x/y coordinates.
  */
 public class LocalPoint {
+
+    /*
+    * x/y (easting/northing) coordinates in user map units
+    */
     private double x;
     private double y;
 
