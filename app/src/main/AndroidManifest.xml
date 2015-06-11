@@ -22,7 +22,7 @@
         </activity>
 
         <provider
-            android:name=".GeoLocalContentProvider"
+            android:name=".PointsProvider"
             android:authorities="com.asis.chasm.geolocal.provider"
             android:enabled="true"
             android:exported="true" >
