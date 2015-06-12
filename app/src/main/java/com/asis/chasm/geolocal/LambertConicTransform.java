@@ -15,19 +15,22 @@ public class LambertConicTransform {
 
     private LambertConicTransform() { }
 
-    public static GeoPoint toGeographic(LocalPoint p, TransformParams params) {
-        if (sParams != params) {
-            sParams = params;
-            // init constants
-        }
+    public static GeoPoint toGeographic(LocalPoint locPt, TransformParams params) {
+        initTransform(params);
         return new GeoPoint(0.0, 0.0);
     }
 
-    public static LocalPoint toLocal(GeoPoint pnt, TransformParams params) {
-        if (sParams != params) {
-            sParams = params;
-            // init constants
-        }
+    public static LocalPoint toLocal(GeoPoint geoPt, TransformParams params) {
+        initTransform(params);
         return new LocalPoint(0.0, 0.0);
+    }
+
+    private static void initTransform(TransformParams params) {
+        if (sParams.equals(params)) {
+            return;
+         }
+        sParams = params;
+
+        // init transform constants
     }
 }
