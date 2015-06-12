@@ -53,7 +53,15 @@ public class GeoPoint {
 
     @Override
     public int hashCode() {
-        return super.hashCode();
+        int hash = 7;
+        long bits = Double.doubleToLongBits(lat);
+        int code = (int)(bits ^ (bits >> 32));
+        hash = hash * 31 + code;
+        bits = Double.doubleToLongBits(lon);
+        code = (int)(bits ^ (bits >> 32));
+        hash = hash * 31 + code;
+
+        return hash;
     }
 
     @Override

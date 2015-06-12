@@ -51,7 +51,15 @@ public class LocalPoint {
 
     @Override
     public int hashCode() {
-        return super.hashCode();
+        int hash = 7;
+        long bits = Double.doubleToLongBits(x);
+        int code = (int)(bits ^ (bits >> 32));
+        hash = hash * 31 + code;
+        bits = Double.doubleToLongBits(y);
+        code = (int)(bits ^ (bits >> 32));
+        hash = hash * 31 + code;
+
+        return hash;
     }
 
     @Override
