@@ -1,11 +1,13 @@
 package com.asis.chasm.geolocal;
 
 import android.app.Activity;
+import android.net.Uri;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -20,6 +22,9 @@ public class MainActivity extends ActionBarActivity implements
         NavigationDrawerFragment.NavigationDrawerCallbacks,
         LocalPointsListFragment.OnFragmentInteractionListener,
         GeoPointsListFragment.OnFragmentInteractionListener {
+
+    // Use for logging and debugging
+    private static final String TAG = "MainActivity";
 
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
@@ -184,8 +189,13 @@ public class MainActivity extends ActionBarActivity implements
     }
 
     public void onLocalPointsFragmentInteraction(String id) {
-        Toast.makeText(this, "Local points: " + id, Toast.LENGTH_SHORT).show();
 
+        Uri uri = Uri.parse(PointsContract.Points.CONTENT_URI);
+        Log.d(TAG, "Calling ContentResolver.getType: " + uri);
+
+        String type = getContentResolver().getType(uri);
+
+        Toast.makeText(this, "Content type: " + type, Toast.LENGTH_LONG).show();
     }
 
     public void onGeoPointsFragmentInteraction(String id) {
