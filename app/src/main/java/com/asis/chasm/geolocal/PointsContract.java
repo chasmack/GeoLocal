@@ -14,6 +14,21 @@ public final class PointsContract {
     public static final String AUTHORITY = "com.asis.chasm.provider.Points";
     public static final String BASE_URI = "content://" + AUTHORITY + "/";
 
+    public static final int UNITS_METER = 1;
+    public static final int UNITS_SFT = 2;
+
+    public static final int TYPE_LOCAL = 1;
+    public static final int TYPE_GEOGRAPHIC = 2;
+
+    public static final int COORD_SYSTEM_UTM = 1;
+    public static final int COORD_SYSTEM_SPCS = 2;
+    public static final int COORD_SYSTEM_USER = 3;
+
+    public static final int PROJECTION_TM = 1;    // Transverse Mercator
+    public static final int PROJECTION_LC = 2;    // Lambert Conic
+    public static final int PROJECTION_OM = 3;    // Oblique Mercator
+
+
     public static abstract class Points implements BaseColumns {
 
         public static final String CONTENT_PATH = "points";
@@ -29,9 +44,6 @@ public final class PointsContract {
         public static final String COLUMN_Y = "y";
         public static final String COLUMN_LAT = "lat";
         public static final String COLUMN_LON = "lon";
-
-        public static final int TYPE_LOCAL = 1;
-        public static final int TYPE_GEOGRAPHIC = 2;
     }
 
     public static abstract class Projections implements BaseColumns {
@@ -44,8 +56,8 @@ public final class PointsContract {
         public static final String TABLE = "projections";
         public static final String COLUMN_CODE = "code";
         public static final String COLUMN_DESC = "desc";
-        public static final String COLUMN_TYPE = "type";
-        public static final String COLUMN_PROJ = "proj";
+        public static final String COLUMN_COORD_SYSTEM = "system";
+        public static final String COLUMN_PROJECTION = "proj";
         public static final String COLUMN_P0 = "p0";
         public static final String COLUMN_M0 = "m0";
         public static final String COLUMN_X0 = "x0";
@@ -53,14 +65,6 @@ public final class PointsContract {
         public static final String COLUMN_P1 = "p1";
         public static final String COLUMN_P2 = "p2";
         public static final String COLUMN_SF = "sf";
-
-        public static final int TYPE_UTM = 1;
-        public static final int TYPE_SPCS = 2;
-        public static final int TYPE_USER = 3;
-
-        public static final int PROJ_TM = 1;    // Transverse Mercator
-        public static final int PROJ_LC = 2;    // Lambert Conic
-        public static final int PROJ_OM = 3;    // Oblique Mercator
     }
 
     public static abstract class Transforms implements BaseColumns {
@@ -78,9 +82,10 @@ public final class PointsContract {
         public static final String COLUMN_ROTATE = "rot";
         public static final String COLUMN_SCALE = "scale";
         public static final String COLUMN_UNITS = "units";
-        public static final String COLUMN_COORD_SYSTEM_CODE = "code";
-        public static final String COLUMN_COORD_SYSTEM_TYPE = "type";
-        public static final String COLUMN_COORD_SYSTEM_PROJ = "proj";
+        public static final String COLUMN_CODE = "code";
+        public static final String COLUMN_DESC = "desc";
+        public static final String COLUMN_COORD_SYSTEM = "system";
+        public static final String COLUMN_PROJECTION = "proj";
         public static final String COLUMN_P0 = "p0";
         public static final String COLUMN_M0 = "m0";
         public static final String COLUMN_X0 = "x0";
@@ -88,8 +93,5 @@ public final class PointsContract {
         public static final String COLUMN_P1 = "p1";
         public static final String COLUMN_P2 = "p2";
         public static final String COLUMN_SF = "sf";
-
-        public static final int UNITS_METER = 1;
-        public static final int UNITS_SFT = 2;
     }
 }

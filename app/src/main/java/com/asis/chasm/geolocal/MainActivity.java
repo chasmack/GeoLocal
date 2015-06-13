@@ -1,6 +1,9 @@
 package com.asis.chasm.geolocal;
 
 import android.app.Activity;
+import android.content.ContentResolver;
+import android.content.ContentValues;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
@@ -16,6 +19,10 @@ import android.view.ViewGroup;
 import android.support.v4.widget.DrawerLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
 
 public class MainActivity extends ActionBarActivity implements
@@ -59,6 +66,10 @@ public class MainActivity extends ActionBarActivity implements
         mNavigationDrawerFragment.setUp(
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
+
+        // Populate Coordinate Systems table
+        populateProjectionsTable("projections.txt");
+
     }
 
     @Override
@@ -186,6 +197,128 @@ public class MainActivity extends ActionBarActivity implements
             ((MainActivity) activity).onSectionAttached(
                     getArguments().getInt(ARG_SECTION_NUMBER));
         }
+    }
+
+    private void populateProjectionsTable(String datafile) {
+
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(
+                    new InputStreamReader(getAssets().open(datafile), "UTF-8"));
+
+            int cnt;
+            String line;
+            String[] parts;
+            ContentResolver resolver = getContentResolver();
+            ContentValues values = new ContentValues();
+
+            final Uri PROJECTIONS_URI = Uri.parse(PointsContract.Projections.CONTENT_URI);
+
+            // Delete any entries already in the Coordinate Systems table
+            cnt = resolver.delete(PROJECTIONS_URI, null, null);
+            Log.d(TAG, "Projections deleted: " + cnt);
+
+            cnt = 0;
+            READLINE:
+            while ((line = reader.readLine()) != null) {
+
+                if (line.startsWith("#"))
+                    continue;       // comment lines start with #
+
+                parts = line.split(",", 11);
+                if (parts.length != 11) {
+                    Log.d(TAG, "File format error: " + line);
+                    continue;
+                }
+
+                // 0-CODE, 1-DESC, 2-TYPE, 3-PROJ, 4-P0, 5-M0, 6-X0, 7-Y0, 8-P1, 9-P2, 10-SF
+                values.put(PointsContract.Projections.COLUMN_CODE, parts[0]);
+                values.put(PointsContract.Projections.COLUMN_DESC, parts[1]);
+                switch (parts[2]) {
+                    case "SPCS":
+                        values.put(PointsContract.Projections.COLUMN_COORD_SYSTEM,
+                                PointsContract.COORD_SYSTEM_SPCS);
+                        break;
+                    case "UTM":
+                        values.put(PointsContract.Projections.COLUMN_COORD_SYSTEM,
+                                PointsContract.COORD_SYSTEM_UTM);
+                        break;
+                    case "USER":
+                        values.put(PointsContract.Projections.COLUMN_COORD_SYSTEM,
+                                PointsContract.COORD_SYSTEM_USER);
+                        break;
+                    default:
+                        Log.d(TAG, "Invalid projection TYPE: " + line);
+                        continue READLINE;
+                }
+                switch (parts[3]) {
+                    case "L":
+                        values.put(PointsContract.Projections.COLUMN_PROJECTION,
+                                PointsContract.PROJECTION_LC);
+                        break;
+                    case "T":
+                        values.put(PointsContract.Projections.COLUMN_PROJECTION,
+                                PointsContract.PROJECTION_TM);
+                        break;
+                    case "O":
+                        values.put(PointsContract.Projections.COLUMN_PROJECTION,
+                                PointsContract.PROJECTION_OM);
+                        break;
+                    default:
+                        Log.d(TAG, "Invalid projection PROJ: " + line);
+                        continue READLINE;
+                }
+                values.put(PointsContract.Projections.COLUMN_P0, parseDegMin(parts[4]));
+                values.put(PointsContract.Projections.COLUMN_M0, parseDegMin(parts[5]));
+                values.put(PointsContract.Projections.COLUMN_X0, Double.parseDouble(parts[6]));
+                values.put(PointsContract.Projections.COLUMN_Y0, Double.parseDouble(parts[7]));
+                values.put(PointsContract.Projections.COLUMN_P1, parseDegMin(parts[8]));
+                values.put(PointsContract.Projections.COLUMN_P2, parseDegMin(parts[9]));
+                values.put(PointsContract.Projections.COLUMN_SF,
+                        parts[10].isEmpty() ? 0 : Long.parseLong(parts[10]));
+
+                resolver.insert(PROJECTIONS_URI, values);
+                cnt++;
+            }
+            Log.d(TAG, "Projections loaded: " + cnt);
+
+        } catch (IOException e) {
+            Log.d(TAG, e.toString());
+
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException e) {
+                    Log.d(TAG, e.toString());
+                }
+            }
+        }
+    }
+
+    private double parseDegMin(String dmString) {
+        double val;
+        String[] parts;
+        boolean neg = false;
+
+        if (dmString == null) {
+            throw new IllegalArgumentException("Null DEG-MIN string.");
+        }
+        if (dmString.isEmpty()) {
+            return 0.0;                 // empty string is valid
+        }
+        if (dmString.startsWith("-")) {
+            neg = true;
+            parts = dmString.substring(1).split("-");
+        } else {
+            parts = dmString.split("-");
+        }
+        if (parts.length != 2) {
+            throw new IllegalArgumentException("Invalid DEG-MIN string: " + dmString);
+        }
+        val = Integer.parseInt(parts[0]) + Integer.parseInt(parts[1])/60.0;
+
+        return neg ? -1.0 * val : val;
     }
 
     public void onLocalPointsFragmentInteraction(String id) {
