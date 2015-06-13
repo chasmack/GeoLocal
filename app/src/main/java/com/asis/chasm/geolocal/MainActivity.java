@@ -3,6 +3,7 @@ package com.asis.chasm.geolocal;
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.support.v7.app.ActionBarActivity;
@@ -22,8 +23,8 @@ import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
-
 
 public class MainActivity extends ActionBarActivity implements
         NavigationDrawerFragment.NavigationDrawerCallbacks,
@@ -104,7 +105,6 @@ public class MainActivity extends ActionBarActivity implements
         }
     }
 
-
     public void onSectionAttached(int number) {
         switch (number) {
             case 1:
@@ -148,11 +148,102 @@ public class MainActivity extends ActionBarActivity implements
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        switch (id) {
+            case R.id.action_settings:
+                return true;
+
+            case R.id.action_read_points:
+                selectPointsFile();
+                return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    // Activity result codes
+    private final int RESULT_CODE_FILE_SELECT = 1;
+
+    private void selectPointsFile() {
+
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("text/plain");
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+
+        try {
+            startActivityForResult(
+                    Intent.createChooser(intent, "Select a File"), RESULT_CODE_FILE_SELECT);
+
+        } catch (android.content.ActivityNotFoundException ex) {
+            Toast.makeText(this, "Please install a File Manager.",
+                    Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == RESULT_CODE_FILE_SELECT && resultCode == Activity.RESULT_OK) {
+            readPointsFile(data.getData());
+        }
+    }
+
+    private void readPointsFile(Uri uri) {
+
+        Log.d(TAG, "FILE_SELECT Uri: " + uri);
+
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(
+                    new InputStreamReader(getContentResolver().openInputStream(uri)));
+
+            int cnt;
+            String line;
+            String[] parts;
+            ContentResolver resolver = getContentResolver();
+            ContentValues values = new ContentValues();
+
+            final Uri POINTS_URI = Uri.parse(PointsContract.Points.CONTENT_URI);
+
+            // Delete any entries already in the Coordinate Systems table
+            cnt = resolver.delete(POINTS_URI,
+                    PointsContract.Points.COLUMN_TYPE + " = " + PointsContract.TYPE_LOCAL, null);
+            Log.d(TAG, "Local points deleted: " + cnt);
+
+            cnt = 0;
+            while ((line = reader.readLine()) != null) {
+                // Ignore blank lines and comment lines which start with #
+                if (line.length() == 0 || line.startsWith("#")) {
+                    continue;
+                }
+                parts = line.split(",", 5);
+                if (parts.length != 5) {
+                    Log.d(TAG, "PNEZD file format error: " + line);
+                    continue;
+                }
+                values.put(PointsContract.Points.COLUMN_NAME, parts[0]);
+                values.put(PointsContract.Points.COLUMN_Y, Double.parseDouble(parts[1]));
+                values.put(PointsContract.Points.COLUMN_X, Double.parseDouble(parts[2]));
+                // Skipping Z (elevation)
+                values.put(PointsContract.Points.COLUMN_DESC, parts[4]);
+                values.put(PointsContract.Points.COLUMN_TYPE, PointsContract.TYPE_LOCAL);
+                resolver.insert(POINTS_URI, values);
+                cnt++;
+            }
+            Log.d(TAG, "Points loaded: " + cnt);
+
+        } catch (IOException e) {
+            Log.d(TAG, e.toString());
+
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException e) {
+                    Log.d(TAG, e.toString());
+                }
+            }
+        }
     }
 
     /**

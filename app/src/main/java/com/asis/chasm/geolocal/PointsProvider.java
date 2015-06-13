@@ -182,13 +182,17 @@ public class PointsProvider extends ContentProvider {
 
     @Override
     public Uri insert(Uri uri, ContentValues values) {
+
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+        long id;
         switch (sUriMatcher.match(uri)) {
             case POINTS:
-                return null;
+                id = db.insert(PointsContract.Points.TABLE, null, values);
+                return Uri.parse(PointsContract.Points.CONTENT_URI)
+                        .buildUpon().appendPath(Long.toString(id)).build();
 
             case PROJECTIONS:
-                SQLiteDatabase db = mDbHelper.getWritableDatabase();
-                long id = db.insert(PointsContract.Projections.TABLE, null, values);
+                id = db.insert(PointsContract.Projections.TABLE, null, values);
                 return Uri.parse(PointsContract.Projections.CONTENT_URI)
                         .buildUpon().appendPath(Long.toString(id)).build();
 
@@ -202,24 +206,28 @@ public class PointsProvider extends ContentProvider {
 
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
-        // Log.d(TAG, "delete Uri: " + uri);
-        int match = sUriMatcher.match(uri);
-        switch (match) {
-            case POINTS:
-            case POINTS_ID:
-                return 0;
+        Log.d(TAG, "delete Uri: " + uri);
 
-            case PROJECTIONS:
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+        int match = sUriMatcher.match(uri);
+        String id;
+        switch (match) {
+            case POINTS_ID:
+                id = PointsContract.Points._ID + " = " + uri.getLastPathSegment();
+                selection = selection != null ? id + " AND " + selection : id;
+                // FALL THROUGH
+            case POINTS:
+                return db.delete(PointsContract.Points.TABLE, selection, selectionArgs);
+
             case PROJECTIONS_ID:
-                SQLiteDatabase db = mDbHelper.getWritableDatabase();
-                if (match == PROJECTIONS_ID) {
-                    String id = PointsContract.Projections._ID + " = " + uri.getLastPathSegment();
-                    selection = selection != null ? id + " AND " + selection : id;
-                }
+                id = PointsContract.Projections._ID + " = " + uri.getLastPathSegment();
+                selection = selection != null ? id + " AND " + selection : id;
+                // FALL THROUGH
+            case PROJECTIONS:
                 return db.delete(PointsContract.Projections.TABLE, selection, selectionArgs);
 
-            case TRANSFORMS:
             case TRANSFORMS_ID:
+            case TRANSFORMS:
                 return 0;
 
             default:
