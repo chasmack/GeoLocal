@@ -42,8 +42,8 @@ public class PointsProvider extends ContentProvider {
         // Add Uris for Points, CoordSystems and Transforms
         sUriMatcher.addURI(PointsContract.AUTHORITY, PointsContract.Points.CONTENT_PATH, POINTS);
         sUriMatcher.addURI(PointsContract.AUTHORITY, PointsContract.Points.CONTENT_PATH + "/#", POINTS_ID);
-        sUriMatcher.addURI(PointsContract.AUTHORITY, PointsContract.CoordSystems.CONTENT_PATH, COORD_SYSTEMS);
-        sUriMatcher.addURI(PointsContract.AUTHORITY, PointsContract.CoordSystems.CONTENT_PATH + "/#", COORD_SYSTEMS_ID);
+        sUriMatcher.addURI(PointsContract.AUTHORITY, PointsContract.Projections.CONTENT_PATH, COORD_SYSTEMS);
+        sUriMatcher.addURI(PointsContract.AUTHORITY, PointsContract.Projections.CONTENT_PATH + "/#", COORD_SYSTEMS_ID);
         sUriMatcher.addURI(PointsContract.AUTHORITY, PointsContract.Transforms.CONTENT_PATH, TRANSFORMS);
         sUriMatcher.addURI(PointsContract.AUTHORITY, PointsContract.Transforms.CONTENT_PATH + "/#", TRANSFORMS_ID);
 
@@ -69,19 +69,19 @@ public class PointsProvider extends ContentProvider {
                         + ")";
 
         private static final String SQL_CREATE_COORD_SYSTEMS =
-                "CREATE TABLE " + PointsContract.CoordSystems.TABLE + " ("
-                        + PointsContract.CoordSystems._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                        + PointsContract.CoordSystems.COLUMN_CODE + " TEXT" + COMMA_SEP
-                        + PointsContract.CoordSystems.COLUMN_DESC + " TEXT" + COMMA_SEP
-                        + PointsContract.CoordSystems.COLUMN_TYPE + " INTEGER" + COMMA_SEP
-                        + PointsContract.CoordSystems.COLUMN_PROJ + " INTEGER" + COMMA_SEP
-                        + PointsContract.CoordSystems.COLUMN_P0 + " REAL" + COMMA_SEP
-                        + PointsContract.CoordSystems.COLUMN_M0 + " REAL" + COMMA_SEP
-                        + PointsContract.CoordSystems.COLUMN_X0 + " REAL" + COMMA_SEP
-                        + PointsContract.CoordSystems.COLUMN_Y0 + " REAL" + COMMA_SEP
-                        + PointsContract.CoordSystems.COLUMN_P1 + " REAL" + COMMA_SEP
-                        + PointsContract.CoordSystems.COLUMN_P2 + " REAL" + COMMA_SEP
-                        + PointsContract.CoordSystems.COLUMN_SF + " INTEGER"
+                "CREATE TABLE " + PointsContract.Projections.TABLE + " ("
+                        + PointsContract.Projections._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                        + PointsContract.Projections.COLUMN_CODE + " TEXT" + COMMA_SEP
+                        + PointsContract.Projections.COLUMN_DESC + " TEXT" + COMMA_SEP
+                        + PointsContract.Projections.COLUMN_TYPE + " INTEGER" + COMMA_SEP
+                        + PointsContract.Projections.COLUMN_PROJ + " INTEGER" + COMMA_SEP
+                        + PointsContract.Projections.COLUMN_P0 + " REAL" + COMMA_SEP
+                        + PointsContract.Projections.COLUMN_M0 + " REAL" + COMMA_SEP
+                        + PointsContract.Projections.COLUMN_X0 + " REAL" + COMMA_SEP
+                        + PointsContract.Projections.COLUMN_Y0 + " REAL" + COMMA_SEP
+                        + PointsContract.Projections.COLUMN_P1 + " REAL" + COMMA_SEP
+                        + PointsContract.Projections.COLUMN_P2 + " REAL" + COMMA_SEP
+                        + PointsContract.Projections.COLUMN_SF + " INTEGER"
                         + ")";
 
         private static final String SQL_CREATE_TRANSFORMS =
@@ -110,7 +110,7 @@ public class PointsProvider extends ContentProvider {
                 "DROP TABLE IF EXISTS " + PointsContract.Points.TABLE;
 
         private static final String SQL_DROP_COORD_SYSTEMS =
-                "DROP TABLE IF EXISTS " + PointsContract.CoordSystems.TABLE;
+                "DROP TABLE IF EXISTS " + PointsContract.Projections.TABLE;
 
         private static final String SQL_DROP_TRANSFORMS =
                 "DROP TABLE IF EXISTS " + PointsContract.Transforms.TABLE;
@@ -148,19 +148,17 @@ public class PointsProvider extends ContentProvider {
         mDbHelper = new PointsDbHelper(getContext());
 
         // Populate Coordinate Systems table
-        populateCoordSystems(mDbHelper.getWritableDatabase(),
-                "spcs-zones.txt", PointsContract.CoordSystems.TYPE_SPCS);
+        populateProjections(mDbHelper.getWritableDatabase(), "projections.txt");
 
         return true;
     }
 
-    private void populateCoordSystems(SQLiteDatabase db,
-            String assetFile, int coordSystemType) {
+    private void populateProjections(SQLiteDatabase db, String projfile) {
 
         BufferedReader reader = null;
         try {
             reader = new BufferedReader(
-                    new InputStreamReader(getContext().getAssets().open(assetFile), "UTF-8"));
+                    new InputStreamReader(getContext().getAssets().open(projfile), "UTF-8"));
 
             int cnt;
             String line;
@@ -168,57 +166,70 @@ public class PointsProvider extends ContentProvider {
             ContentValues values = new ContentValues();
 
             // Delete any entries already in the Coordinate Systems table
-            cnt = db.delete(PointsContract.CoordSystems.TABLE, null, null);
+            cnt = db.delete(PointsContract.Projections.TABLE, null, null);
             Log.d(TAG, "Rows deleted: " + cnt);
 
             cnt = 0;
+            READLINE:
             while ((line = reader.readLine()) != null) {
 
                 if (line.startsWith("#"))
                     continue;       // comment lines start with #
-                cnt++;
 
-                parts = line.split(",", 10);
-                if (parts.length != 10) {
+                parts = line.split(",", 11);
+                if (parts.length != 11) {
                     Log.d(TAG, "File format error: " + line);
-                    break;
+                    continue;
                 }
 
-                // 0-CODE, 1-DESC, 2-PROJ, 3-P0, 4-M0, 5-X0, 6-Y0, 7-P1, 8-P2, 9-SF
-                values.put(PointsContract.CoordSystems.COLUMN_CODE, parts[0]);
-                values.put(PointsContract.CoordSystems.COLUMN_DESC, parts[1]);
-                values.put(PointsContract.CoordSystems.COLUMN_TYPE, coordSystemType);
+                // 0-CODE, 1-DESC, 2-TYPE, 3-PROJ, 4-P0, 5-M0, 6-X0, 7-Y0, 8-P1, 9-P2, 10-SF
+                values.put(PointsContract.Projections.COLUMN_CODE, parts[0]);
+                values.put(PointsContract.Projections.COLUMN_DESC, parts[1]);
                 switch (parts[2]) {
-                    case "L":
-                        values.put(PointsContract.CoordSystems.COLUMN_PROJ,
-                                PointsContract.CoordSystems.PROJ_LC);
+                    case "SPCS":
+                        values.put(PointsContract.Projections.COLUMN_TYPE,
+                                PointsContract.Projections.TYPE_SPCS);
                         break;
-                    case "T":
-                        values.put(PointsContract.CoordSystems.COLUMN_PROJ,
-                                PointsContract.CoordSystems.PROJ_TM);
+                    case "UTM":
+                        values.put(PointsContract.Projections.COLUMN_TYPE,
+                                PointsContract.Projections.TYPE_UTM);
                         break;
-                    case "O":
-                        values.put(PointsContract.CoordSystems.COLUMN_PROJ,
-                                PointsContract.CoordSystems.PROJ_OM);
+                    case "USER":
+                        values.put(PointsContract.Projections.COLUMN_TYPE,
+                                PointsContract.Projections.TYPE_USER);
                         break;
                     default:
-                        values.put(PointsContract.CoordSystems.COLUMN_PROJ,
-                                PointsContract.CoordSystems.PROJ_OTHER);
-                        break;
+                        Log.d(TAG, "Invalid projection TYPE: " + line);
+                        continue READLINE;
                 }
-                values.put(PointsContract.CoordSystems.COLUMN_PROJ, parts[2]);
-                values.put(PointsContract.CoordSystems.COLUMN_P0, parseDegMin(parts[3]));
-                values.put(PointsContract.CoordSystems.COLUMN_M0, parseDegMin(parts[4]));
-                values.put(PointsContract.CoordSystems.COLUMN_X0,
-                        parts[5].isEmpty() ? 0.0 : Double.parseDouble(parts[5]));
-                values.put(PointsContract.CoordSystems.COLUMN_Y0,
-                        parts[5].isEmpty() ? 0.0 :  Double.parseDouble(parts[6]));
-                values.put(PointsContract.CoordSystems.COLUMN_P1, parseDegMin(parts[7]));
-                values.put(PointsContract.CoordSystems.COLUMN_P2, parseDegMin(parts[8]));
-                values.put(PointsContract.CoordSystems.COLUMN_SF,
-                        parts[9].isEmpty() ? 0 : Long.parseLong(parts[9]));
+                switch (parts[3]) {
+                    case "L":
+                        values.put(PointsContract.Projections.COLUMN_PROJ,
+                                PointsContract.Projections.PROJ_LC);
+                        break;
+                    case "T":
+                        values.put(PointsContract.Projections.COLUMN_PROJ,
+                                PointsContract.Projections.PROJ_TM);
+                        break;
+                    case "O":
+                        values.put(PointsContract.Projections.COLUMN_PROJ,
+                                PointsContract.Projections.PROJ_OM);
+                        break;
+                    default:
+                        Log.d(TAG, "Invalid projection PROJ: " + line);
+                        continue READLINE;
+                }
+                values.put(PointsContract.Projections.COLUMN_P0, parseDegMin(parts[4]));
+                values.put(PointsContract.Projections.COLUMN_M0, parseDegMin(parts[5]));
+                values.put(PointsContract.Projections.COLUMN_X0, Double.parseDouble(parts[6]));
+                values.put(PointsContract.Projections.COLUMN_Y0, Double.parseDouble(parts[7]));
+                values.put(PointsContract.Projections.COLUMN_P1, parseDegMin(parts[8]));
+                values.put(PointsContract.Projections.COLUMN_P2, parseDegMin(parts[9]));
+                values.put(PointsContract.Projections.COLUMN_SF,
+                        parts[10].isEmpty() ? 0 : Long.parseLong(parts[10]));
 
-                db.insert(PointsContract.CoordSystems.TABLE, null, values);
+                db.insert(PointsContract.Projections.TABLE, null, values);
+                cnt++;
             }
             Log.d(TAG, "Transforms loaded: " + cnt);
 
@@ -279,9 +290,9 @@ public class PointsProvider extends ContentProvider {
             case POINTS_ID:
                 return PointsContract.Points.CONTENT_TYPE_ITEM;
             case COORD_SYSTEMS:
-                return PointsContract.CoordSystems.CONTENT_TYPE;
+                return PointsContract.Projections.CONTENT_TYPE;
             case COORD_SYSTEMS_ID:
-                return PointsContract.CoordSystems.CONTENT_TYPE_ITEM;
+                return PointsContract.Projections.CONTENT_TYPE_ITEM;
             case TRANSFORMS:
                 return PointsContract.Transforms.CONTENT_TYPE;
             case TRANSFORMS_ID:

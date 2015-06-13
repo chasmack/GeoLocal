@@ -190,7 +190,20 @@ public class MainActivity extends ActionBarActivity implements
 
     public void onLocalPointsFragmentInteraction(String id) {
 
-        Uri uri = Uri.parse(PointsContract.Points.CONTENT_URI);
+        Uri uri;
+        switch (id) {
+            case "1":
+                uri = Uri.parse(PointsContract.Points.CONTENT_URI);
+                break;
+            case "2":
+                uri = Uri.parse(PointsContract.Projections.CONTENT_URI);
+                break;
+            case "3":
+            default:
+                uri = Uri.parse(PointsContract.Transforms.CONTENT_URI);
+                break;
+
+        }
         Log.d(TAG, "Calling ContentResolver.getType: " + uri);
 
         String type = getContentResolver().getType(uri);
@@ -199,7 +212,25 @@ public class MainActivity extends ActionBarActivity implements
     }
 
     public void onGeoPointsFragmentInteraction(String id) {
-        Toast.makeText(this, "Geo points: " + id, Toast.LENGTH_SHORT).show();
+        Uri uri;
+        switch (id) {
+            case "1":
+                uri = Uri.parse(PointsContract.Points.CONTENT_URI + "/1");
+                break;
+            case "2":
+                uri = Uri.parse(PointsContract.Projections.CONTENT_URI + "/1");
+                break;
+            case "3":
+            default:
+                uri = Uri.parse(PointsContract.Transforms.CONTENT_URI + "/1");
+                break;
+
+        }
+        Log.d(TAG, "Calling ContentResolver.getType: " + uri);
+
+        String type = getContentResolver().getType(uri);
+
+        Toast.makeText(this, "Content type: " + type, Toast.LENGTH_LONG).show();
 
     }
 

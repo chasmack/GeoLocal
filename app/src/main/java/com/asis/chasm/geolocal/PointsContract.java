@@ -34,14 +34,14 @@ public final class PointsContract {
         public static final int TYPE_GEOGRAPHIC = 2;
     }
 
-    public static abstract class CoordSystems implements BaseColumns {
+    public static abstract class Projections implements BaseColumns {
 
-        public static final String CONTENT_PATH = "coord_systems";
+        public static final String CONTENT_PATH = "projections";
         public static final String CONTENT_URI = BASE_URI + CONTENT_PATH;
-        public static final String CONTENT_TYPE = "vnd.android.cursor.dir/vnd.chasm.coord_system";
-        public static final String CONTENT_TYPE_ITEM = "vnd.android.cursor.item/vnd.chasm.coord_system";
+        public static final String CONTENT_TYPE = "vnd.android.cursor.dir/vnd.chasm.projections";
+        public static final String CONTENT_TYPE_ITEM = "vnd.android.cursor.item/vnd.chasm.projections";
 
-        public static final String TABLE = "coord_systems";
+        public static final String TABLE = "projections";
         public static final String COLUMN_CODE = "code";
         public static final String COLUMN_DESC = "desc";
         public static final String COLUMN_TYPE = "type";
@@ -61,7 +61,6 @@ public final class PointsContract {
         public static final int PROJ_TM = 1;    // Transverse Mercator
         public static final int PROJ_LC = 2;    // Lambert Conic
         public static final int PROJ_OM = 3;    // Oblique Mercator
-        public static final int PROJ_OTHER = 0;
     }
 
     public static abstract class Transforms implements BaseColumns {
