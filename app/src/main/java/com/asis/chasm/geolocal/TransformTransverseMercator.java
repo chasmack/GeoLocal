@@ -2,33 +2,33 @@ package com.asis.chasm.geolocal;
 
 /**
  * Transform between a local basis and geographic coordinates using
- * a Lambert Conic projection as an intermediate basis.
+ * a Transverse Mercator projection as an intermediate basis.
  *
  * The local transform converts local x,y coordinates in local units
  * to grid coordinates in meters.  The grid coordinates are then converted
  * to geographic coordinates.
  */
 
-public class LambertConicTransform {
+public class TransformTransverseMercator {
 
     private static TransformParams sParams;
 
-    private LambertConicTransform() { }
+    private TransformTransverseMercator() { }
 
-    public static GeoPoint toGeographic(LocalPoint locPt, TransformParams params) {
+    public static Point toGeographic(Point pt, TransformParams params) {
         initTransform(params);
-        return new GeoPoint(0.0, 0.0);
+        return new Point(Point.TYPE_GEOGRAPHIC);
     }
 
-    public static LocalPoint toLocal(GeoPoint geoPt, TransformParams params) {
+    public static Point toLocal(Point pt, TransformParams params) {
         initTransform(params);
-        return new LocalPoint(0.0, 0.0);
+        return new Point(Point.TYPE_LOCAL);
     }
 
     private static void initTransform(TransformParams params) {
         if (sParams.equals(params)) {
             return;
-         }
+        }
         sParams = params;
 
         // init transform constants

@@ -8,12 +8,15 @@ import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
+import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.HashMap;
 
 public class PointsProvider extends ContentProvider {
 
@@ -22,6 +25,9 @@ public class PointsProvider extends ContentProvider {
 
     // A UriMatcher instance
     private static final UriMatcher sUriMatcher;
+
+    // A projection map used to select columns from the database
+    private static HashMap<String, String> sPointsProjectionMap;
 
     // A new Database Helper
     private PointsDbHelper mDbHelper;
@@ -46,6 +52,14 @@ public class PointsProvider extends ContentProvider {
         sUriMatcher.addURI(PointsContract.AUTHORITY, PointsContract.Projections.CONTENT_PATH + "/#", PROJECTIONS_ID);
         sUriMatcher.addURI(PointsContract.AUTHORITY, PointsContract.Transforms.CONTENT_PATH, TRANSFORMS);
         sUriMatcher.addURI(PointsContract.AUTHORITY, PointsContract.Transforms.CONTENT_PATH + "/#", TRANSFORMS_ID);
+
+         /*
+         * Creates and initializes a projection map that returns all columns
+         */
+
+        sPointsProjectionMap = new HashMap<String, String>();
+        sPointsProjectionMap.put(PointsContract.Points._ID, PointsContract.Points._ID);
+        sPointsProjectionMap.put(PointsContract.Points.COLUMN_NAME, PointsContract.Points.COLUMN_DESC);
 
     }
 
@@ -154,8 +168,60 @@ public class PointsProvider extends ContentProvider {
     public Cursor query(Uri uri, String[] projection, String selection,
                         String[] selectionArgs, String sortOrder) {
 
-        // TODO: Implement this to handle query requests from clients.
-        throw new UnsupportedOperationException("Not yet implemented");
+        // Constructs a new query builder and sets its table name
+        SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
+        qb.setTables(PointsContract.Points.TABLE);
+
+        /**
+         * Choose the projection and adjust the "where" clause based on URI pattern-matching.
+         */
+        switch (sUriMatcher.match(uri)) {
+            case POINTS:
+                qb.setProjectionMap(sPointsProjectionMap);
+                break;
+            case POINTS_ID:
+                qb.setProjectionMap(sPointsProjectionMap);
+                qb.appendWhere(
+                        PointsContract.Points._ID +
+                                "=" + uri.getLastPathSegment());
+                break;
+            case PROJECTIONS:
+            case PROJECTIONS_ID:
+            case TRANSFORMS:
+            case TRANSFORMS_ID:
+            default:
+                throw new IllegalArgumentException("Unknown URI: " + uri);
+        }
+
+        String orderBy;
+        // If no sort order is specified, uses the default
+        if (TextUtils.isEmpty(sortOrder)) {
+            orderBy = PointsContract.Points.DEFAULT_SORT_ORDER;
+        } else {
+            orderBy = sortOrder;
+        }
+
+        // Opens the database object in "read" mode, since no writes need to be done.
+        SQLiteDatabase db = mDbHelper.getReadableDatabase();
+
+       /*
+        * Performs the query. If no problems occur trying to read the database, then a Cursor
+        * object is returned; otherwise, the cursor variable contains null. If no records were
+        * selected, then the Cursor object is empty, and Cursor.getCount() returns 0.
+        */
+        Cursor c = qb.query(
+                db,            // The database to query
+                projection,    // The columns to return from the query
+                selection,     // The columns for the where clause
+                selectionArgs, // The values for the where clause
+                null,          // don't group the rows
+                null,          // don't filter by row groups
+                orderBy        // The sort order
+        );
+
+        // Tells the Cursor what URI to watch, so it knows when its source data changes
+        c.setNotificationUri(getContext().getContentResolver(), uri);
+        return c;
     }
 
     @Override

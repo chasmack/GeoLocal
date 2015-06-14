@@ -44,6 +44,9 @@ public final class PointsContract {
         public static final String COLUMN_Y = "y";
         public static final String COLUMN_LAT = "lat";
         public static final String COLUMN_LON = "lon";
+
+        public static final String DEFAULT_SORT_ORDER = COLUMN_NAME + " ASC";
+
     }
 
     public static abstract class Projections implements BaseColumns {
