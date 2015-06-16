@@ -20,6 +20,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import com.asis.chasm.geolocal.PointsContract.Points;
+import com.asis.chasm.geolocal.PointsContract.Projections;
+import com.asis.chasm.geolocal.PointsContract.Transforms;
+
 public class MainActivity extends Activity implements
         PointsListFragment.OnFragmentInteractionListener {
 
@@ -110,6 +114,14 @@ public class MainActivity extends Activity implements
 
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == RESULT_CODE_FILE_SELECT && resultCode == Activity.RESULT_OK) {
+
+            // Delete any entries already in the Coordinate Systems table
+            int cnt = getContentResolver().delete(Uri.parse(Points.CONTENT_URI),
+                    Points.COLUMN_TYPE + "=" + Points.POINT_TYPE_LOCAL, null);
+            Log.d(TAG, "Local points deleted: " + cnt);
+
+            getLoaderManager().restartLoader(0, null, mPointsListFragment);
+
             new ReadLocalPointsTask().execute(data.getData());
         }
     }
@@ -132,11 +144,11 @@ public class MainActivity extends Activity implements
                 ContentResolver resolver = getContentResolver();
                 ContentValues values = new ContentValues();
 
-                final Uri POINTS_URI = Uri.parse(PointsContract.Points.CONTENT_URI);
+                final Uri POINTS_URI = Uri.parse(Points.CONTENT_URI);
 
                 // Delete any entries already in the Coordinate Systems table
                 cnt = resolver.delete(POINTS_URI,
-                        PointsContract.Points.COLUMN_TYPE + " = " + PointsContract.TYPE_LOCAL, null);
+                        Points.COLUMN_TYPE + " = " + Points.POINT_TYPE_LOCAL, null);
                 Log.d(TAG, "Local points deleted: " + cnt);
 
                 cnt = 0;
@@ -150,12 +162,12 @@ public class MainActivity extends Activity implements
                         Log.d(TAG, "PNEZD file format error: " + line);
                         continue;
                     }
-                    values.put(PointsContract.Points.COLUMN_NAME, parts[0]);
-                    values.put(PointsContract.Points.COLUMN_Y, Double.parseDouble(parts[1]));
-                    values.put(PointsContract.Points.COLUMN_X, Double.parseDouble(parts[2]));
+                    values.put(Points.COLUMN_NAME, parts[0]);
+                    values.put(Points.COLUMN_Y, Double.parseDouble(parts[1]));
+                    values.put(Points.COLUMN_X, Double.parseDouble(parts[2]));
                     // Skipping Z (elevation)
-                    values.put(PointsContract.Points.COLUMN_DESC, parts[4]);
-                    values.put(PointsContract.Points.COLUMN_TYPE, PointsContract.TYPE_LOCAL);
+                    values.put(Points.COLUMN_DESC, parts[4]);
+                    values.put(Points.COLUMN_TYPE, Points.POINT_TYPE_LOCAL);
                     resolver.insert(POINTS_URI, values);
                     cnt++;
                 }
@@ -220,20 +232,18 @@ public class MainActivity extends Activity implements
                     }
 
                     // 0-CODE, 1-DESC, 2-TYPE, 3-PROJ, 4-P0, 5-M0, 6-X0, 7-Y0, 8-P1, 9-P2, 10-SF
-                    values.put(PointsContract.Projections.COLUMN_CODE, parts[0]);
-                    values.put(PointsContract.Projections.COLUMN_DESC, parts[1]);
+                    values.put(Projections.COLUMN_CODE, parts[0]);
+                    values.put(Projections.COLUMN_DESC, parts[1]);
                     switch (parts[2]) {
                         case "SPCS":
-                            values.put(PointsContract.Projections.COLUMN_COORD_SYSTEM,
-                                    PointsContract.COORD_SYSTEM_SPCS);
+                            values.put(Projections.COLUMN_COORD_SYSTEM,
+                                    Projections.COORD_SYSTEM_SPCS);
                             break;
                         case "UTM":
-                            values.put(PointsContract.Projections.COLUMN_COORD_SYSTEM,
-                                    PointsContract.COORD_SYSTEM_UTM);
+                            values.put(Projections.COLUMN_COORD_SYSTEM, Projections.COORD_SYSTEM_UTM);
                             break;
                         case "USER":
-                            values.put(PointsContract.Projections.COLUMN_COORD_SYSTEM,
-                                    PointsContract.COORD_SYSTEM_USER);
+                            values.put(Projections.COLUMN_COORD_SYSTEM, Projections.COORD_SYSTEM_USER);
                             break;
                         default:
                             Log.d(TAG, "Invalid projection TYPE: " + line);
@@ -241,28 +251,25 @@ public class MainActivity extends Activity implements
                     }
                     switch (parts[3]) {
                         case "L":
-                            values.put(PointsContract.Projections.COLUMN_PROJECTION,
-                                    PointsContract.PROJECTION_LC);
+                            values.put(Projections.COLUMN_PROJECTION, Projections.PROJECTION_LC);
                             break;
                         case "T":
-                            values.put(PointsContract.Projections.COLUMN_PROJECTION,
-                                    PointsContract.PROJECTION_TM);
+                            values.put(Projections.COLUMN_PROJECTION, Projections.PROJECTION_TM);
                             break;
                         case "O":
-                            values.put(PointsContract.Projections.COLUMN_PROJECTION,
-                                    PointsContract.PROJECTION_OM);
+                            values.put(Projections.COLUMN_PROJECTION, Projections.PROJECTION_OM);
                             break;
                         default:
                             Log.d(TAG, "Invalid projection PROJ: " + line);
                             continue READLINE;
                     }
-                    values.put(PointsContract.Projections.COLUMN_P0, parseDegMin(parts[4]));
-                    values.put(PointsContract.Projections.COLUMN_M0, parseDegMin(parts[5]));
-                    values.put(PointsContract.Projections.COLUMN_X0, Double.parseDouble(parts[6]));
-                    values.put(PointsContract.Projections.COLUMN_Y0, Double.parseDouble(parts[7]));
-                    values.put(PointsContract.Projections.COLUMN_P1, parseDegMin(parts[8]));
-                    values.put(PointsContract.Projections.COLUMN_P2, parseDegMin(parts[9]));
-                    values.put(PointsContract.Projections.COLUMN_SF,
+                    values.put(Projections.COLUMN_P0, parseDegMin(parts[4]));
+                    values.put(Projections.COLUMN_M0, parseDegMin(parts[5]));
+                    values.put(Projections.COLUMN_X0, Double.parseDouble(parts[6]));
+                    values.put(Projections.COLUMN_Y0, Double.parseDouble(parts[7]));
+                    values.put(Projections.COLUMN_P1, parseDegMin(parts[8]));
+                    values.put(Projections.COLUMN_P2, parseDegMin(parts[9]));
+                    values.put(Projections.COLUMN_SF,
                             parts[10].isEmpty() ? 0 : Long.parseLong(parts[10]));
 
                     resolver.insert(PROJECTIONS_URI, values);
