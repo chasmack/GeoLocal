@@ -6,6 +6,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.UriMatcher;
 import android.database.Cursor;
+import android.database.MergeCursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
@@ -160,17 +161,22 @@ public class PointsProvider extends ContentProvider {
     public Cursor query(Uri uri, String[] projection, String select,
                         String[] selectArgs, String sort) {
 
-        String fullSelect;
+        String select1, select2 = null;
         switch (sUriMatcher.match(uri))  {
 
             case POINTS:
-                fullSelect = select;
+                select1 = "REGEXP(\"\\d+\"," + PointsContract.Points.COLUMN_NAME + ")";
+                select2 = "NOT " + select1;
+                if (select != null && !select.isEmpty()) {
+                    select1 = select + " AND " + select1;
+                    select2 = select + " AND " + select2;
+                }
                 break;
 
             case POINTS_ID:
-                fullSelect = PointsContract.Points._ID + "=" + uri.getLastPathSegment();
+                select1 = PointsContract.Points._ID + "=" + uri.getLastPathSegment();
                 if (select != null && !select.isEmpty()) {
-                    fullSelect = select + " AND " + fullSelect;
+                    select1 = select + " AND " + select1;
                 }
                 break;
 
@@ -196,21 +202,35 @@ public class PointsProvider extends ContentProvider {
         * selected, then the Cursor object is empty, and Cursor.getCount() returns 0.
         */
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
-        Cursor c = db.query(
+        Cursor c1, c2;
+        c1 = db.query(
                 PointsContract.Points.TABLE,    // The database to query
                 projection,      // The columns to return from the query
-                fullSelect,      // The columns for the where clause
+                select1,      // The columns for the where clause
                 selectArgs,      // The values for the where clause
                 null,            // don't group the rows
                 null,            // don't filter by row groups
                 orderBy          // The sort order
         );
 
+        if (select2 != null) {
+            c2 = db.query(
+                    PointsContract.Points.TABLE,    // The database to query
+                    projection,      // The columns to return from the query
+                    select2,      // The columns for the where clause
+                    selectArgs,      // The values for the where clause
+                    null,            // don't group the rows
+                    null,            // don't filter by row groups
+                    orderBy          // The sort order
+            );
+            c1 = (Cursor) new MergeCursor(new Cursor[] { c1, c2 });
+        }
+
         // Tells the Cursor what URI to watch, so it knows when its source data changes
-        c.setNotificationUri(getContext().getContentResolver(), uri);
-        Log.d(TAG, "query rows: " + c.getCount());
-        Log.d(TAG, "query columns: " + c.getColumnCount());
-        return c;
+        c1.setNotificationUri(getContext().getContentResolver(), uri);
+        Log.d(TAG, "query rows: " + c1.getCount());
+        Log.d(TAG, "query columns: " + c1.getColumnCount());
+        return c1;
     }
 
     @Override
