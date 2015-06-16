@@ -4,5 +4,6 @@
     <string name="action_settings">Settings</string>
     <string name="action_read_points">Read Points</string>
     <string name="action_show_local">Local Coords</string>
-    <string name="action_show_geographic">Geo Coords</string>
+    <string name="action_show_geographic">Geographic Coords</string>
+    <string name="action_test">Test</string>
 </resources>

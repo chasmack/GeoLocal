@@ -77,8 +77,8 @@ public class PointsListFragment extends ListFragment implements
         setHasOptionsMenu(true);
 
         // Create an empty adapter we will use to display the loaded data.
-        mAdapter = new PointsCursorAdapter(getActivity(), null,
-                CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER);
+        mAdapter = new PointsCursorAdapter(getActivity(), null, 0);
+            // CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER);
         setListAdapter(mAdapter);
 
         // Prepare the loader.  Either re-connect with an existing one,
@@ -122,9 +122,16 @@ public class PointsListFragment extends ListFragment implements
             case R.id.action_show_geographic:
                 mAdapter.showGeographicCoordinates();
                 return true;
+            case R.id.action_test:
+                test();
+                return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void test() {
+        getLoaderManager().restartLoader(0, null, this);
     }
 
     @Override
@@ -193,12 +200,16 @@ public class PointsListFragment extends ListFragment implements
             v.setText(cursor.getString(Points.INDEX_DESC));
             if (showGeographic) {
                 v = (TextView) view.findViewById(R.id.coords);
-                v.setText(String.format(formatGeographic, cursor.getFloat(Points.INDEX_LAT), cursor.getFloat(Points.INDEX_LON)));
+                v.setText(String.format(formatGeographic,
+                        cursor.getFloat(Points.INDEX_LAT),
+                        cursor.getFloat(Points.INDEX_LON)));
                 v = (TextView) view.findViewById(R.id.coord_type);
                 v.setText("Lat/Lon:");
             } else {
                 v = (TextView) view.findViewById(R.id.coords);
-                v.setText(String.format(formatLocal, cursor.getFloat(Points.INDEX_Y), cursor.getFloat(Points.INDEX_X)));
+                v.setText(String.format(formatLocal,
+                        cursor.getFloat(Points.INDEX_Y),
+                        cursor.getFloat(Points.INDEX_X)));
                 v = (TextView) view.findViewById(R.id.coord_type);
                 v.setText("N/E:");
             }
@@ -223,6 +234,7 @@ public class PointsListFragment extends ListFragment implements
 
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 
+        Log.d(TAG, "LoaderManager.LoaderCallbacks<?>.onCreateLoader");
         return new CursorLoader(
                 getActivity(),          // Parent activity context
                 Uri.parse(Points.CONTENT_URI),
@@ -234,12 +246,14 @@ public class PointsListFragment extends ListFragment implements
     }
 
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        Log.d(TAG, "LoaderManager.LoaderCallbacks<?>.onLoadFinished");
         // Swap the new cursor in.  (The framework will take care of closing the
         // old cursor once we return.)
         mAdapter.swapCursor(data);
     }
 
     public void onLoaderReset(Loader<Cursor> loader) {
+        Log.d(TAG, "LoaderManager.LoaderCallbacks<?>.onLoaderReset");
         // This is called when the last Cursor provided to onLoadFinished()
         // above is about to be closed.  We need to make sure we are no
         // longer using it.
@@ -273,13 +287,14 @@ public class PointsListFragment extends ListFragment implements
             // Delete any entries already in the Coordinate Systems table
             int cnt = getActivity().getContentResolver().delete(Uri.parse(Points.CONTENT_URI),
                     Points.COLUMN_TYPE + "=" + Points.POINT_TYPE_LOCAL, null);
-            Log.d(TAG, "Local points deleted: " + cnt);
+            Log.d(TAG, "onActivityResult points deleted: " + cnt);
 
+            // Disconnect the cursor from the list while we load points.
             setEmptyText("Loading points...");
-
-            getLoaderManager().restartLoader(0, null, this);
+            mAdapter.swapCursor(null);
             mAdapter.notifyDataSetChanged();
 
+            // getLoaderManager().restartLoader(0, null, this);
             new ReadLocalPointsTask(this).execute(data.getData());
         }
     }
@@ -296,17 +311,17 @@ public class PointsListFragment extends ListFragment implements
         @Override
         protected Integer doInBackground(Uri... params) {
             Uri uri = params[0];
-            Log.d(TAG, "FILE_SELECT Uri: " + uri);
+            Log.d(TAG, "doInBackground Uri: " + uri);
 
             int cnt = 0;
             BufferedReader reader = null;
             try {
+                ContentResolver resolver = getActivity().getContentResolver();
                 reader = new BufferedReader(
-                        new InputStreamReader(getActivity().getContentResolver().openInputStream(uri)));
+                        new InputStreamReader(resolver.openInputStream(uri)));
 
                 String line;
                 String[] parts;
-                ContentResolver resolver = getActivity().getContentResolver();
                 ContentValues values = new ContentValues();
 
                 final Uri POINTS_URI = Uri.parse(Points.CONTENT_URI);
@@ -334,7 +349,6 @@ public class PointsListFragment extends ListFragment implements
                     resolver.insert(POINTS_URI, values);
                     cnt++;
                 }
-                Log.d(TAG, "Points loaded: " + cnt);
 
             } catch (IOException e) {
                 Log.d(TAG, e.toString());
@@ -353,13 +367,10 @@ public class PointsListFragment extends ListFragment implements
 
         @Override
         protected void onPostExecute(Integer cnt) {
-            // super.onPostExecute(cnt);
-            setEmptyText("No points.");
+            Log.d(TAG, "onPostExecute points loaded: " + cnt);
 
             getLoaderManager().restartLoader(0, null, mLoaderCallbacksManager);
-            mAdapter.notifyDataSetChanged();
-
-            Log.d(TAG, "ReadLocalPointsTask onPostExecute cnt: " + cnt);
+            setEmptyText("No points.");
         }
     }
 
