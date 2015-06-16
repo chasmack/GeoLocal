@@ -44,16 +44,16 @@ public class MainActivity extends Activity implements
         }
 
         // Create a new Fragment to be placed in the activity layout
-        PointsListFragment listFragment = new PointsListFragment();
+        mPointsListFragment = new PointsListFragment();
 
         // In case this activity was started with special instructions from an
         // Intent, pass the Intent's extras to the fragment as arguments
-        listFragment.setArguments(getIntent().getExtras());
+        mPointsListFragment.setArguments(getIntent().getExtras());
 
         // Add the fragment to the 'container' FrameLayout
         FragmentManager manager = getFragmentManager();
         FragmentTransaction transaction = manager.beginTransaction();
-        transaction.add(R.id.container, (Fragment) listFragment);
+        transaction.add(R.id.container, (Fragment) mPointsListFragment);
         transaction.commit();
 
         // Start a background task to populate the Coordinate Systems table
@@ -179,6 +179,7 @@ public class MainActivity extends Activity implements
         @Override
         protected void onPostExecute(Void v) {
             super.onPostExecute(v);
+            getLoaderManager().restartLoader(0, null, mPointsListFragment);
             Log.d(TAG, "ReadLocalPointsTask onPostExecute.");
 
         }
@@ -317,26 +318,8 @@ public class MainActivity extends Activity implements
     }
 
     @Override
-    public void onPointsFragmentInteraction(String id) {
+    public void onPointsFragmentInteraction(int position) {
 
-        Uri uri;
-        switch (id) {
-            case "1":
-                uri = Uri.parse(PointsContract.Points.CONTENT_URI);
-                break;
-            case "2":
-                uri = Uri.parse(PointsContract.Projections.CONTENT_URI);
-                break;
-            case "3":
-            default:
-                uri = Uri.parse(PointsContract.Transforms.CONTENT_URI);
-                break;
-
-        }
-        Log.d(TAG, "Calling ContentResolver.getType: " + uri);
-
-        String type = getContentResolver().getType(uri);
-
-        Toast.makeText(this, "Content type: " + type, Toast.LENGTH_LONG).show();
+        Toast.makeText(this, "List item: " + position, Toast.LENGTH_SHORT).show();
     }
 }

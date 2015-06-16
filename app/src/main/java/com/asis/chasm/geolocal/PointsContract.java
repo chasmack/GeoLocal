@@ -45,8 +45,12 @@ public final class PointsContract {
         public static final String COLUMN_LAT = "lat";
         public static final String COLUMN_LON = "lon";
 
-        public static final String DEFAULT_SORT_ORDER = COLUMN_NAME + " ASC";
-
+        // Default sort order sorts numerically.
+        //  CAST(name AS INTEGER), SUBSTR(name,1,1), CAST(SUBSTR(name,2) AS INTEGER), name
+        public static final String DEFAULT_ORDER_BY = "CAST(" + COLUMN_NAME + " AS INTEGER), "
+                + "SUBSTR(" + COLUMN_NAME + ",1,1), "
+                + "CAST(SUBSTR(" + COLUMN_NAME + ",2) AS INTEGER), "
+                + COLUMN_NAME;
     }
 
     public static abstract class Projections implements BaseColumns {

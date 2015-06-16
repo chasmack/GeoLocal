@@ -8,9 +8,12 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.ListFragment;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
@@ -33,7 +36,6 @@ public class PointsListFragment extends ListFragment implements
     // This is the Adapter being used to display the list's data.
     SimpleCursorAdapter mAdapter;
 
-
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
@@ -45,9 +47,18 @@ public class PointsListFragment extends ListFragment implements
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+    }
+
+    @Override public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
         // Give some text to display if there is no data.  In a real
         // application this would come from a resource.
-        setEmptyText("No Points.");
+        setEmptyText("No points.");
+
+
+        // We have a menu item to show in action bar.
+        setHasOptionsMenu(true);
 
         // We have a menu item to show in action bar.
         setHasOptionsMenu(true);
@@ -55,16 +66,17 @@ public class PointsListFragment extends ListFragment implements
         // Create an empty adapter we will use to display the loaded data.
         mAdapter = new SimpleCursorAdapter(getActivity(),
                 R.layout.list_item_point, null,
-                new String[] { PointsContract.Points.COLUMN_NAME, PointsContract.Points.COLUMN_DESC },
-                new int[] { android.R.id.text1, android.R.id.text2 }, 0);
+                new String[] {
+                        PointsContract.Points.COLUMN_NAME, PointsContract.Points.COLUMN_DESC
+                },
+                new int[] { R.id.point_name, R.id.point_desc },
+                0);
         setListAdapter(mAdapter);
 
         // Prepare the loader.  Either re-connect with an existing one,
         // or start a new one.
         getLoaderManager().initLoader(0, null, this);
-
     }
-
 
     @Override
     public void onAttach(Activity activity) {
@@ -84,6 +96,11 @@ public class PointsListFragment extends ListFragment implements
     }
 
     @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+       return super.onCreateView(inflater, container, savedInstanceState);
+    }
+
+    @Override
     public void onDetach() {
         super.onDetach();
         mListener = null;
@@ -92,26 +109,28 @@ public class PointsListFragment extends ListFragment implements
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
         super.onListItemClick(l, v, position, id);
-
+        Log.d("FragmentComplexList", "Item clicked: " + id);
         if (null != mListener) {
             // Notify the active callbacks interface (the activity, if the
             // fragment is attached to one) that an item has been selected.
-            mListener.onPointsFragmentInteraction(DummyContent.ITEMS.get(position).id);
+            mListener.onPointsFragmentInteraction(position);
         }
     }
 
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        // This is called when a new Loader needs to be created.  This
-        // sample only has one Loader, so we don't care about the ID.
-        // First, pick the base URI to use depending on whether we are
-        // currently filtering.
-        Uri baseUri = Uri.parse(PointsContract.Points.CONTENT_URI);
-
-
-        // Now create and return a CursorLoader that will take c
-        return new CursorLoader(getActivity(), baseUri,
-                null, null, null,
-                PointsContract.Points.COLUMN_NAME + " ASC");
+        final String[] projection = {
+                PointsContract.Points._ID,
+                PointsContract.Points.COLUMN_NAME,
+                PointsContract.Points.COLUMN_DESC
+        };
+        return new CursorLoader(
+                getActivity(),   // Parent activity context
+                Uri.parse(PointsContract.Points.CONTENT_URI),
+                projection,      // Projection to return
+                null,            // No selection clause
+                null,            // No selection arguments
+                null             // Default sort order
+        );
     }
 
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
@@ -139,7 +158,7 @@ public class PointsListFragment extends ListFragment implements
      */
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
-        public void onPointsFragmentInteraction(String id);
+        public void onPointsFragmentInteraction(int position);
     }
 
 }
