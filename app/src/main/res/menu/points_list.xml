@@ -1,4 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item android:id="@+id/action_read_points"
+        android:title="@string/action_read_points"
+        android:orderInCategory="20" />
+
+    <item android:id="@+id/action_show_local"
+        android:title="@string/action_show_local"
+        android:orderInCategory="30" />
+
+    <item android:id="@+id/action_show_geographic"
+        android:title="@string/action_show_geographic"
+        android:orderInCategory="40" />
 
 </menu>

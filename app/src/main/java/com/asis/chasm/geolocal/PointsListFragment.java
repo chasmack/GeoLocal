@@ -2,17 +2,22 @@ package com.asis.chasm.geolocal;
 
 import android.app.Activity;
 import android.app.LoaderManager;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.CursorLoader;
+import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.ListFragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -20,9 +25,14 @@ import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.asis.chasm.geolocal.PointsContract.Points;
 import com.asis.chasm.geolocal.dummy.DummyContent;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
 /**
  * A fragment representing a list of Items.
@@ -63,15 +73,12 @@ public class PointsListFragment extends ListFragment implements
         // application this would come from a resource.
         setEmptyText("No points.");
 
-
-        // We have a menu item to show in action bar.
-        setHasOptionsMenu(true);
-
         // We have a menu item to show in action bar.
         setHasOptionsMenu(true);
 
         // Create an empty adapter we will use to display the loaded data.
-        mAdapter = new PointsCursorAdapter(getActivity(), null, 0);
+        mAdapter = new PointsCursorAdapter(getActivity(), null,
+                CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER);
         setListAdapter(mAdapter);
 
         // Prepare the loader.  Either re-connect with an existing one,
@@ -94,6 +101,30 @@ public class PointsListFragment extends ListFragment implements
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.points_list, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        switch (id) {
+            case R.id.action_read_points:
+                selectPointsFile();
+                return true;
+            case R.id.action_show_local:
+                mAdapter.showLocalCoordinates();
+                return true;
+            case R.id.action_show_geographic:
+                mAdapter.showGeographicCoordinates();
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -143,6 +174,16 @@ public class PointsListFragment extends ListFragment implements
             mInflater = LayoutInflater.from(context);
         }
 
+        public void showLocalCoordinates() {
+            showGeographic = false;
+            notifyDataSetChanged();
+        }
+
+        public void showGeographicCoordinates() {
+            showGeographic = true;
+            notifyDataSetChanged();
+        }
+
         @Override
         public void bindView(View view, Context context, Cursor cursor) {
             TextView v;
@@ -169,6 +210,11 @@ public class PointsListFragment extends ListFragment implements
             return v;
         }
 
+        @Override
+        protected void onContentChanged() {
+            super.onContentChanged();
+            Log.d(TAG, "PointsCursorAdapter.onContentChanged");
+        }
     }
 
     /*
@@ -198,6 +244,123 @@ public class PointsListFragment extends ListFragment implements
         // above is about to be closed.  We need to make sure we are no
         // longer using it.
         mAdapter.swapCursor(null);
+    }
+
+    // Activity result codes
+    private final int RESULT_CODE_FILE_SELECT = 1;
+
+    private void selectPointsFile() {
+
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("text/plain");
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+
+        try {
+            startActivityForResult(
+                    Intent.createChooser(intent, "Select a File"), RESULT_CODE_FILE_SELECT);
+
+        } catch (android.content.ActivityNotFoundException ex) {
+            Toast.makeText(getActivity(), "Please install a File Manager.",
+                    Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == RESULT_CODE_FILE_SELECT && resultCode == Activity.RESULT_OK) {
+
+            // Delete any entries already in the Coordinate Systems table
+            int cnt = getActivity().getContentResolver().delete(Uri.parse(Points.CONTENT_URI),
+                    Points.COLUMN_TYPE + "=" + Points.POINT_TYPE_LOCAL, null);
+            Log.d(TAG, "Local points deleted: " + cnt);
+
+            setEmptyText("Loading points...");
+
+            getLoaderManager().restartLoader(0, null, this);
+            mAdapter.notifyDataSetChanged();
+
+            new ReadLocalPointsTask(this).execute(data.getData());
+        }
+    }
+
+    private class ReadLocalPointsTask extends AsyncTask<Uri, Void, Integer> {
+
+        LoaderManager.LoaderCallbacks<?> mLoaderCallbacksManager;
+
+        public ReadLocalPointsTask(LoaderManager.LoaderCallbacks<?> callbacksManager) {
+            super();
+            mLoaderCallbacksManager = callbacksManager;
+        }
+
+        @Override
+        protected Integer doInBackground(Uri... params) {
+            Uri uri = params[0];
+            Log.d(TAG, "FILE_SELECT Uri: " + uri);
+
+            int cnt = 0;
+            BufferedReader reader = null;
+            try {
+                reader = new BufferedReader(
+                        new InputStreamReader(getActivity().getContentResolver().openInputStream(uri)));
+
+                String line;
+                String[] parts;
+                ContentResolver resolver = getActivity().getContentResolver();
+                ContentValues values = new ContentValues();
+
+                final Uri POINTS_URI = Uri.parse(Points.CONTENT_URI);
+
+                cnt = 0;
+                while ((line = reader.readLine()) != null) {
+                    // Ignore blank lines and comment lines which start with #
+                    if (line.length() == 0 || line.startsWith("#")) {
+                        continue;
+                    }
+                    parts = line.split(",", 5);
+                    if (parts.length != 5) {
+                        Log.d(TAG, "PNEZD file format error: " + line);
+                        continue;
+                    }
+                    values.put(Points.COLUMN_NAME, parts[0]);
+                    values.put(Points.COLUMN_Y, Double.parseDouble(parts[1]));
+                    values.put(Points.COLUMN_X, Double.parseDouble(parts[2]));
+                    // Skipping Z (elevation)
+                    values.put(Points.COLUMN_DESC, parts[4]);
+                    values.put(Points.COLUMN_TYPE, Points.POINT_TYPE_LOCAL);
+                    values.put(Points.COLUMN_LAT, 0.0);
+                    values.put(Points.COLUMN_LON, 0.0);
+
+                    resolver.insert(POINTS_URI, values);
+                    cnt++;
+                }
+                Log.d(TAG, "Points loaded: " + cnt);
+
+            } catch (IOException e) {
+                Log.d(TAG, e.toString());
+
+            } finally {
+                if (reader != null) {
+                    try {
+                        reader.close();
+                    } catch (IOException e) {
+                        Log.d(TAG, e.toString());
+                    }
+                }
+            }
+            return cnt;
+        }
+
+        @Override
+        protected void onPostExecute(Integer cnt) {
+            // super.onPostExecute(cnt);
+            setEmptyText("No points.");
+
+            getLoaderManager().restartLoader(0, null, mLoaderCallbacksManager);
+            mAdapter.notifyDataSetChanged();
+
+            Log.d(TAG, "ReadLocalPointsTask onPostExecute cnt: " + cnt);
+        }
     }
 
     /**
