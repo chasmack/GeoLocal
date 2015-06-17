@@ -78,7 +78,6 @@ public class PointsListFragment extends ListFragment implements
 
         // Create an empty adapter we will use to display the loaded data.
         mAdapter = new PointsCursorAdapter(getActivity(), null, 0);
-            // CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER);
         setListAdapter(mAdapter);
 
         // Prepare the loader.  Either re-connect with an existing one,
@@ -235,7 +234,7 @@ public class PointsListFragment extends ListFragment implements
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 
         Log.d(TAG, "LoaderManager.LoaderCallbacks<?>.onCreateLoader");
-        return new CursorLoader(
+        CursorLoader loader =  new CursorLoader(
                 getActivity(),          // Parent activity context
                 Uri.parse(Points.CONTENT_URI),
                 Points.PROJECTION,      // Projection to return
@@ -243,6 +242,10 @@ public class PointsListFragment extends ListFragment implements
                 null,                    // No selection arguments
                 null                    // Default sort order
         );
+
+        // The loader will wait 0.5 seconds between requerys.
+        loader.setUpdateThrottle(500);
+        return loader;
     }
 
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
@@ -284,17 +287,15 @@ public class PointsListFragment extends ListFragment implements
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == RESULT_CODE_FILE_SELECT && resultCode == Activity.RESULT_OK) {
 
+            // Change the empty text message..
+            setEmptyText("Loading points...");
+
             // Delete any entries already in the Coordinate Systems table
             int cnt = getActivity().getContentResolver().delete(Uri.parse(Points.CONTENT_URI),
                     Points.COLUMN_TYPE + "=" + Points.POINT_TYPE_LOCAL, null);
             Log.d(TAG, "onActivityResult points deleted: " + cnt);
 
-            // Disconnect the cursor from the list while we load points.
-            setEmptyText("Loading points...");
-            mAdapter.swapCursor(null);
-            mAdapter.notifyDataSetChanged();
-
-            // getLoaderManager().restartLoader(0, null, this);
+            // Run an AsyncTask to read points into the content provider.
             new ReadLocalPointsTask(this).execute(data.getData());
         }
     }
@@ -368,9 +369,9 @@ public class PointsListFragment extends ListFragment implements
         @Override
         protected void onPostExecute(Integer cnt) {
             Log.d(TAG, "onPostExecute points loaded: " + cnt);
-
-            getLoaderManager().restartLoader(0, null, mLoaderCallbacksManager);
-            setEmptyText("No points.");
+            if (cnt == 0) {
+                setEmptyText("No points.");
+            }
         }
     }
 

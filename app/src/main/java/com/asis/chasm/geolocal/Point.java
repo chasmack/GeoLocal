@@ -57,7 +57,7 @@ public class Point {
     }
 
     public Point toGeographic(TransformParams params)  {
-        Log.d(TAG, "toGeographic x/y: " + x + "/" + y);
+        // Log.d(TAG, "toGeographic x/y: " + x + "/" + y);
         switch (params.getProjection()) {
             case Projections.PROJECTION_LC:
                 TransformLambertConic.toGeographic(this, params);
@@ -73,7 +73,7 @@ public class Point {
     }
 
     public Point toLocal(TransformParams params) {
-        Log.d(TAG, "toLocal lat/lon: " + lat + "/" + lon);
+        // Log.d(TAG, "toLocal lat/lon: " + lat + "/" + lon);
         switch (params.getProjection()) {
             case Projections.PROJECTION_LC:
                 TransformLambertConic.toLocal(this, params);

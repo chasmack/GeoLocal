@@ -11,6 +11,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.util.Log;
 import java.util.HashMap;
 
@@ -165,22 +166,16 @@ public class PointsProvider extends ContentProvider {
     public Cursor query(Uri uri, String[] projection, String select,
                         String[] selectArgs, String sort) {
 
-        String select1, select2 = null;
+        String fullSelect = null;
         switch (sUriMatcher.match(uri))  {
 
             case POINTS:
-                select1 = "REGEXP(\"\\d+\"," + Points.COLUMN_NAME + ")";
-                select2 = "NOT " + select1;
-                if (select != null && !select.isEmpty()) {
-                    select1 = select + " AND " + select1;
-                    select2 = select + " AND " + select2;
-                }
+                fullSelect = select;
                 break;
-
             case POINTS_ID:
-                select1 = Points._ID + "=" + uri.getLastPathSegment();
+                fullSelect = Points._ID + "=" + uri.getLastPathSegment();
                 if (select != null && !select.isEmpty()) {
-                    select1 = select + " AND " + select1;
+                    fullSelect = select + " AND " + fullSelect;
                 }
                 break;
 
@@ -206,35 +201,22 @@ public class PointsProvider extends ContentProvider {
         * selected, then the Cursor object is empty, and Cursor.getCount() returns 0.
         */
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
-        Cursor c1, c2;
-        c1 = db.query(
+        Cursor c;
+        c = db.query(
                 Points.TABLE,   // The database to query
                 projection,     // The columns to return from the query
-                select1,        // The columns for the where clause
+                fullSelect,        // The columns for the where clause
                 selectArgs,     // The values for the where clause
                 null,           // don't group the rows
                 null,           // don't filter by row groups
                 orderBy         // The sort order
         );
-
-        if (select2 != null) {
-            c2 = db.query(
-                    Points.TABLE,   // The database to query
-                    projection,     // The columns to return from the query
-                    select2,        // The columns for the where clause
-                    selectArgs,     // The values for the where clause
-                    null,           // don't group the rows
-                    null,           // don't filter by row groups
-                    orderBy         // The sort order
-            );
-            c1 = (Cursor) new MergeCursor(new Cursor[] { c1, c2 });
-        }
+        Log.d(TAG, "query rows: " + c.getCount());
+        Log.d(TAG, "query columns: " + c.getColumnCount());
 
         // Tells the Cursor what URI to watch, so it knows when its source data changes
-        c1.setNotificationUri(getContext().getContentResolver(), uri);
-        Log.d(TAG, "query rows: " + c1.getCount());
-        Log.d(TAG, "query columns: " + c1.getColumnCount());
-        return c1;
+        c.setNotificationUri(getContext().getContentResolver(), uri);
+        return c;
     }
 
     @Override
@@ -259,11 +241,14 @@ public class PointsProvider extends ContentProvider {
         }
     }
 
+    private boolean notificationPending = false;
+
     @Override
     public Uri insert(Uri uri, ContentValues values) {
 
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
         long id;
+        Uri resultUri;
 
         switch (sUriMatcher.match(uri)) {
             case POINTS:
@@ -282,13 +267,15 @@ public class PointsProvider extends ContentProvider {
                     values.put(Points.COLUMN_Y, pt.getY());
                 }
                 id = db.insert(Points.TABLE, null, values);
-                return Uri.parse(Points.CONTENT_URI)
+                resultUri = Uri.parse(Points.CONTENT_URI)
                         .buildUpon().appendPath(Long.toString(id)).build();
+                break;
 
             case PROJECTIONS:
                 id = db.insert(Projections.TABLE, null, values);
-                return Uri.parse(Projections.CONTENT_URI)
+                resultUri = Uri.parse(Projections.CONTENT_URI)
                         .buildUpon().appendPath(Long.toString(id)).build();
+                break;
 
             case TRANSFORMS:
                 return null;
@@ -296,6 +283,11 @@ public class PointsProvider extends ContentProvider {
             default:
                 throw new IllegalArgumentException("Illegal URI: " + uri);
         }
+
+        // Let the content resolver know the data has changed.
+        getContext().getContentResolver().notifyChange(resultUri, null);
+
+        return resultUri;
     }
 
     @Override
@@ -305,27 +297,32 @@ public class PointsProvider extends ContentProvider {
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
         String fullSelect;
+        int rows;
         switch (sUriMatcher.match(uri)) {
 
             case POINTS:
-                return db.delete(Points.TABLE, select, selectArgs);
+                rows = db.delete(Points.TABLE, select, selectArgs);
+                break;
 
             case POINTS_ID:
                 fullSelect = Points._ID + "=" + uri.getLastPathSegment();
                 if (select != null && !select.isEmpty()) {
                     fullSelect = select + " AND " + fullSelect;
                 }
-                return db.delete(Points.TABLE, fullSelect, selectArgs);
+                rows = db.delete(Points.TABLE, fullSelect, selectArgs);
+                break;
 
             case PROJECTIONS:
-                return db.delete(Projections.TABLE, select, selectArgs);
+                rows = db.delete(Projections.TABLE, select, selectArgs);
+                break;
 
             case PROJECTIONS_ID:
                 fullSelect = Projections._ID + "=" + uri.getLastPathSegment();
                 if (select != null && !select.isEmpty()) {
                     fullSelect = select + " AND " + fullSelect;
                 }
-                return db.delete(Projections.TABLE, fullSelect, selectArgs);
+                rows = db.delete(Projections.TABLE, fullSelect, selectArgs);
+                break;
 
             case TRANSFORMS_ID:
             case TRANSFORMS:
@@ -334,6 +331,10 @@ public class PointsProvider extends ContentProvider {
             default:
                 throw new IllegalArgumentException("Illegal URI: " + uri);
         }
+
+        // Let the content resolver know the data has changed.
+        getContext().getContentResolver().notifyChange(uri, null);
+        return rows;
     }
 
     @Override
