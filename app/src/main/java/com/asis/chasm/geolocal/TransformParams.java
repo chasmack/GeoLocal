@@ -49,6 +49,9 @@ public class TransformParams {
     private double k0;
 
     public TransformParams() {
+
+        // Initialize new transform parameters from the Transform content provider.
+
     }
 
     public void setLocalTransform(

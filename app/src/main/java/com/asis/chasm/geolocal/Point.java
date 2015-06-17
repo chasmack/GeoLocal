@@ -1,12 +1,17 @@
 package com.asis.chasm.geolocal;
 
+import android.util.Log;
+
+import com.asis.chasm.geolocal.PointsContract.Points;
+import com.asis.chasm.geolocal.PointsContract.Projections;
+
 /**
  * Local point with x/y coordinates.
  */
 public class Point {
 
-    public static final int TYPE_LOCAL = 1;
-    public static final int TYPE_GEOGRAPHIC = 2;
+    // Use for logging and debugging
+    private static final String TAG = "Point";
 
     /*
     * Point type determined by the points origin.
@@ -39,14 +44,48 @@ public class Point {
         return type;
     }
 
-    public void setXY(double x, double y) {
+    public Point setXY(double x, double y) {
         this.x = x;
         this.y = y;
+        return this;
     }
 
-    public void setLatLon(double lat, double lon) {
+    public Point setLatLon(double lat, double lon) {
         this.lat = lat;
         this.lon = lon;
+        return this;
+    }
+
+    public Point toGeographic(TransformParams params)  {
+        Log.d(TAG, "toGeographic x/y: " + x + "/" + y);
+        switch (params.getProjection()) {
+            case Projections.PROJECTION_LC:
+                TransformLambertConic.toGeographic(this, params);
+                break;
+            case Projections.PROJECTION_TM:
+                TransformTransverseMercator.toGeographic(this, params);
+                break;
+            default:
+                setLatLon(0.0, 0.0);
+                break;
+        }
+        return this;
+    }
+
+    public Point toLocal(TransformParams params) {
+        Log.d(TAG, "toLocal lat/lon: " + lat + "/" + lon);
+        switch (params.getProjection()) {
+            case Projections.PROJECTION_LC:
+                TransformLambertConic.toLocal(this, params);
+                break;
+            case Projections.PROJECTION_TM:
+                TransformTransverseMercator.toLocal(this, params);
+                break;
+            default:
+                setXY(0.0, 0.0);
+                break;
+        }
+        return this;
     }
 
     public double getX() {
@@ -99,7 +138,7 @@ public class Point {
 
     @Override
     public String toString() {
-        if (type == TYPE_LOCAL) {
+        if (type == Points.POINT_TYPE_LOCAL) {
             return "y/x: " + y + ", " + x + "(lat/lon: " + lat + ", " + lon + ")";
         } else {
             return "lat/lon: " + lat + ", " + lon + "(y/x: " + y + ", " + x + ")";

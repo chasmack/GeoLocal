@@ -15,14 +15,14 @@ public class TransformTransverseMercator {
 
     private TransformTransverseMercator() { }
 
-    public static Point toGeographic(Point pt, TransformParams params) {
+    public static void toGeographic(Point pt, TransformParams params) {
         initTransform(params);
-        return new Point(Point.TYPE_GEOGRAPHIC);
+        pt.setLatLon(0.0, 0.0);
     }
 
-    public static Point toLocal(Point pt, TransformParams params) {
+    public static void toLocal(Point pt, TransformParams params) {
         initTransform(params);
-        return new Point(Point.TYPE_LOCAL);
+        pt.setXY(0.0, 0.0);
     }
 
     private static void initTransform(TransformParams params) {
