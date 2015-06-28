@@ -33,6 +33,7 @@ import com.asis.chasm.geolocal.dummy.DummyContent;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 
 /**
  * A fragment representing a list of Items.
@@ -311,23 +312,23 @@ public class PointsListFragment extends ListFragment implements
 
         @Override
         protected Integer doInBackground(Uri... params) {
-            Uri uri = params[0];
-            Log.d(TAG, "doInBackground Uri: " + uri);
 
-            int cnt = 0;
+            Uri uri = params[0];
+            Log.d(TAG, "ReadLocalPointsTask doInBackground points uri: " + uri);
+
+            ContentResolver resolver = getActivity().getContentResolver();
+            ArrayList<ContentValues> valuesList = new ArrayList<ContentValues>();
+
+            final Uri POINTS_URI = Uri.parse(Points.CONTENT_URI);
+
             BufferedReader reader = null;
             try {
-                ContentResolver resolver = getActivity().getContentResolver();
+
                 reader = new BufferedReader(
                         new InputStreamReader(resolver.openInputStream(uri)));
 
                 String line;
                 String[] parts;
-                ContentValues values = new ContentValues();
-
-                final Uri POINTS_URI = Uri.parse(Points.CONTENT_URI);
-
-                cnt = 0;
                 while ((line = reader.readLine()) != null) {
                     // Ignore blank lines and comment lines which start with #
                     if (line.length() == 0 || line.startsWith("#")) {
@@ -335,9 +336,12 @@ public class PointsListFragment extends ListFragment implements
                     }
                     parts = line.split(",", 5);
                     if (parts.length != 5) {
-                        Log.d(TAG, "PNEZD file format error: " + line);
+                        Log.d(TAG, "PNEZD (comma delimited) file format error: " + line);
                         continue;
                     }
+
+                    ContentValues values = new ContentValues();
+
                     values.put(Points.COLUMN_NAME, parts[0]);
                     values.put(Points.COLUMN_Y, Double.parseDouble(parts[1]));
                     values.put(Points.COLUMN_X, Double.parseDouble(parts[2]));
@@ -347,8 +351,7 @@ public class PointsListFragment extends ListFragment implements
                     values.put(Points.COLUMN_LAT, 0.0);
                     values.put(Points.COLUMN_LON, 0.0);
 
-                    resolver.insert(POINTS_URI, values);
-                    cnt++;
+                    valuesList.add(values);
                 }
 
             } catch (IOException e) {
@@ -363,12 +366,13 @@ public class PointsListFragment extends ListFragment implements
                     }
                 }
             }
-            return cnt;
+            resolver.bulkInsert(POINTS_URI, valuesList.toArray(new ContentValues[0]));
+            return valuesList.size();
         }
 
         @Override
         protected void onPostExecute(Integer cnt) {
-            Log.d(TAG, "onPostExecute points loaded: " + cnt);
+            Log.d(TAG, "ReadLocalPointsTask onPostExecute points loaded: " + cnt);
             if (cnt == 0) {
                 setEmptyText("No points.");
             }

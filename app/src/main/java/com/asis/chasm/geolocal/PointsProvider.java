@@ -241,53 +241,67 @@ public class PointsProvider extends ContentProvider {
         }
     }
 
-    private boolean notificationPending = false;
-
     @Override
     public Uri insert(Uri uri, ContentValues values) {
 
-        SQLiteDatabase db = mDbHelper.getWritableDatabase();
-        long id;
-        Uri resultUri;
-
+        String table;
         switch (sUriMatcher.match(uri)) {
             case POINTS:
-                Point pt;
-                if (values.getAsInteger(Points.COLUMN_TYPE) == Points.POINT_TYPE_LOCAL) {
-                    pt = new Point(Points.POINT_TYPE_LOCAL)
-                            .setXY(values.getAsFloat(Points.COLUMN_X), values.getAsFloat(Points.COLUMN_Y))
-                            .toGeographic(mTransform);
-                    values.put(Points.COLUMN_LAT, pt.getLat());
-                    values.put(Points.COLUMN_LON, pt.getLon());
-                } else if  (values.getAsInteger(Points.COLUMN_TYPE) == Points.POINT_TYPE_GEOGRAPHIC) {
-                    pt = new Point(Points.POINT_TYPE_GEOGRAPHIC)
-                        .setLatLon(values.getAsFloat(Points.COLUMN_LAT), values.getAsFloat(Points.COLUMN_LON))
-                        .toLocal(mTransform);
-                    values.put(Points.COLUMN_X, pt.getX());
-                    values.put(Points.COLUMN_Y, pt.getY());
-                }
-                id = db.insert(Points.TABLE, null, values);
-                resultUri = Uri.parse(Points.CONTENT_URI)
-                        .buildUpon().appendPath(Long.toString(id)).build();
+                table = Points.TABLE;
                 break;
-
             case PROJECTIONS:
-                id = db.insert(Projections.TABLE, null, values);
-                resultUri = Uri.parse(Projections.CONTENT_URI)
-                        .buildUpon().appendPath(Long.toString(id)).build();
+                table = Projections.TABLE;
                 break;
-
             case TRANSFORMS:
-                return null;
-
+                table = Transforms.TABLE;
+                break;
             default:
                 throw new IllegalArgumentException("Illegal URI: " + uri);
         }
 
-        // Let the content resolver know the data has changed.
-        getContext().getContentResolver().notifyChange(resultUri, null);
+        // Perform the insert.
+        long id = mDbHelper.getWritableDatabase().insert(table, null, values);
 
-        return resultUri;
+        // Let the content resolver know the data has changed.
+        Uri result = uri.buildUpon().appendPath(Long.toString(id)).build();
+        getContext().getContentResolver().notifyChange(result, null);
+
+        Log.d(TAG, "insert into \"" + table + "\": " + result.toString());
+        return result;
+    }
+
+    @Override
+    public int bulkInsert(Uri uri, ContentValues[] values) {
+
+
+        String table;
+        switch (sUriMatcher.match(uri)) {
+            case POINTS:
+                table = Points.TABLE;
+                break;
+            case PROJECTIONS:
+                table = Projections.TABLE;
+                break;
+            case TRANSFORMS:
+                table = Transforms.TABLE;
+                break;
+            default:
+                throw new IllegalArgumentException("Illegal URI: " + uri);
+        }
+
+        // Perform the inserts
+        int cnt = 0;
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+        for (ContentValues v : values) {
+            if (db.insert(table, null, v) > 0)
+                cnt++;
+        }
+
+        // Let the content resolver know the data has changed.
+        getContext().getContentResolver().notifyChange(uri, null);
+
+        Log.d(TAG, "bulkInsert into \"" + table + "\" count: " + cnt);
+        return cnt;
     }
 
     @Override

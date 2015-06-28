@@ -19,6 +19,7 @@ import android.widget.Toast;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 
 import com.asis.chasm.geolocal.PointsContract.Points;
 import com.asis.chasm.geolocal.PointsContract.Projections;
@@ -90,24 +91,24 @@ public class MainActivity extends Activity implements
 
         @Override
         protected Void doInBackground(String... params) {
+
+            ArrayList<ContentValues> valuesList = new ArrayList<ContentValues>();
+            ContentResolver resolver = getContentResolver();
+
+            final Uri PROJECTIONS_URI = Uri.parse(PointsContract.Projections.CONTENT_URI);
+
             BufferedReader reader = null;
             try {
                 reader = new BufferedReader(
                         new InputStreamReader(getAssets().open(params[0]), "UTF-8"));
 
-                int cnt;
                 String line;
                 String[] parts;
-                ContentResolver resolver = getContentResolver();
-                ContentValues values = new ContentValues();
-
-                final Uri PROJECTIONS_URI = Uri.parse(PointsContract.Projections.CONTENT_URI);
 
                 // Delete any entries already in the Coordinate Systems table
-                cnt = resolver.delete(PROJECTIONS_URI, null, null);
+                int cnt = resolver.delete(PROJECTIONS_URI, null, null);
                 Log.d(TAG, "Projections deleted: " + cnt);
 
-                cnt = 0;
                 READLINE:
                 while ((line = reader.readLine()) != null) {
 
@@ -119,6 +120,8 @@ public class MainActivity extends Activity implements
                         Log.d(TAG, "File format error: " + line);
                         continue;
                     }
+
+                    ContentValues values = new ContentValues();
 
                     // 0-CODE, 1-DESC, 2-TYPE, 3-PROJ, 4-P0, 5-M0, 6-X0, 7-Y0, 8-P1, 9-P2, 10-SF
                     values.put(Projections.COLUMN_CODE, parts[0]);
@@ -161,10 +164,9 @@ public class MainActivity extends Activity implements
                     values.put(Projections.COLUMN_SF,
                             parts[10].isEmpty() ? 0 : Long.parseLong(parts[10]));
 
-                    resolver.insert(PROJECTIONS_URI, values);
-                    cnt++;
+                    valuesList.add(values);
                 }
-                Log.d(TAG, "Projections loaded: " + cnt);
+                Log.d(TAG, "Projections loaded: " + valuesList.size());
 
             } catch (IOException e) {
                 Log.d(TAG, e.toString());
@@ -178,6 +180,9 @@ public class MainActivity extends Activity implements
                     }
                 }
             }
+            // Perform the bulk insert
+            resolver.bulkInsert(PROJECTIONS_URI, valuesList.toArray(new ContentValues[0]));
+
             return null;
         }
 
