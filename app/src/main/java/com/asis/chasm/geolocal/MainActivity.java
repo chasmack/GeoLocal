@@ -26,10 +26,16 @@ import com.asis.chasm.geolocal.PointsContract.Projections;
 import com.asis.chasm.geolocal.PointsContract.Transforms;
 
 public class MainActivity extends Activity implements
-        PointsListFragment.OnFragmentInteractionListener {
+        PointsListFragment.OnFragmentInteractionListener,
+        PointsManagerFragment.OnFragmentInteractionListener {
 
     // Use for logging and debugging
     private static final String TAG = "MainActivity";
+
+    // Tags to identify the fragments
+    public static final String FRAGMENT_POINTS_LIST = "list";
+    public static final String FRAGMENT_POINTS_MANAGER = "manager";
+    public static final String FRAGMENT_SETTINGS = "settings";
 
     /**
      * Fragment displaying the points list
@@ -55,14 +61,20 @@ public class MainActivity extends Activity implements
         // Intent, pass the Intent's extras to the fragment as arguments
         mPointsListFragment.setArguments(getIntent().getExtras());
 
-        // Add the fragment to the 'container' FrameLayout
+        // Add the points list fragment to the 'container' FrameLayout
         FragmentManager manager = getFragmentManager();
-        FragmentTransaction transaction = manager.beginTransaction();
-        transaction.add(R.id.container, (Fragment) mPointsListFragment);
-        transaction.commit();
+        manager.beginTransaction()
+                .add(R.id.container, (Fragment) mPointsListFragment, FRAGMENT_POINTS_LIST)
+                .commit();
 
-        // Start a background task to populate the Coordinate Systems table
-        new PopulateProjectionsTableTask().execute("projections.txt");
+        // Create the Non-UI points manager fragment
+        manager.beginTransaction()
+                .add((Fragment) new PointsManagerFragment(), FRAGMENT_POINTS_MANAGER)
+                .commit();
+
+        // Start a background task to load the Projections table
+        loadProjections("projections.txt");
+        // new PopulateProjectionsTableTask().execute("projections.txt");
     }
 
     @Override
@@ -87,111 +99,115 @@ public class MainActivity extends Activity implements
         return super.onOptionsItemSelected(item);
     }
 
-    private class PopulateProjectionsTableTask extends AsyncTask<String, Void, Void> {
+    private void loadProjections(String filename) {
 
-        @Override
-        protected Void doInBackground(String... params) {
+        /*
+        * Background task to read projection data from a resource data file
+        * and write it to the content provider's Projections table
+        */
 
-            ArrayList<ContentValues> valuesList = new ArrayList<ContentValues>();
-            ContentResolver resolver = getContentResolver();
+        final String fn = filename;
 
-            final Uri PROJECTIONS_URI = Uri.parse(PointsContract.Projections.CONTENT_URI);
+        new Thread(new Runnable() {
 
-            BufferedReader reader = null;
-            try {
-                reader = new BufferedReader(
-                        new InputStreamReader(getAssets().open(params[0]), "UTF-8"));
+            @Override
+            public void run() {
 
-                String line;
-                String[] parts;
+                ArrayList<ContentValues> valuesList = new ArrayList<ContentValues>();
+                ContentResolver resolver = getContentResolver();
 
-                // Delete any entries already in the Coordinate Systems table
-                int cnt = resolver.delete(PROJECTIONS_URI, null, null);
-                Log.d(TAG, "Projections deleted: " + cnt);
+                final Uri PROJECTIONS_URI = Uri.parse(PointsContract.Projections.CONTENT_URI);
 
-                READLINE:
-                while ((line = reader.readLine()) != null) {
+                BufferedReader reader = null;
+                try {
+                    reader = new BufferedReader(
+                            new InputStreamReader(getAssets().open(fn), "UTF-8"));
 
-                    if (line.startsWith("#"))
-                        continue;       // comment lines start with #
+                    String line;
+                    String[] parts;
 
-                    parts = line.split(",", 11);
-                    if (parts.length != 11) {
-                        Log.d(TAG, "File format error: " + line);
-                        continue;
+                    // Delete any entries already in the Coordinate Systems table
+                    int cnt = resolver.delete(PROJECTIONS_URI, null, null);
+                    Log.d(TAG, "Projections deleted: " + cnt);
+
+                    READLINE:
+                    while ((line = reader.readLine()) != null) {
+
+                        if (line.startsWith("#"))
+                            continue;       // comment lines start with #
+
+                        parts = line.split(",", 11);
+                        if (parts.length != 11) {
+                            Log.d(TAG, "File format error: " + line);
+                            continue;
+                        }
+
+                        ContentValues values = new ContentValues();
+
+                        // 0-CODE, 1-DESC, 2-TYPE, 3-PROJ, 4-P0, 5-M0, 6-X0, 7-Y0, 8-P1, 9-P2, 10-SF
+                        values.put(Projections.COLUMN_CODE, parts[0]);
+                        values.put(Projections.COLUMN_DESC, parts[1]);
+                        switch (parts[2]) {
+                            case "SPCS":
+                                values.put(Projections.COLUMN_COORD_SYSTEM,
+                                        Projections.COORD_SYSTEM_SPCS);
+                                break;
+                            case "UTM":
+                                values.put(Projections.COLUMN_COORD_SYSTEM, Projections.COORD_SYSTEM_UTM);
+                                break;
+                            case "USER":
+                                values.put(Projections.COLUMN_COORD_SYSTEM, Projections.COORD_SYSTEM_USER);
+                                break;
+                            default:
+                                Log.d(TAG, "Invalid projection TYPE: " + line);
+                                continue READLINE;
+                        }
+                        switch (parts[3]) {
+                            case "L":
+                                values.put(Projections.COLUMN_PROJECTION, Projections.PROJECTION_LC);
+                                break;
+                            case "T":
+                                values.put(Projections.COLUMN_PROJECTION, Projections.PROJECTION_TM);
+                                break;
+                            case "O":
+                                values.put(Projections.COLUMN_PROJECTION, Projections.PROJECTION_OM);
+                                break;
+                            default:
+                                Log.d(TAG, "Invalid projection PROJ: " + line);
+                                continue READLINE;
+                        }
+                        values.put(Projections.COLUMN_P0, parseDegMin(parts[4]));
+                        values.put(Projections.COLUMN_M0, parseDegMin(parts[5]));
+                        values.put(Projections.COLUMN_X0, Double.parseDouble(parts[6]));
+                        values.put(Projections.COLUMN_Y0, Double.parseDouble(parts[7]));
+                        values.put(Projections.COLUMN_P1, parseDegMin(parts[8]));
+                        values.put(Projections.COLUMN_P2, parseDegMin(parts[9]));
+                        values.put(Projections.COLUMN_SF,
+                                parts[10].isEmpty() ? 0 : Long.parseLong(parts[10]));
+
+                        valuesList.add(values);
                     }
 
-                    ContentValues values = new ContentValues();
+                } catch (IOException e) {
+                    Log.d(TAG, e.toString());
 
-                    // 0-CODE, 1-DESC, 2-TYPE, 3-PROJ, 4-P0, 5-M0, 6-X0, 7-Y0, 8-P1, 9-P2, 10-SF
-                    values.put(Projections.COLUMN_CODE, parts[0]);
-                    values.put(Projections.COLUMN_DESC, parts[1]);
-                    switch (parts[2]) {
-                        case "SPCS":
-                            values.put(Projections.COLUMN_COORD_SYSTEM,
-                                    Projections.COORD_SYSTEM_SPCS);
-                            break;
-                        case "UTM":
-                            values.put(Projections.COLUMN_COORD_SYSTEM, Projections.COORD_SYSTEM_UTM);
-                            break;
-                        case "USER":
-                            values.put(Projections.COLUMN_COORD_SYSTEM, Projections.COORD_SYSTEM_USER);
-                            break;
-                        default:
-                            Log.d(TAG, "Invalid projection TYPE: " + line);
-                            continue READLINE;
+                } finally {
+                    if (reader != null) {
+                        try {
+                            reader.close();
+                        } catch (IOException e) {
+                            Log.d(TAG, e.toString());
+                        }
                     }
-                    switch (parts[3]) {
-                        case "L":
-                            values.put(Projections.COLUMN_PROJECTION, Projections.PROJECTION_LC);
-                            break;
-                        case "T":
-                            values.put(Projections.COLUMN_PROJECTION, Projections.PROJECTION_TM);
-                            break;
-                        case "O":
-                            values.put(Projections.COLUMN_PROJECTION, Projections.PROJECTION_OM);
-                            break;
-                        default:
-                            Log.d(TAG, "Invalid projection PROJ: " + line);
-                            continue READLINE;
-                    }
-                    values.put(Projections.COLUMN_P0, parseDegMin(parts[4]));
-                    values.put(Projections.COLUMN_M0, parseDegMin(parts[5]));
-                    values.put(Projections.COLUMN_X0, Double.parseDouble(parts[6]));
-                    values.put(Projections.COLUMN_Y0, Double.parseDouble(parts[7]));
-                    values.put(Projections.COLUMN_P1, parseDegMin(parts[8]));
-                    values.put(Projections.COLUMN_P2, parseDegMin(parts[9]));
-                    values.put(Projections.COLUMN_SF,
-                            parts[10].isEmpty() ? 0 : Long.parseLong(parts[10]));
-
-                    valuesList.add(values);
                 }
-                Log.d(TAG, "Projections loaded: " + valuesList.size());
+                // Perform the bulk insert
+                int cnt = valuesList.size();
+                resolver.bulkInsert(PROJECTIONS_URI, valuesList.toArray(new ContentValues[cnt]));
 
-            } catch (IOException e) {
-                Log.d(TAG, e.toString());
-
-            } finally {
-                if (reader != null) {
-                    try {
-                        reader.close();
-                    } catch (IOException e) {
-                        Log.d(TAG, e.toString());
-                    }
-                }
+                Log.d(TAG, "Projections loaded: " + cnt);
             }
-            // Perform the bulk insert
-            resolver.bulkInsert(PROJECTIONS_URI, valuesList.toArray(new ContentValues[0]));
-
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void v) {
-            super.onPostExecute(v);
-            Log.d(TAG, "PopulateProjectionsTableTask onPostExecute.");
-        }
-   }
+        }).start();
+    }
 
     private double parseDegMin(String dmString) {
         double val;
@@ -218,9 +234,11 @@ public class MainActivity extends Activity implements
         return neg ? -1.0 * val : val;
     }
 
-    @Override
     public void onPointsFragmentInteraction(int position) {
-
         Toast.makeText(this, "List item: " + position, Toast.LENGTH_SHORT).show();
+    }
+
+    public void onPointsManagerFragmentInteraction(int code) {
+        Toast.makeText(this, "List item: " + code, Toast.LENGTH_SHORT).show();
     }
 }

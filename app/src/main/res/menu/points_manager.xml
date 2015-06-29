@@ -2,13 +2,13 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto" >
 
-    <item android:id="@+id/action_show_local"
-        android:title="@string/action_show_local"
-        android:orderInCategory="30"
+    <item android:id="@+id/action_read_points"
+        android:title="@string/action_read_points"
+        android:orderInCategory="20"
         app:showAsAction="never" />
 
-    <item android:id="@+id/action_show_geographic"
-        android:title="@string/action_show_geographic"
+    <item android:id="@+id/action_test"
+        android:title="@string/action_test"
         android:orderInCategory="40"
         app:showAsAction="never" />
 
