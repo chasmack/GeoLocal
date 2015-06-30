@@ -1,5 +1,6 @@
 package com.asis.chasm.geolocal;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
@@ -27,7 +28,8 @@ import com.asis.chasm.geolocal.PointsContract.Transforms;
 
 public class MainActivity extends Activity implements
         PointsListFragment.OnFragmentInteractionListener,
-        PointsManagerFragment.OnFragmentInteractionListener {
+        PointsManagerFragment.OnFragmentInteractionListener,
+        TransformSettingsFragment.OnFragmentInteractionListener {
 
     // Use for logging and debugging
     private static final String TAG = "MainActivity";
@@ -46,6 +48,8 @@ public class MainActivity extends Activity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        getActionBar().setDisplayHomeAsUpEnabled(true);
 
         // If we're being restored from a previous state, then
         // we don't need to do anything and should return or else
@@ -93,10 +97,27 @@ public class MainActivity extends Activity implements
         //noinspection SimplifiableIfStatement
         switch (id) {
             case R.id.action_settings:
+                // Create new fragment and transaction
+                Fragment newFragment = new TransformSettingsFragment();
+                FragmentTransaction transaction = getFragmentManager().beginTransaction();
+
+                // Replace whatever is in the fragment_container view with this fragment,
+                // and add the transaction to the back stack
+                transaction.replace(R.id.container, newFragment);
+                transaction.addToBackStack(null);
+
+                // Commit the transaction
+                transaction.commit();
                 return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public boolean onNavigateUp() {
+        getFragmentManager().popBackStack();
+        return true;
     }
 
     private void loadProjections(String filename) {
@@ -238,7 +259,11 @@ public class MainActivity extends Activity implements
         Toast.makeText(this, "List item: " + position, Toast.LENGTH_SHORT).show();
     }
 
-    public void onPointsManagerFragmentInteraction(int code) {
-        Toast.makeText(this, "List item: " + code, Toast.LENGTH_SHORT).show();
+    public void onPointsManagerFragmentInteraction(int value) {
+        Toast.makeText(this, "List item: " + value, Toast.LENGTH_SHORT).show();
+    }
+
+    public void onTransformSettingsFragmentInteraction(int value) {
+        Toast.makeText(this, "List item: " + value, Toast.LENGTH_SHORT).show();
     }
 }

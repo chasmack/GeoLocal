@@ -19,6 +19,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
+import android.widget.RadioButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.view.View.OnClickListener;
@@ -73,6 +74,8 @@ public class PointsListFragment extends ListFragment
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Log.d(TAG, "onCreateView");
+
+        // Inflate our custom layout for the list fragment
         return inflater.inflate(R.layout.fragment_points_list, container, false);
     }
 
@@ -87,17 +90,14 @@ public class PointsListFragment extends ListFragment
         Log.d(TAG, "onActivityCreated");
 
         // Set onClickListeners for the Local/Grid/Geographic buttons
-        getActivity().findViewById(R.id.buttonLocal).setOnClickListener(new OnClickListener() {
+        RadioButton radio = (RadioButton) getActivity().findViewById(R.id.radio_local);
+        radio.setChecked(true);
+        radio.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
                 mAdapter.showLocalCoordinates();
             }
         });
-        getActivity().findViewById(R.id.buttonGrid).setOnClickListener(new OnClickListener() {
-            public void onClick(View v) {
-                mAdapter.showGeographicCoordinates();
-            }
-        });
-        getActivity().findViewById(R.id.buttonGeographic).setOnClickListener(new OnClickListener() {
+        getActivity().findViewById(R.id.radio_geographic).setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
                 mAdapter.showGeographicCoordinates();
             }
@@ -119,6 +119,9 @@ public class PointsListFragment extends ListFragment
         getLoaderManager().initLoader(0, null, this);
     }
 
+    /*
+    * Need to override setEmptyText when using a custom layout for ListFragment.
+    */
     @Override
     public void setEmptyText(CharSequence text) {
         TextView view = (TextView) getActivity().findViewById(android.R.id.empty);
@@ -142,15 +145,17 @@ public class PointsListFragment extends ListFragment
 
         //noinspection SimplifiableIfStatement
         switch (id) {
-            case R.id.action_show_local:
-                mAdapter.showLocalCoordinates();
-                return true;
-            case R.id.action_show_geographic:
-                mAdapter.showGeographicCoordinates();
+            case R.id.action_test:
+                test();
                 return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void test() {
+        Toast.makeText(getActivity(), "Menu Item Test.",
+                Toast.LENGTH_SHORT).show();
     }
 
     @Override

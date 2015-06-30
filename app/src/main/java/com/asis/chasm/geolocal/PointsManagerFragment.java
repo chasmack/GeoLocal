@@ -114,18 +114,9 @@ public class PointsManagerFragment extends Fragment {
             case R.id.action_read_points:
                 selectPointsFile();
                 return true;
-            case R.id.action_test:
-                test();
-                return true;
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    private void test() {
-
-        Toast.makeText(getActivity(), "Menu Item Test.",
-                Toast.LENGTH_SHORT).show();
     }
 
     // Activity result codes
@@ -273,7 +264,7 @@ public class PointsManagerFragment extends Fragment {
      */
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
-        public void onPointsManagerFragmentInteraction(int code);
+        public void onPointsManagerFragmentInteraction(int value);
     }
 
 }
