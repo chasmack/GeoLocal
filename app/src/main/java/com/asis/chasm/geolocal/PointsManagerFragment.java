@@ -89,8 +89,7 @@ public class PointsManagerFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Shouldn't get called.
-        Log.d(TAG, "PointsManagerFragment.onCreateView().");
+        Log.d(TAG, "onCreateView");
 
         // No UI associated with this fragmant.
         return null;

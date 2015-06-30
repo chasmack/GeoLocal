@@ -16,9 +16,13 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.view.View.OnClickListener;
+import android.widget.Toast;
 
 import com.asis.chasm.geolocal.PointsContract.Points;
 
@@ -49,20 +53,62 @@ public class PointsListFragment extends ListFragment
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public void onAttach(Activity activity) {
+        Log.d(TAG, "onAttach");
+        super.onAttach(activity);
+        try {
+            mListener = (OnFragmentInteractionListener) activity;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString()
+                    + " must implement OnFragmentInteractionListener");
+        }
+    }
 
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        Log.d(TAG, "onCreate");
+        super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        Log.d(TAG, "onCreateView");
+        return inflater.inflate(R.layout.fragment_points_list, container, false);
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        Log.d(TAG, "onViewCreated");
+        super.onViewCreated(view, savedInstanceState);
     }
 
     @Override public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        Log.d(TAG, "onActivityCreated");
+
+        // Set onClickListeners for the Local/Grid/Geographic buttons
+        getActivity().findViewById(R.id.buttonLocal).setOnClickListener(new OnClickListener() {
+            public void onClick(View v) {
+                mAdapter.showLocalCoordinates();
+            }
+        });
+        getActivity().findViewById(R.id.buttonGrid).setOnClickListener(new OnClickListener() {
+            public void onClick(View v) {
+                mAdapter.showGeographicCoordinates();
+            }
+        });
+        getActivity().findViewById(R.id.buttonGeographic).setOnClickListener(new OnClickListener() {
+            public void onClick(View v) {
+                mAdapter.showGeographicCoordinates();
+            }
+        });
+
+        // We have a menu item to show in action bar.
+        setHasOptionsMenu(true);
 
         // Give some text to display if there is no data.  In a real
         // application this would come from a resource.
         setEmptyText("No points.");
-
-        // We have a menu item to show in action bar.
-        setHasOptionsMenu(true);
 
         // Create an empty adapter we will use to display the loaded data.
         mAdapter = new PointsCursorAdapter(getActivity(), null, 0);
@@ -74,18 +120,14 @@ public class PointsListFragment extends ListFragment
     }
 
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        try {
-            mListener = (OnFragmentInteractionListener) activity;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString()
-                    + " must implement OnFragmentInteractionListener");
-        }
+    public void setEmptyText(CharSequence text) {
+        TextView view = (TextView) getActivity().findViewById(android.R.id.empty);
+        view.setText(text);
     }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        Log.d(TAG, "onCreateOptionsMenu");
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.points_list, menu);
     }
@@ -112,12 +154,8 @@ public class PointsListFragment extends ListFragment
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-       return super.onCreateView(inflater, container, savedInstanceState);
-    }
-
-    @Override
     public void onDetach() {
+        Log.d(TAG, "onDetach");
         super.onDetach();
         mListener = null;
     }
@@ -160,6 +198,11 @@ public class PointsListFragment extends ListFragment
 
         public void showLocalCoordinates() {
             showGeographic = false;
+            notifyDataSetChanged();
+        }
+
+        public void showGridCoordinates() {
+            showGeographic = true;
             notifyDataSetChanged();
         }
 
