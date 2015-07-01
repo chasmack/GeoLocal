@@ -33,9 +33,6 @@ public class PointsProvider extends ContentProvider {
     // A new Database Helper
     private PointsDbHelper mDbHelper;
 
-    // The current transform parameters.
-    private TransformParams mTransform;
-
     // Constants for UriMatcher to return for matched Uris
     private static final int POINTS = 1;
     private static final int POINTS_ID = 2;
@@ -63,7 +60,7 @@ public class PointsProvider extends ContentProvider {
     class PointsDbHelper extends SQLiteOpenHelper {
 
         public static final String DATABASE_NAME = "points.db";
-        public static final int DATABASE_VERSION = 2;
+        public static final int DATABASE_VERSION = 1;
 
         private static final String COMMA_SEP = ", ";
 
@@ -92,7 +89,7 @@ public class PointsProvider extends ContentProvider {
                         + Projections.COLUMN_Y0 + " REAL" + COMMA_SEP
                         + Projections.COLUMN_P1 + " REAL" + COMMA_SEP
                         + Projections.COLUMN_P2 + " REAL" + COMMA_SEP
-                        + Projections.COLUMN_SF + " INTEGER"
+                        + Projections.COLUMN_K0 + " REAL"
                         + ")";
 
         private static final String SQL_CREATE_TRANSFORMS =
@@ -115,7 +112,7 @@ public class PointsProvider extends ContentProvider {
                         + Transforms.COLUMN_Y0 + " REAL" + COMMA_SEP
                         + Transforms.COLUMN_P1 + " REAL" + COMMA_SEP
                         + Transforms.COLUMN_P2 + " REAL" + COMMA_SEP
-                        + Transforms.COLUMN_SF + " INTEGER"
+                        + Transforms.COLUMN_K0 + " REAL"
                         + ")";
 
         private static final String SQL_DROP_POINTS =
@@ -158,7 +155,6 @@ public class PointsProvider extends ContentProvider {
     @Override
     public boolean onCreate() {
         mDbHelper = new PointsDbHelper(getContext());
-        mTransform = new TransformParams();
         return true;
     }
 
@@ -166,13 +162,22 @@ public class PointsProvider extends ContentProvider {
     public Cursor query(Uri uri, String[] projection, String select,
                         String[] selectArgs, String sort) {
 
-        String fullSelect = null;
+        String table;
+        String fullSelect;
+        String orderBy = null;
         switch (sUriMatcher.match(uri))  {
 
             case POINTS:
+                table = Points.TABLE;
                 fullSelect = select;
+                if (sort == null || sort.isEmpty()) {
+                    orderBy = Points.DEFAULT_ORDER_BY;
+                } else {
+                    orderBy = sort;
+                }
                 break;
             case POINTS_ID:
+                table = Points.TABLE;
                 fullSelect = Points._ID + "=" + uri.getLastPathSegment();
                 if (select != null && !select.isEmpty()) {
                     fullSelect = select + " AND " + fullSelect;
@@ -180,19 +185,26 @@ public class PointsProvider extends ContentProvider {
                 break;
 
             case PROJECTIONS:
+                table = Projections.TABLE;
+                fullSelect = select;
+                if (sort == null || sort.isEmpty()) {
+                    orderBy = Projections.DEFAULT_ORDER_BY;
+                } else {
+                    orderBy = sort;
+                }
+                break;
             case PROJECTIONS_ID:
+                table = Projections.TABLE;
+                fullSelect = Projections._ID + "=" + uri.getLastPathSegment();
+                if (select != null && !select.isEmpty()) {
+                    fullSelect = select + " AND " + fullSelect;
+                }
+                break;
+
             case TRANSFORMS:
             case TRANSFORMS_ID:
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
-        }
-
-        // If no sort order is specified, uses the default
-        String orderBy;
-        if (sort == null || sort.isEmpty()) {
-            orderBy = Points.DEFAULT_ORDER_BY;
-        } else {
-            orderBy = sort;
         }
 
        /*
@@ -201,9 +213,8 @@ public class PointsProvider extends ContentProvider {
         * selected, then the Cursor object is empty, and Cursor.getCount() returns 0.
         */
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
-        Cursor c;
-        c = db.query(
-                Points.TABLE,   // The database to query
+        Cursor c = db.query(
+                table,   // The database to query
                 projection,     // The columns to return from the query
                 fullSelect,        // The columns for the where clause
                 selectArgs,     // The values for the where clause
@@ -211,8 +222,7 @@ public class PointsProvider extends ContentProvider {
                 null,           // don't filter by row groups
                 orderBy         // The sort order
         );
-        Log.d(TAG, "query rows: " + c.getCount());
-        Log.d(TAG, "query columns: " + c.getColumnCount());
+        Log.d(TAG, "query table \"" + table + "\" rows x columns = " + c.getCount() + " x " + c.getColumnCount());
 
         // Tells the Cursor what URI to watch, so it knows when its source data changes
         c.setNotificationUri(getContext().getContentResolver(), uri);

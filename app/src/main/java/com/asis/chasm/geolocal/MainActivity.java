@@ -1,16 +1,12 @@
 package com.asis.chasm.geolocal;
 
-import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.ContentResolver;
 import android.content.ContentValues;
-import android.content.Intent;
-import android.database.Cursor;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -22,13 +18,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 
-import com.asis.chasm.geolocal.PointsContract.Points;
 import com.asis.chasm.geolocal.PointsContract.Projections;
-import com.asis.chasm.geolocal.PointsContract.Transforms;
 
 public class MainActivity extends Activity implements
-        PointsListFragment.OnFragmentInteractionListener,
-        PointsManagerFragment.OnFragmentInteractionListener,
         TransformSettingsFragment.OnFragmentInteractionListener {
 
     // Use for logging and debugging
@@ -39,12 +31,7 @@ public class MainActivity extends Activity implements
     public static final String FRAGMENT_POINTS_MANAGER = "manager";
     public static final String FRAGMENT_SETTINGS = "settings";
 
-    /**
-     * Fragment displaying the points list
-     */
-    private PointsListFragment mPointsListFragment;
-
-    @Override
+   @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -58,27 +45,41 @@ public class MainActivity extends Activity implements
             return;
         }
 
-        // Create a new Fragment to be placed in the activity layout
-        mPointsListFragment = new PointsListFragment();
-
-        // In case this activity was started with special instructions from an
-        // Intent, pass the Intent's extras to the fragment as arguments
-        mPointsListFragment.setArguments(getIntent().getExtras());
-
-        // Add the points list fragment to the 'container' FrameLayout
+        // Get a fragment manager to add the points manager and points list fragments
         FragmentManager manager = getFragmentManager();
-        manager.beginTransaction()
-                .add(R.id.container, (Fragment) mPointsListFragment, FRAGMENT_POINTS_LIST)
-                .commit();
 
         // Create the Non-UI points manager fragment
         manager.beginTransaction()
-                .add((Fragment) new PointsManagerFragment(), FRAGMENT_POINTS_MANAGER)
+               .add((Fragment) new PointsManagerFragment(), FRAGMENT_POINTS_MANAGER)
+               .commit();
+        Log.d(TAG, "PointsManagerFragment new/add/commit.");
+
+        // Create a new Fragment to be placed in the activity layout
+        PointsListFragment list = new PointsListFragment();
+        Log.d(TAG, "PointsListFragment new");
+
+        // In case this activity was started with special instructions from an
+        // Intent, pass the Intent's extras to the fragment as arguments
+        list.setArguments(getIntent().getExtras());
+
+       // Add the points list fragment to the 'container' FrameLayout
+        manager.beginTransaction()
+                .add(R.id.container, (Fragment) list, FRAGMENT_POINTS_LIST)
                 .commit();
+       Log.d(TAG, "PointsListFragment add/commit");
 
         // Start a background task to load the Projections table
         loadProjections("projections.txt");
-        // new PopulateProjectionsTableTask().execute("projections.txt");
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
     }
 
     @Override
@@ -97,20 +98,20 @@ public class MainActivity extends Activity implements
         //noinspection SimplifiableIfStatement
         switch (id) {
             case R.id.action_settings:
-                // Create new fragment and transaction
-                Fragment newFragment = new TransformSettingsFragment();
-                FragmentTransaction transaction = getFragmentManager().beginTransaction();
+                FragmentManager manager = getFragmentManager();
+                if (manager.findFragmentByTag(FRAGMENT_SETTINGS) == null) {
 
-                // Replace whatever is in the fragment_container view with this fragment,
-                // and add the transaction to the back stack
-                transaction.replace(R.id.container, newFragment);
-                transaction.addToBackStack(null);
+                    Fragment settings = new TransformSettingsFragment();
 
-                // Commit the transaction
-                transaction.commit();
+                    // Replace whatever is in the fragment_container view with this fragment,
+                    // and add the transaction to the back stack.
+                    manager.beginTransaction()
+                            .replace(R.id.container, settings, FRAGMENT_SETTINGS)
+                            .addToBackStack(null)
+                            .commit();
+                }
                 return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
 
@@ -118,6 +119,11 @@ public class MainActivity extends Activity implements
     public boolean onNavigateUp() {
         getFragmentManager().popBackStack();
         return true;
+    }
+
+    // Callback from TransformSettingsFragment
+    public void onTransformSettingsFragmentInteraction(int value) {
+        Toast.makeText(this, "List item: " + value, Toast.LENGTH_SHORT).show();
     }
 
     private void loadProjections(String filename) {
@@ -203,8 +209,11 @@ public class MainActivity extends Activity implements
                         values.put(Projections.COLUMN_Y0, Double.parseDouble(parts[7]));
                         values.put(Projections.COLUMN_P1, parseDegMin(parts[8]));
                         values.put(Projections.COLUMN_P2, parseDegMin(parts[9]));
-                        values.put(Projections.COLUMN_SF,
-                                parts[10].isEmpty() ? 0 : Long.parseLong(parts[10]));
+
+                        // Convert integer scale factor to K0 = 1 - 1/SF
+                        values.put(Projections.COLUMN_K0,
+                                parts[10].isEmpty() ? 0.0 :
+                                        1.0 - 1.0 / Long.parseLong(parts[10]));
 
                         valuesList.add(values);
                     }
@@ -253,17 +262,5 @@ public class MainActivity extends Activity implements
         val = Integer.parseInt(parts[0]) + Integer.parseInt(parts[1])/60.0;
 
         return neg ? -1.0 * val : val;
-    }
-
-    public void onPointsFragmentInteraction(int position) {
-        Toast.makeText(this, "List item: " + position, Toast.LENGTH_SHORT).show();
-    }
-
-    public void onPointsManagerFragmentInteraction(int value) {
-        Toast.makeText(this, "List item: " + value, Toast.LENGTH_SHORT).show();
-    }
-
-    public void onTransformSettingsFragmentInteraction(int value) {
-        Toast.makeText(this, "List item: " + value, Toast.LENGTH_SHORT).show();
     }
 }

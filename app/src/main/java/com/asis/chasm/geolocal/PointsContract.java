@@ -14,6 +14,10 @@ public final class PointsContract {
     public static final String AUTHORITY = "com.asis.chasm.provider.Points";
     public static final String BASE_URI = "content://" + AUTHORITY + "/";
 
+    public static final int UNITS_METERS = 1;
+    public static final int UNITS_SURVEY_FT = 2;
+    public static final int UNITS_INTERNATIONAL_FT = 3;
+
     public static abstract class Points implements BaseColumns {
 
         public static final int POINT_TYPE_LOCAL = 1;
@@ -25,6 +29,7 @@ public final class PointsContract {
         public static final String CONTENT_TYPE_ITEM = "vnd.android.cursor.item/vnd.chasm.point";
 
         public static final String TABLE = "points";
+
         public static final String COLUMN_NAME = "name";
         public static final String COLUMN_DESC = "desc";
         public static final String COLUMN_TYPE = "type";
@@ -33,12 +38,6 @@ public final class PointsContract {
         public static final String COLUMN_LAT = "lat";
         public static final String COLUMN_LON = "lon";
 
-        public static final String[] PROJECTION = { _ID,
-                COLUMN_NAME, COLUMN_DESC, COLUMN_TYPE,
-                COLUMN_X, COLUMN_Y, COLUMN_LAT, COLUMN_LON
-        };
-
-        public static final int INDEX_ID = 0;
         public static final int INDEX_NAME = 1;
         public static final int INDEX_DESC = 2;
         public static final int INDEX_TYPE = 3;
@@ -47,8 +46,12 @@ public final class PointsContract {
         public static final int INDEX_LAT = 6;
         public static final int INDEX_LON = 7;
 
+        public static final String[] PROJECTION = { _ID,
+                COLUMN_NAME, COLUMN_DESC, COLUMN_TYPE,
+                COLUMN_X, COLUMN_Y, COLUMN_LAT, COLUMN_LON
+        };
+
         // Default sort order sorts numerically.
-        //  CAST(name AS INTEGER), SUBSTR(name,1,1), CAST(SUBSTR(name,2) AS INTEGER), name
         public static final String DEFAULT_ORDER_BY = "CAST(" + COLUMN_NAME + " AS INTEGER), "
                 + "SUBSTR(" + COLUMN_NAME + ",1,1), "
                 + "CAST(SUBSTR(" + COLUMN_NAME + ",2) AS INTEGER), "
@@ -73,10 +76,19 @@ public final class PointsContract {
         public static final String COLUMN_Y0 = "y0";
         public static final String COLUMN_P1 = "p1";
         public static final String COLUMN_P2 = "p2";
-        public static final String COLUMN_SF = "sf";
+        public static final String COLUMN_K0 = "k0";
 
-        public static final int UNITS_METER = 1;
-        public static final int UNITS_SFT = 2;
+        public static final int INDEX_CODE = 1;
+        public static final int INDEX_DESC = 2;
+        public static final int INDEX_COORD_SYSTEM = 3;
+        public static final int INDEX_PROJECTION = 4;
+        public static final int INDEX_P0 = 5;
+        public static final int INDEX_M0 = 6;
+        public static final int INDEX_X0 = 7;
+        public static final int INDEX_Y0 = 8;
+        public static final int INDEX_P1 = 9;
+        public static final int INDEX_P2 = 10;
+        public static final int INDEX_K0 = 11;
 
         public static final int COORD_SYSTEM_UTM = 1;
         public static final int COORD_SYSTEM_SPCS = 2;
@@ -85,6 +97,13 @@ public final class PointsContract {
         public static final int PROJECTION_TM = 1;    // Transverse Mercator
         public static final int PROJECTION_LC = 2;    // Lambert Conic
         public static final int PROJECTION_OM = 3;    // Oblique Mercator
+
+        public static final int UNITS_METERS = PointsContract.UNITS_METERS;
+        public static final int UNITS_SURVEY_FT = PointsContract.UNITS_SURVEY_FT;
+        public static final int UNITS_INTERNATIONAL_FT = PointsContract.UNITS_INTERNATIONAL_FT;
+
+        // Default sort order sorts numerically.
+        public static final String DEFAULT_ORDER_BY = null;
     }
 
     public static abstract class Transforms implements BaseColumns {
@@ -112,6 +131,8 @@ public final class PointsContract {
         public static final String COLUMN_Y0 = "y0";
         public static final String COLUMN_P1 = "p1";
         public static final String COLUMN_P2 = "p2";
-        public static final String COLUMN_SF = "sf";
+        public static final String COLUMN_K0 = "k0";
+
+
     }
 }

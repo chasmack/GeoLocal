@@ -1,6 +1,7 @@
 package com.asis.chasm.geolocal;
 
 import android.app.Activity;
+import android.app.Fragment;
 import android.app.LoaderManager;
 import android.content.Context;
 import android.content.CursorLoader;
@@ -31,7 +32,7 @@ import com.asis.chasm.geolocal.PointsContract.Points;
  * A fragment representing a list of Items.
  * <p/>
  * <p/>
- * Activities containing this fragment MUST implement the {@link OnFragmentInteractionListener}
+ * Activities containing this fragment MUST implement the {@link OnListFragmentInteractionListener}
  * interface.
  */
 public class PointsListFragment extends ListFragment
@@ -41,7 +42,7 @@ public class PointsListFragment extends ListFragment
     private static final String TAG = "PointsListFragment";
 
     // Hook back into main activity.
-    private OnFragmentInteractionListener mListener;
+    private OnListFragmentInteractionListener mListener;
 
     // This is the Adapter being used to display the list's data.
     PointsCursorAdapter mAdapter;
@@ -58,7 +59,13 @@ public class PointsListFragment extends ListFragment
         Log.d(TAG, "onAttach");
         super.onAttach(activity);
         try {
-            mListener = (OnFragmentInteractionListener) activity;
+            Fragment manager = getFragmentManager()
+                    .findFragmentByTag(MainActivity.FRAGMENT_POINTS_MANAGER);
+            if (manager != null) {
+                mListener = (OnListFragmentInteractionListener) manager;
+            } else {
+                Log.d(TAG, "Can't find FRAGMENT_POINTS_MANAGER.");
+            }
         } catch (ClassCastException e) {
             throw new ClassCastException(activity.toString()
                     + " must implement OnFragmentInteractionListener");
@@ -168,11 +175,11 @@ public class PointsListFragment extends ListFragment
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
         super.onListItemClick(l, v, position, id);
-        Log.d("FragmentComplexList", "Item clicked: " + id);
+        Log.d(TAG, "Item clicked: " + id);
         if (null != mListener) {
-            // Notify the active callbacks interface (the activity, if the
-            // fragment is attached to one) that an item has been selected.
-            mListener.onPointsFragmentInteraction(position);
+            // Notify the points manager active callbacks interface
+            // that an item has been selected.
+            mListener.onListFragmentInteraction(id);
         }
     }
 
@@ -299,9 +306,8 @@ public class PointsListFragment extends ListFragment
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
      */
-    public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
-        public void onPointsFragmentInteraction(int position);
+    public interface OnListFragmentInteractionListener {
+        public void onListFragmentInteraction(long position);
     }
 
 }

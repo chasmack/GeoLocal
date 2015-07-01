@@ -5,6 +5,7 @@ import android.app.ListFragment;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -23,59 +24,30 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 
+import com.asis.chasm.geolocal.PointsContract.Points;
+
 /**
  * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link PointsManagerFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link PointsManagerFragment#newInstance} factory method to
- * create an instance of this fragment.
  */
-public class PointsManagerFragment extends Fragment {
+public class PointsManagerFragment extends Fragment implements
+        PointsListFragment.OnListFragmentInteractionListener {
 
     // Use for logging and debugging
     private static final String TAG = "PointsManagerFragment";
-
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    private OnFragmentInteractionListener mListener;
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment PointsManagerFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static PointsManagerFragment newInstance(String param1, String param2) {
-        PointsManagerFragment fragment = new PointsManagerFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
 
     public PointsManagerFragment() {
         // Required empty public constructor
     }
 
     @Override
+    public void onAttach(Activity activity) {
+        Log.d(TAG, "onAttach");
+        super.onAttach(activity);
+    }
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
     }
 
     @Override
@@ -96,6 +68,11 @@ public class PointsManagerFragment extends Fragment {
     }
 
     @Override
+    public void onDetach() {
+        super.onDetach();
+    }
+
+    @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.points_manager, menu);
@@ -112,17 +89,41 @@ public class PointsManagerFragment extends Fragment {
         //noinspection SimplifiableIfStatement
         switch (id) {
             case R.id.action_read_points:
-                selectPointsFile();
+                readPointsFile();
+                return true;
+            case R.id.action_test_transform:
+                testTransform();
                 return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
+    private void testTransform() {
+        Toast.makeText(getActivity(), "Test Transform", Toast.LENGTH_SHORT).show();
+    }
+
+    // Interaction from points list fragment onListItemClick
+    public void onListFragmentInteraction(long id) {
+        Log.d(TAG, "onListFragmentInteraction id: " + id);
+        Uri uri = Uri.parse(PointsContract.Points.CONTENT_URI)
+                .buildUpon()
+                .appendPath(Long.toString(id))
+                .build();
+        Cursor c = getActivity().getContentResolver().query(uri, null, null, null, null);
+        if (c != null && c.moveToFirst()) {
+
+            Log.d(TAG, "point: " + c.getString(Points.INDEX_NAME)
+                    + " - " + c.getString(Points.INDEX_DESC));
+        }
+        
+        TransformParams params = new TransformParams(getActivity());
+    }
+
     // Activity result codes
     private final int RESULT_CODE_FILE_SELECT = 1;
 
-    private void selectPointsFile() {
+    private void readPointsFile() {
 
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("text/plain");
@@ -233,38 +234,6 @@ public class PointsManagerFragment extends Fragment {
                     .findFragmentByTag(MainActivity.FRAGMENT_POINTS_LIST);
             fragment.setEmptyText("No points.");
         }
-    }
-
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        try {
-            mListener = (OnFragmentInteractionListener) activity;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString()
-                    + " must implement OnFragmentInteractionListener");
-        }
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
-    }
-
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p/>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
-    public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
-        public void onPointsManagerFragmentInteraction(int value);
     }
 
 }

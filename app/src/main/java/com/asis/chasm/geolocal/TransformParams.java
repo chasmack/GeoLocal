@@ -1,19 +1,22 @@
 package com.asis.chasm.geolocal;
 
+import android.content.Context;
+import android.database.Cursor;
+import android.net.Uri;
+import android.util.Log;
+
+import com.asis.chasm.geolocal.PointsContract.Projections;
+
 /**
  * Transform paramaters.
  */
 public class TransformParams {
 
-    /*
-    * Transformation from the local basis and units to the selected grid basis.
-    */
-
-    public static final int UNITS_METERS = 1;
-    public static final int UNITS_SURVEY_FT = 2;
-    public static final int UNITS_INTERNATIONAL_FT = 3;
+    // Use for logging and debugging
+    private static final String TAG = "TransformParams";
 
     // Units used for local point coordinates.
+    // All transform and grid calculations are in meters.
     private int units;
 
     // Translation from local reference point to grid reference in meters.
@@ -26,14 +29,7 @@ public class TransformParams {
     // Scale factor from local distances to geographic distance.
     private double scale;
 
-    /*
-    * Grid projection type and constants.
-    */
-
-    public static final int PROJECTION_TM = 1;
-    public static final int PROJECTION_LC = 2;
-
-    // Type of grid projection.
+    // Type of grid projection, e.g. TM, LC, OM.
     private int projection;
 
     // Latitude of origin, central meridian
@@ -45,13 +41,44 @@ public class TransformParams {
     // Lambert conic first and second standard parallels
     private double p1, p2;
 
-    // Transverse mercator central scale factor (1 - 1/E)
+    // Transverse mercator central scale factor (1 - 1/SF)
     private double k0;
 
-    public TransformParams() {
+    public TransformParams(Context appContext) {
+
+        // TODO: Hook up units.
+        units = Projections.UNITS_METERS;
+
+        // TODO: Hook up local-grid transform.
+        dx = dy = 0.0;
+        rotate = 0.0;
+        scale = 1.0;
+
+        // TODO: Hook up projection.
+        final String code = "0401";
 
         // Initialize new transform parameters from the Transform content provider.
+        Cursor c = appContext.getContentResolver().query(
+                Uri.parse(Projections.CONTENT_URI), // The content URI of the projections table
+                null,                               // The columns to return for each row
+                Projections.COLUMN_CODE + " = ?",   // Selection criteria
+                new String[]{code},                 // Selection criteria
+                null);                              // Sort order
 
+        if (c != null && c.moveToFirst()) {
+
+            Log.d(TAG, "projection: " + c.getString(Projections.INDEX_DESC)
+                    + " (" + c.getString(Projections.INDEX_CODE) + ")");
+
+            projection = c.getInt(Projections.INDEX_PROJECTION);
+            p0 = c.getDouble(Projections.INDEX_P0);
+            m0 = c.getDouble(Projections.INDEX_M0);
+            x0 = c.getDouble(Projections.INDEX_X0);
+            y0 = c.getDouble(Projections.INDEX_Y0);
+            p1 = c.getDouble(Projections.INDEX_P1);
+            p2 = c.getDouble(Projections.INDEX_P2);
+            k0 = c.getDouble(Projections.INDEX_K0);
+        }
     }
 
     public void setLocalTransform(
@@ -68,7 +95,7 @@ public class TransformParams {
             double p0, double m0,
             double x0, double y0,
             int sf) {
-        projection = PROJECTION_TM;
+        projection = Projections.PROJECTION_TM;
         this.p0 = p0; this.m0 = m0;
         this.x0 = x0; this.y0 = y0;
         this.k0 = (sf == 1) ? 1.0 : 1.0 - 1.0 / sf;
@@ -79,7 +106,7 @@ public class TransformParams {
             double p0, double m0,
             double x0, double y0,
             double p1, double p2) {
-        projection = PROJECTION_LC;
+        projection = Projections.PROJECTION_LC;
         this.p0 = p0; this.m0 = m0;
         this.x0 = x0; this.y0 = y0;
         this.p0 = p1; this.p0 = p2;
