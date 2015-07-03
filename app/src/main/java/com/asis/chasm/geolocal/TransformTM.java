@@ -1,5 +1,7 @@
 package com.asis.chasm.geolocal;
 
+import com.asis.chasm.geolocal.PointsContract.Transforms;
+
 /**
  * Transform between a local basis and geographic coordinates using
  * a Transverse Mercator projection as an intermediate basis.
@@ -22,7 +24,7 @@ public class TransformTM {
 
     public static GridPoint toLocal(GeoPoint pt, TransformParams params) {
         initTransform(params);
-        return new GridPoint(0.0, 0.0).setK(1.0).setTheta(0.0);
+        return new GridPoint(0.0, 0.0, Transforms.UNITS_METERS).setK(1.0).setTheta(0.0);
     }
 
     private static void initTransform(TransformParams params) {

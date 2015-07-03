@@ -53,8 +53,6 @@ public class PointsProvider extends ContentProvider {
         sUriMatcher.addURI(PointsContract.AUTHORITY, Projections.CONTENT_PATH + "/#", PROJECTIONS_ID);
         sUriMatcher.addURI(PointsContract.AUTHORITY, Transforms.CONTENT_PATH, TRANSFORMS);
         sUriMatcher.addURI(PointsContract.AUTHORITY, Transforms.CONTENT_PATH + "/#", TRANSFORMS_ID);
-
-
     }
 
     class PointsDbHelper extends SQLiteOpenHelper {
@@ -70,6 +68,7 @@ public class PointsProvider extends ContentProvider {
                         + Points.COLUMN_NAME + " TEXT" + COMMA_SEP
                         + Points.COLUMN_DESC + " TEXT" + COMMA_SEP
                         + Points.COLUMN_TYPE + " INTEGER" + COMMA_SEP
+                        + Points.COLUMN_UNITS + " INTEGER" + COMMA_SEP
                         + Points.COLUMN_X + " REAL" + COMMA_SEP
                         + Points.COLUMN_Y + " REAL" + COMMA_SEP
                         + Points.COLUMN_LAT + " REAL" + COMMA_SEP

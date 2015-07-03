@@ -1,6 +1,9 @@
 package com.asis.chasm.geolocal;
 
+import android.util.Log;
 import java.lang.Math;
+
+import com.asis.chasm.geolocal.PointsContract.Transforms;
 
 /**
  * Transform between a local basis and geographic coordinates using
@@ -13,16 +16,17 @@ import java.lang.Math;
 
 public class TransformLC {
 
+    private static final String TAG = "TransformLC";
 
     private static TransformParams sParams;
 
     // Coordinate system constants
     // private final static double A = 6378206.4;          // major radius of ellipsoid, meters (NAD27)
     // private final static double E = 0.08227185422;      // eccentricity of ellipsoid (NAD27)
-    private final static double A = 6378137.0;             // major radius of ellipsoid, meters (NAD83)
-    private final static double E = 0.08181922146;         // eccentricity of ellipsoid (NAD83)
-    private final static double PI4 = Math.PI / 4.0;
-    private final static double PI2 = Math.PI / 2.0;
+    private static final double A = 6378137.0;             // major radius of ellipsoid, meters (NAD83)
+    private static final double E = 0.08181922146;         // eccentricity of ellipsoid (NAD83)
+    private static final double PI4 = Math.PI / 4.0;
+    private static final double PI2 = Math.PI / 2.0;
 
     // Defining coordinate system constants for the zone
     private static double P0;       // latitude of origin, radians (Bb)
@@ -44,14 +48,15 @@ public class TransformLC {
 
     private TransformLC() { }
 
-    public static GeoPoint toGeo(GridPoint pt, TransformParams params) {
+    public static GeoPoint toGeo(GridPoint grid, TransformParams params) {
 
         // Initialize the zone constants if necessary.
         initTransform(params);
 
         // Calculate the Longitude.
-        double x = pt.getX() - X0;
-        double y = pt.getY() - Y0;
+        GridPoint p = new GridPoint(grid).toMeters();
+        double x = p.getX() - X0;
+        double y = p.getY() - Y0;
 
         double rho = Math.sqrt(Math.pow(x, 2.0) + Math.pow(rho0 - y, 2.0));
         double theta = Math.atan2(x, rho0 - y);
@@ -78,7 +83,7 @@ public class TransformLC {
     public static GridPoint toGrid(double lat, double lon, TransformParams params) {
         initTransform(params);
 
-        return new GridPoint(0.0, 0.0).setK(1.0).setTheta(0.0);
+        return new GridPoint(0.0, 0.0, Transforms.UNITS_METERS).setK(1.0).setTheta(0.0);
     }
 
     private static void initTransform(TransformParams params) {
@@ -96,16 +101,26 @@ public class TransformLC {
         X0 = params.getX0();
 
         // Calculate the derived coordinate system constants.
-        m1 = Math.cos(P1) / Math.sqrt(1.0 - Math.pow(E, 2.0) * Math.pow(Math.sin(P1), 2.0));
-        m2 = Math.cos(P2) / Math.sqrt(1.0 - Math.pow(E, 2.0) * Math.pow(Math.sin(P2), 2.0));
-        t1 = Math.sin(PI4 - P1 / 2.0) / Math.cos(PI4 - P1 / 2.0) ;
-        t1 = t1 / Math.pow( (1.0 - E * Math.sin(P1)) / (1.0 + E * Math.sin(P1)), E / 2.0);
-        t2 = Math.sin(PI4 - P2 / 2.0) / Math.cos(PI4 - P2 / 2.0) ;
-        t2 = t2 / Math.pow( (1.0 - E * Math.sin(P2)) / (1.0 + E * Math.sin(P2)), E / 2.0);
-        t0 = Math.sin(PI4 - P0 / 2.0) / Math.cos(PI4 - P0 / 2.0) ;
-        t0 = t0 / Math.pow( (1.0 - E * Math.sin(P0)) / (1.0 + E * Math.sin(P0)), E / 2.0);
+        m1 = Math.cos(P1) / Math.sqrt(1.0 - Math.pow(E * Math.sin(P1), 2.0));
+        m2 = Math.cos(P2) / Math.sqrt(1.0 - Math.pow(E * Math.sin(P2), 2.0));
+        t1 = Math.tan(PI4 - P1 / 2.0)
+                / Math.pow((1.0 - E * Math.sin(P1)) / (1.0 + E * Math.sin(P1)), E / 2.0);
+        t2 = Math.tan(PI4 - P2 / 2.0)
+                / Math.pow( (1.0 - E * Math.sin(P2)) / (1.0 + E * Math.sin(P2)), E / 2.0);
+        t0 = Math.tan(PI4 - P0 / 2.0)
+                / Math.pow((1.0 - E * Math.sin(P0)) / (1.0 + E * Math.sin(P0)), E / 2.0);
         n = Math.log(m1 / m2) / Math.log(t1 / t2);
         F = m1 / (n * Math.pow(t1, n));
         rho0 = A * F * Math.pow(t0, n);
+
+        Log.d(TAG, "Transform initialized.");
+        Log.d(TAG, "m1=" + m1);
+        Log.d(TAG, "m2=" + m2);
+        Log.d(TAG, "t1=" + t1);
+        Log.d(TAG, "t2=" + t2);
+        Log.d(TAG, "t0=" + t0);
+        Log.d(TAG, "n=" + n);
+        Log.d(TAG, "F=" + F);
+        Log.d(TAG, "rho0=" + rho0);
     }
 }

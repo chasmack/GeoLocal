@@ -25,6 +25,8 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 import com.asis.chasm.geolocal.PointsContract.Points;
+import com.asis.chasm.geolocal.PointsContract.Transforms;
+
 
 /**
  * A simple {@link Fragment} subclass.
@@ -105,22 +107,35 @@ public class PointsManagerFragment extends Fragment implements
 
     // Interaction from points list fragment onListItemClick
     public void onListFragmentInteraction(long id) {
+
         Log.d(TAG, "onListFragmentInteraction id: " + id);
-        Uri uri = Uri.parse(PointsContract.Points.CONTENT_URI)
+        Uri uri = Uri.parse(Points.CONTENT_URI)
                 .buildUpon()
                 .appendPath(Long.toString(id))
                 .build();
+        uri = Uri.parse(Points.CONTENT_URI);
         Cursor c = getActivity().getContentResolver().query(uri, null, null, null, null);
-        if (c != null && c.moveToFirst()) {
-            TransformParams params = new TransformParams(getActivity(), "0401");
-            LocalPoint local = new LocalPoint(c.getDouble(Points.INDEX_X), c.getDouble(Points.INDEX_Y));
+        TransformParams params = new TransformParams(getActivity(), "0401");
+
+        c.moveToFirst();
+        int cnt = 0;
+        do {
+            LocalPoint local = new LocalPoint(
+                    c.getDouble(Points.INDEX_X),
+                    c.getDouble(Points.INDEX_Y),
+                    c.getInt(Points.INDEX_UNITS));
             GridPoint grid = new GridPoint(local, params);
             GeoPoint geo = TransformLC.toGeo(grid, params);
-            Log.d(TAG, "point " + c.getString(Points.INDEX_NAME) + " name: " + c.getString(Points.INDEX_DESC));
-            Log.d(TAG, "point " + c.getString(Points.INDEX_NAME) + " " + local.toString());
-            Log.d(TAG, "point " + c.getString(Points.INDEX_NAME) + " " + grid.toString());
-            Log.d(TAG, "point " + c.getString(Points.INDEX_NAME) + " " + geo.toString());
-        }
+            cnt++;
+
+            // Log.d(TAG, "point " + c.getString(Points.INDEX_NAME) + " name: " + c.getString(Points.INDEX_DESC));
+            // Log.d(TAG, "point " + c.getString(Points.INDEX_NAME) + " " + local.toString());
+            // Log.d(TAG, "point " + c.getString(Points.INDEX_NAME) + " " + grid.toString());
+            // Log.d(TAG, "point " + c.getString(Points.INDEX_NAME) + " " + geo.toString());
+
+        } while (c.moveToNext());
+
+        Log.d(TAG, "Geographic points calculated: " + cnt);
     }
 
     // Activity result codes
@@ -153,8 +168,8 @@ public class PointsManagerFragment extends Fragment implements
             fragment.setEmptyText("Loading points...");
 
             // Delete any entries already in the points table
-            int cnt = getActivity().getContentResolver().delete(Uri.parse(PointsContract.Points.CONTENT_URI),
-                    PointsContract.Points.COLUMN_TYPE + "=" + PointsContract.Points.POINT_TYPE_LOCAL, null);
+            int cnt = getActivity().getContentResolver().delete(Uri.parse(Points.CONTENT_URI),
+                    Points.COLUMN_TYPE + "=" + Points.TYPE_LOCAL, null);
             Log.d(TAG, "onActivityResult points deleted: " + cnt);
 
             // Run an AsyncTask to read points into the content provider.
@@ -165,9 +180,9 @@ public class PointsManagerFragment extends Fragment implements
     private class ReadLocalPointsTask extends AsyncTask<Uri, Void, Void> {
 
         @Override
-        protected Void doInBackground(Uri... params) {
+        protected Void doInBackground(Uri... args) {
 
-            Uri uri = params[0];
+            Uri uri = args[0];
             Log.d(TAG, "ReadLocalPointsTask points uri: " + uri);
 
             ContentResolver resolver = getActivity().getContentResolver();
@@ -183,6 +198,8 @@ public class PointsManagerFragment extends Fragment implements
 
                 String line;
                 String[] parts;
+
+                TransformParams params = new TransformParams(getActivity(), "0401");
                 while ((line = reader.readLine()) != null) {
                     // Ignore blank lines and comment lines which start with #
                     if (line.length() == 0 || line.startsWith("#")) {
@@ -194,16 +211,23 @@ public class PointsManagerFragment extends Fragment implements
                         continue;
                     }
 
+                    LocalPoint local = new LocalPoint(
+                            Double.parseDouble(parts[2]),
+                            Double.parseDouble(parts[1]),
+                            Points.UNITS_SURVEY_FT);
+                    GeoPoint geo = TransformLC.toGeo(new GridPoint(local, params), params);
+
                     ContentValues values = new ContentValues();
 
-                    values.put(PointsContract.Points.COLUMN_NAME, parts[0]);
-                    values.put(PointsContract.Points.COLUMN_Y, Double.parseDouble(parts[1]));
-                    values.put(PointsContract.Points.COLUMN_X, Double.parseDouble(parts[2]));
+                    values.put(Points.COLUMN_NAME, parts[0]);
+                    values.put(Points.COLUMN_Y, local.getY());
+                    values.put(Points.COLUMN_X, local.getX());
                     // Skipping Z (elevation)
-                    values.put(PointsContract.Points.COLUMN_DESC, parts[4]);
-                    values.put(PointsContract.Points.COLUMN_TYPE, PointsContract.Points.POINT_TYPE_LOCAL);
-                    values.put(PointsContract.Points.COLUMN_LAT, 0.0);
-                    values.put(PointsContract.Points.COLUMN_LON, 0.0);
+                    values.put(Points.COLUMN_DESC, parts[4]);
+                    values.put(Points.COLUMN_TYPE, Points.TYPE_LOCAL);
+                    values.put(Points.COLUMN_UNITS, local.getUnits());
+                    values.put(Points.COLUMN_LAT, geo.getLat());
+                    values.put(Points.COLUMN_LON, geo.getLon());
 
                     valuesList.add(values);
                 }

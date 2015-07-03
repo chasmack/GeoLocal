@@ -20,8 +20,12 @@ public final class PointsContract {
 
     public static abstract class Points implements BaseColumns {
 
-        public static final int POINT_TYPE_LOCAL = 1;
-        public static final int POINT_TYPE_GEOGRAPHIC = 2;
+        public static final int TYPE_LOCAL = 1;
+        public static final int TYPE_GEOGRAPHIC = 2;
+
+        public static final int UNITS_METERS = PointsContract.UNITS_METERS;
+        public static final int UNITS_SURVEY_FT = PointsContract.UNITS_SURVEY_FT;
+        public static final int UNITS_INTERNATIONAL_FT = PointsContract.UNITS_INTERNATIONAL_FT;
 
         public static final String CONTENT_PATH = "points";
         public static final String CONTENT_URI = BASE_URI + CONTENT_PATH;
@@ -33,6 +37,7 @@ public final class PointsContract {
         public static final String COLUMN_NAME = "name";
         public static final String COLUMN_DESC = "desc";
         public static final String COLUMN_TYPE = "type";
+        public static final String COLUMN_UNITS = "units";
         public static final String COLUMN_X = "x";
         public static final String COLUMN_Y = "y";
         public static final String COLUMN_LAT = "lat";
@@ -41,13 +46,14 @@ public final class PointsContract {
         public static final int INDEX_NAME = 1;
         public static final int INDEX_DESC = 2;
         public static final int INDEX_TYPE = 3;
-        public static final int INDEX_X = 4;
-        public static final int INDEX_Y = 5;
-        public static final int INDEX_LAT = 6;
-        public static final int INDEX_LON = 7;
+        public static final int INDEX_UNITS = 4;
+        public static final int INDEX_X = 5;
+        public static final int INDEX_Y = 6;
+        public static final int INDEX_LAT = 7;
+        public static final int INDEX_LON = 8;
 
         public static final String[] PROJECTION = { _ID,
-                COLUMN_NAME, COLUMN_DESC, COLUMN_TYPE,
+                COLUMN_NAME, COLUMN_DESC, COLUMN_TYPE, COLUMN_UNITS,
                 COLUMN_X, COLUMN_Y, COLUMN_LAT, COLUMN_LON
         };
 
@@ -98,10 +104,6 @@ public final class PointsContract {
         public static final int PROJECTION_LC = 2;    // Lambert Conic
         public static final int PROJECTION_OM = 3;    // Oblique Mercator
 
-        public static final int UNITS_METERS = PointsContract.UNITS_METERS;
-        public static final int UNITS_SURVEY_FT = PointsContract.UNITS_SURVEY_FT;
-        public static final int UNITS_INTERNATIONAL_FT = PointsContract.UNITS_INTERNATIONAL_FT;
-
         // Default sort order sorts numerically.
         public static final String DEFAULT_ORDER_BY = null;
     }
@@ -133,6 +135,11 @@ public final class PointsContract {
         public static final String COLUMN_P2 = "p2";
         public static final String COLUMN_K0 = "k0";
 
+        public static final int UNITS_METERS = PointsContract.UNITS_METERS;
+        public static final int UNITS_SURVEY_FT = PointsContract.UNITS_SURVEY_FT;
+        public static final int UNITS_INTERNATIONAL_FT = PointsContract.UNITS_INTERNATIONAL_FT;
 
+        public static final double SURVEY_FT_PER_METER = 3937.0 / 1200.0;
+        public static final double INTERNATIONAL_FT_PER_METER = 1.0 / (0.0254 * 12);
     }
 }

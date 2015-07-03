@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.util.Log;
 
 import com.asis.chasm.geolocal.PointsContract.Projections;
+import com.asis.chasm.geolocal.PointsContract.Transforms;
 
 /**
  * Transform paramaters.
@@ -16,10 +17,9 @@ public class TransformParams {
     private static final String TAG = "TransformParams";
 
     // Units used for local point coordinates.
-    // All transform and grid calculations are in meters.
     private int units;
 
-    // Local (base) and grid reference points.
+    // Local (base) and grid reference points in user units.
     private double baseX, baseY;
     private double gridX, gridY;
 
@@ -33,13 +33,13 @@ public class TransformParams {
     // Type of grid projection, e.g. TM, LC, OM.
     private int projection;
 
-    // Latitude of origin, central meridian
+    // Latitude of origin, central meridian in decimal degrees.
     private double p0, m0;
 
-    // False easting, northing
+    // False easting, northing in meters.
     private double x0, y0;
 
-    // Lambert conic first and second standard parallels
+    // Lambert conic first and second standard parallels in decimal degrees.
     private double p1, p2;
 
     // Transverse mercator central scale factor (1 - 1/SF)
@@ -48,14 +48,14 @@ public class TransformParams {
     public TransformParams(Context appContext, String code) {
 
         // TODO: Hook up units.
-        units = Projections.UNITS_METERS;
+        units = Transforms.UNITS_SURVEY_FT;
 
         // TODO: Hook up local-grid transform.
         baseX = 5000.00;
         baseY = 10000.00;
         gridX = 6069017.11;
         gridY = 2118671.75;
-        rotate = -0.064167;
+        rotate = -1.2250;
         scale = 1.0;
 
         // Initialize new transform parameters from the Transform content provider.

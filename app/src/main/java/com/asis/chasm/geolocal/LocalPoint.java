@@ -6,15 +6,21 @@ package com.asis.chasm.geolocal;
 public class LocalPoint {
 
     /*
+    * Units for the coordinates.
+    */
+    private int units;
+
+    /*
     * x/y (easting/northing) coordinates in user units
     */
     private double x;
     private double y;
 
     public LocalPoint() { }
-    public LocalPoint(double x, double y) {
+    public LocalPoint(double x, double y, int units) {
         this.x = x;
         this.y = y;
+        this.units = units;
     }
     public LocalPoint(GridPoint pt, TransformParams params) {
         // convert grid coordinates to local
@@ -23,6 +29,7 @@ public class LocalPoint {
         double rot = -1.0 * Math.toRadians(params.getRotate());
         this.x = x * Math.cos(rot) - y * Math.sin(rot) + params.getBaseX();
         this.y = x * Math.sin(rot) + y * Math.cos(rot) + params.getBaseY();
+        this.units = params.getUnits();
     }
 
     public LocalPoint setX(double x) {
@@ -39,6 +46,9 @@ public class LocalPoint {
     }
     public double getY() {
         return y;
+    }
+    public int getUnits() {
+        return units;
     }
 
     @Override
