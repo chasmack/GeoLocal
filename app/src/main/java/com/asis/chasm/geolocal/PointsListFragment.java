@@ -27,6 +27,7 @@ import android.view.View.OnClickListener;
 import android.widget.Toast;
 
 import com.asis.chasm.geolocal.PointsContract.Points;
+import com.asis.chasm.geolocal.PointsContract.Transforms;
 
 /**
  * A fragment representing a list of Items.
@@ -239,9 +240,11 @@ public class PointsListFragment extends ListFragment
                 v.setText("Lat/Lon:");
             } else {
                 v = (TextView) view.findViewById(R.id.coords);
+
+                // TODO: Hook up a display units setting.
                 v.setText(String.format(formatLocal,
-                        cursor.getDouble(Points.INDEX_Y),
-                        cursor.getDouble(Points.INDEX_X)));
+                        cursor.getDouble(Points.INDEX_Y) * Transforms.SURVEY_FT_PER_METER,
+                        cursor.getDouble(Points.INDEX_X) * Transforms.SURVEY_FT_PER_METER));
                 v = (TextView) view.findViewById(R.id.coord_type);
                 v.setText("N/E:");
             }

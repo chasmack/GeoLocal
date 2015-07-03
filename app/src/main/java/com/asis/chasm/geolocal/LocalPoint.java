@@ -6,30 +6,15 @@ package com.asis.chasm.geolocal;
 public class LocalPoint {
 
     /*
-    * Units for the coordinates.
-    */
-    private int units;
-
-    /*
-    * x/y (easting/northing) coordinates in user units
+    * x/y (easting/northing) coordinates in meters
     */
     private double x;
     private double y;
 
     public LocalPoint() { }
-    public LocalPoint(double x, double y, int units) {
+    public LocalPoint(double x, double y) {
         this.x = x;
         this.y = y;
-        this.units = units;
-    }
-    public LocalPoint(GridPoint pt, TransformParams params) {
-        // convert grid coordinates to local
-        double x = (pt.getX() - params.getGridX()) / params.getScale();
-        double y = (pt.getY() - params.getGridY()) / params.getScale();
-        double rot = -1.0 * Math.toRadians(params.getRotate());
-        this.x = x * Math.cos(rot) - y * Math.sin(rot) + params.getBaseX();
-        this.y = x * Math.sin(rot) + y * Math.cos(rot) + params.getBaseY();
-        this.units = params.getUnits();
     }
 
     public GridPoint toGrid(TransformParams xp){
@@ -38,19 +23,8 @@ public class LocalPoint {
         double rot = Math.toRadians(xp.getRotate());
         GridPoint grid = new GridPoint(
                 x * Math.cos(rot) - y * Math.sin(rot) + xp.getGridX(),
-                x * Math.sin(rot) + y * Math.cos(rot) + xp.getGridY(),
-                this.units);
+                x * Math.sin(rot) + y * Math.cos(rot) + xp.getGridY());
         return grid;
-    }
-
-    public GeoPoint toGeo(TransformParams xp) {
-        double x = (this.x - xp.getBaseX()) * xp.getScale();
-        double y = (this.y - xp.getBaseY()) * xp.getScale();
-        double rot = Math.toRadians(xp.getRotate());
-        return TransformLC.toGeo(new GridPoint(
-            x * Math.cos(rot) - y * Math.sin(rot) + xp.getGridX(),
-            x * Math.sin(rot) + y * Math.cos(rot) + xp.getGridY(),
-            this.units), xp);
     }
 
     public LocalPoint setX(double x) {
@@ -68,9 +42,6 @@ public class LocalPoint {
     public double getY() {
         return y;
     }
-    public int getUnits() {
-        return units;
-    }
 
     @Override
     public boolean equals(Object o) {
@@ -79,8 +50,8 @@ public class LocalPoint {
             return false;
         }
         // object is a non-null instance of GridPoint
-        LocalPoint pt = (LocalPoint) o;
-        if (this.x == pt.x && this.y == pt.y) { return true; }
+        LocalPoint p = (LocalPoint) o;
+        if (this.x == p.x && this.y == p.y) { return true; }
         return false;
     }
 
@@ -100,6 +71,6 @@ public class LocalPoint {
 
     @Override
     public String toString() {
-        return "local x/y: " + x + ", " + y;
+        return "local x, y: " + x + ", " + y;
     }
 }

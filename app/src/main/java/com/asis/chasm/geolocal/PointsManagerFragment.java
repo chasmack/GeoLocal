@@ -113,22 +113,43 @@ public class PointsManagerFragment extends Fragment implements
                 .buildUpon()
                 .appendPath(Long.toString(id))
                 .build();
-        Cursor c = getActivity().getContentResolver().query(uri, null, null, null, null);
+        Cursor c = getActivity()
+                .getContentResolver()
+                .query(uri, null, null, null, null);
+        c.moveToFirst();
+
         TransformParams xp = new TransformParams(getActivity(), "0401");
 
-        if (c != null && c.moveToFirst()) {
-            LocalPoint local = new LocalPoint(
-                    c.getDouble(Points.INDEX_X),
-                    c.getDouble(Points.INDEX_Y),
-                    c.getInt(Points.INDEX_UNITS));
-            GridPoint grid = local.toGrid(xp);
-            GeoPoint geo = grid.toGeo(xp);
+        LocalPoint local = new LocalPoint(c.getDouble(Points.INDEX_X), c.getDouble(Points.INDEX_Y));
+        GridPoint grid = local.toGrid(xp);
+        GeoPoint geo = grid.toGeo(xp);
 
-            Log.d(TAG, "point " + c.getString(Points.INDEX_NAME) + " desc: " + c.getString(Points.INDEX_DESC));
-            Log.d(TAG, "point " + c.getString(Points.INDEX_NAME) + " " + local.toString());
-            Log.d(TAG, "point " + c.getString(Points.INDEX_NAME) + " " + grid.toString());
-            Log.d(TAG, "point " + c.getString(Points.INDEX_NAME) + " " + geo.toString());
-        }
+        Log.d(TAG, "point " + c.getString(Points.INDEX_NAME) + " inverse LC calculations.");
+        Log.d(TAG, "point " + c.getString(Points.INDEX_NAME) + " " + local.toString());
+        Log.d(TAG, "point " + c.getString(Points.INDEX_NAME) + " " + grid.toString());
+        Log.d(TAG, "point " + c.getString(Points.INDEX_NAME) + " " + geo.toString());
+
+        grid = geo.toGrid(xp);
+        local = grid.toLocal(xp);
+
+        Log.d(TAG, "point " + c.getString(Points.INDEX_NAME) + " forward LC calculations.");
+        Log.d(TAG, "point " + c.getString(Points.INDEX_NAME) + " " + geo.toString());
+        Log.d(TAG, "point " + c.getString(Points.INDEX_NAME) + " " + grid.toString());
+        Log.d(TAG, "point " + c.getString(Points.INDEX_NAME) + " " + local.toString());
+
+
+        xp = new TransformParams(getActivity(), "UTM10");
+
+        grid = geo.toGrid(xp);
+        Log.d(TAG, "point " + c.getString(Points.INDEX_NAME) + " forward TM calculations.");
+        Log.d(TAG, "point " + c.getString(Points.INDEX_NAME) + " " + geo.toString());
+        Log.d(TAG, "point " + c.getString(Points.INDEX_NAME) + " " + grid.toString());
+
+        geo = grid.toGeo(xp);
+        Log.d(TAG, "point " + c.getString(Points.INDEX_NAME) + " inverse TM calculations.");
+        Log.d(TAG, "point " + c.getString(Points.INDEX_NAME) + " " + grid.toString());
+        Log.d(TAG, "point " + c.getString(Points.INDEX_NAME) + " " + geo.toString());
+
     }
 
     // Activity result codes
@@ -204,11 +225,11 @@ public class PointsManagerFragment extends Fragment implements
                         continue;
                     }
 
+                    // TODO: Hook up an option for points file units.
                     LocalPoint local = new LocalPoint(
-                            Double.parseDouble(parts[2]),
-                            Double.parseDouble(parts[1]),
-                            Points.UNITS_SURVEY_FT);
-                    GeoPoint geo = local.toGeo(xp);
+                            Double.parseDouble(parts[2]) / Transforms.SURVEY_FT_PER_METER,
+                            Double.parseDouble(parts[1]) / Transforms.SURVEY_FT_PER_METER);
+                    GeoPoint geo = local.toGrid(xp).toGeo(xp);
 
                     ContentValues values = new ContentValues();
 
@@ -218,7 +239,6 @@ public class PointsManagerFragment extends Fragment implements
                     // Skipping Z (elevation)
                     values.put(Points.COLUMN_DESC, parts[4]);
                     values.put(Points.COLUMN_TYPE, Points.TYPE_LOCAL);
-                    values.put(Points.COLUMN_UNITS, local.getUnits());
                     values.put(Points.COLUMN_LAT, geo.getLat());
                     values.put(Points.COLUMN_LON, geo.getLon());
 

@@ -68,7 +68,6 @@ public class PointsProvider extends ContentProvider {
                         + Points.COLUMN_NAME + " TEXT" + COMMA_SEP
                         + Points.COLUMN_DESC + " TEXT" + COMMA_SEP
                         + Points.COLUMN_TYPE + " INTEGER" + COMMA_SEP
-                        + Points.COLUMN_UNITS + " INTEGER" + COMMA_SEP
                         + Points.COLUMN_X + " REAL" + COMMA_SEP
                         + Points.COLUMN_Y + " REAL" + COMMA_SEP
                         + Points.COLUMN_LAT + " REAL" + COMMA_SEP
@@ -94,7 +93,6 @@ public class PointsProvider extends ContentProvider {
         private static final String SQL_CREATE_TRANSFORMS =
                 "CREATE TABLE " + PointsContract.Transforms.TABLE + " ("
                         + Transforms._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                        + Transforms.COLUMN_UNITS + " INTEGER" + COMMA_SEP
                         + Transforms.COLUMN_REF_X + " REAL" + COMMA_SEP
                         + Transforms.COLUMN_REF_Y + " REAL" + COMMA_SEP
                         + Transforms.COLUMN_REF_LAT + " REAL" + COMMA_SEP

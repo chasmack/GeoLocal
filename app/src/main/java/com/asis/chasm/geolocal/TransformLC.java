@@ -48,13 +48,12 @@ public class TransformLC {
 
     private TransformLC() { }
 
-    public static GeoPoint toGeo(GridPoint grid, TransformParams xp) {
+    public static GeoPoint toGeo(GridPoint p, TransformParams xp) {
 
         // Check that the zone constants are initialized.
         initTransform(xp);
 
         // Subtract the false northing/easting.
-        GridPoint p = new GridPoint(grid).toMeters();
         double x = p.getX() - X0;
         double y = p.getY() - Y0;
 
@@ -97,15 +96,20 @@ public class TransformLC {
         double x = rho * Math.sin(theta) + X0 ;
         double y = rho0 - rho * Math.cos(theta) + Y0 ;
 
-        return new GridPoint(x, y, Transforms.UNITS_METERS)
+        return new GridPoint(x, y)
                 .setTheta(Math.toDegrees(theta))
                 .setK(k);
     }
 
-    private static void initTransform(TransformParams xp) {
+    public static void initTransform(TransformParams xp) {
 
         // Check if zone constants need to be initialized.
-        if (sParams != null && sParams.equals(xp)) return;
+        if (sParams != null && sParams.equals(xp)) { return; }
+
+        // Check we are using a Lambert projection.
+        if (xp.getProjection() != PointsContract.Projections.PROJECTION_LC) {
+            throw new IllegalArgumentException("Bad LC transform parameters.");
+        }
         sParams = xp;
 
         // Get the defining coordinate system constants for the zone

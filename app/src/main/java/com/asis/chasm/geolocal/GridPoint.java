@@ -1,16 +1,14 @@
 package com.asis.chasm.geolocal;
 
+import com.asis.chasm.geolocal.PointsContract.Projections;
 import com.asis.chasm.geolocal.PointsContract.Transforms;
+
+import java.security.InvalidParameterException;
 
 /**
  * Grid point with x/y coordinates.
  */
 public class GridPoint {
-
-    /*
-    * Units for the coordinates.
-    */
-    private int units;
 
     /*
     * x/y (easting/northing) coordinates in meters
@@ -19,38 +17,29 @@ public class GridPoint {
     private double y;
 
     /*
-    * grid scale factor (k) and theta
+    * grid scale factor (k) and theta (degrees)
     */
     private double k;
     private double theta;
 
-    public GridPoint(double x, double y, int units) {
+    public GridPoint(double x, double y) {
         this.x = x;
         this.y = y;
-        this.units = units;
-        this.k = this.theta = 0.0;
-    }
-
-    public GridPoint(GridPoint p) {
-        this.x = p.getX();
-        this.y = p.getY();
-        this.units = p.getUnits();
-        this.k = p.getK();
-        this.theta = p.getTheta();
+        this.k = 1.0;
+        this.theta = 0.0;
     }
 
     /*
-    * Transform a local point using the local to grid transform parameters
+    * Transform a local coordinates to grid using the transform parameters
     */
     public GridPoint(LocalPoint pt, TransformParams params) {
-        // convert local coordinates to grid in meters
         double x = (pt.getX() - params.getBaseX()) * params.getScale();
         double y = (pt.getY() - params.getBaseY()) * params.getScale();
         double rot = Math.toRadians(params.getRotate());
         this.x = x * Math.cos(rot) - y * Math.sin(rot) + params.getGridX();
         this.y = x * Math.sin(rot) + y * Math.cos(rot) + params.getGridY();
-        this.k = this.theta = 0.0;
-        this.units = params.getUnits();
+        this.k = 1.0;
+        this.theta = 0.0;
     }
 
     public GridPoint setX(double x) {
@@ -82,42 +71,28 @@ public class GridPoint {
     public double getTheta() {
         return theta;
     }
-    public int getUnits() {
-        return units;
+
+    public LocalPoint toLocal(TransformParams xp){
+        double x = (this.x - xp.getGridX()) / xp.getScale();
+        double y = (this.y - xp.getGridY()) / xp.getScale();
+        double rot = -1.0 * Math.toRadians(xp.getRotate());
+        return new LocalPoint(
+                x * Math.cos(rot) - y * Math.sin(rot) + xp.getBaseX(),
+                x * Math.sin(rot) + y * Math.cos(rot) + xp.getBaseY());
     }
 
     public GeoPoint toGeo(TransformParams xp) {
-        return TransformLC.toGeo(this, xp);
-    }
+        switch (xp.getProjection()) {
 
-    public GridPoint toMeters() {
-        switch (units) {
-            case Transforms.UNITS_SURVEY_FT:
-                x /= Transforms.SURVEY_FT_PER_METER;
-                y /= Transforms.SURVEY_FT_PER_METER;
-                break;
-            case Transforms.UNITS_INTERNATIONAL_FT:
-                x /= Transforms.INTERNATIONAL_FT_PER_METER;
-                y /= Transforms.INTERNATIONAL_FT_PER_METER;
-                break;
-        }
-        units = Transforms.UNITS_METERS;
-        return this;
-    }
+            case Projections.PROJECTION_TM:
+                return TransformTM.toGeo(this, xp);
 
-    public GridPoint toSurveyFeet() {
-        switch (units) {
-            case Transforms.UNITS_METERS:
-                x *= Transforms.SURVEY_FT_PER_METER;
-                y *= Transforms.SURVEY_FT_PER_METER;
-                break;
-            case Transforms.UNITS_INTERNATIONAL_FT:
-                x *= (Transforms.UNITS_SURVEY_FT / Transforms.INTERNATIONAL_FT_PER_METER);
-                y *= (Transforms.UNITS_SURVEY_FT / Transforms.INTERNATIONAL_FT_PER_METER);
-                break;
+            case Projections.PROJECTION_LC:
+                return TransformLC.toGeo(this, xp);
+
+            default:
+                throw new InvalidParameterException("Bad projection.");
         }
-        units = Transforms.UNITS_SURVEY_FT;
-        return this;
     }
 
     @Override
@@ -156,6 +131,6 @@ public class GridPoint {
 
     @Override
     public String toString() {
-        return "grid x/y/k/theta: " + x + ", " + y + ", " + k + ", " + theta;
+        return "grid x, y, k, theta: " + x + ", " + y + ", " + k + ", " + theta;
     }
 }

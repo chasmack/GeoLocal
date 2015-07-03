@@ -1,6 +1,5 @@
 package com.asis.chasm.geolocal;
 
-import com.asis.chasm.geolocal.PointsContract.Points;
 import com.asis.chasm.geolocal.PointsContract.Projections;
 
 /**
@@ -15,8 +14,6 @@ public class GeoPoint {
     private double lat;
     private double lon;
 
-
-    public GeoPoint() { }
     public GeoPoint(double lat, double lon) {
         this.lat = lat;
         this.lon = lon;
@@ -38,6 +35,20 @@ public class GeoPoint {
         return lon;
     }
 
+    public GridPoint toGrid(TransformParams xp) {
+        switch (xp.getProjection()) {
+
+            case Projections.PROJECTION_LC:
+                return TransformLC.toGrid(this, xp);
+
+            case Projections.PROJECTION_TM:
+                return TransformTM.toGrid(this, xp);
+
+            default:
+                throw new IllegalArgumentException("Bad projection.");
+        }
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) { return true; }
@@ -45,8 +56,8 @@ public class GeoPoint {
             return false;
         }
         // object is a non-null instance of GeoPoint
-        GeoPoint pt = (GeoPoint) o;
-        if (this.lat == pt.lat && this.lon == pt.lon) { return true; }
+        GeoPoint p = (GeoPoint) o;
+        if (this.lat == p.lat && this.lon == p.lon) { return true; }
         return false;
     }
 
@@ -66,6 +77,6 @@ public class GeoPoint {
 
     @Override
     public String toString() {
-        return "lat/lon: " + lat + ", " + lon;
+        return "geographic lat, lon: " + lat + ", " + lon;
     }
 }

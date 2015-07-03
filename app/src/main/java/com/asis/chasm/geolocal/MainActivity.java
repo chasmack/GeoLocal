@@ -176,8 +176,7 @@ public class MainActivity extends Activity implements
                         values.put(Projections.COLUMN_DESC, parts[1]);
                         switch (parts[2]) {
                             case "SPCS":
-                                values.put(Projections.COLUMN_COORD_SYSTEM,
-                                        Projections.COORD_SYSTEM_SPCS);
+                                values.put(Projections.COLUMN_COORD_SYSTEM, Projections.COORD_SYSTEM_SPCS);
                                 break;
                             case "UTM":
                                 values.put(Projections.COLUMN_COORD_SYSTEM, Projections.COORD_SYSTEM_UTM);

@@ -37,7 +37,6 @@ public final class PointsContract {
         public static final String COLUMN_NAME = "name";
         public static final String COLUMN_DESC = "desc";
         public static final String COLUMN_TYPE = "type";
-        public static final String COLUMN_UNITS = "units";
         public static final String COLUMN_X = "x";
         public static final String COLUMN_Y = "y";
         public static final String COLUMN_LAT = "lat";
@@ -46,14 +45,13 @@ public final class PointsContract {
         public static final int INDEX_NAME = 1;
         public static final int INDEX_DESC = 2;
         public static final int INDEX_TYPE = 3;
-        public static final int INDEX_UNITS = 4;
-        public static final int INDEX_X = 5;
-        public static final int INDEX_Y = 6;
-        public static final int INDEX_LAT = 7;
-        public static final int INDEX_LON = 8;
+        public static final int INDEX_X = 4;
+        public static final int INDEX_Y = 5;
+        public static final int INDEX_LAT = 6;
+        public static final int INDEX_LON = 7;
 
         public static final String[] PROJECTION = { _ID,
-                COLUMN_NAME, COLUMN_DESC, COLUMN_TYPE, COLUMN_UNITS,
+                COLUMN_NAME, COLUMN_DESC, COLUMN_TYPE,
                 COLUMN_X, COLUMN_Y, COLUMN_LAT, COLUMN_LON
         };
 
@@ -122,7 +120,6 @@ public final class PointsContract {
         public static final String COLUMN_REF_LON = "ref_lon";
         public static final String COLUMN_ROTATE = "rot";
         public static final String COLUMN_SCALE = "scale";
-        public static final String COLUMN_UNITS = "units";
         public static final String COLUMN_CODE = "code";
         public static final String COLUMN_DESC = "desc";
         public static final String COLUMN_COORD_SYSTEM = "system";
