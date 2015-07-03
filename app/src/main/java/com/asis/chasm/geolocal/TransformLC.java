@@ -43,62 +43,78 @@ public class TransformLC {
     private static double t2;
     private static double t0;
     private static double n;
-    private static double  F;
+    private static double F;
     private static double rho0;
 
     private TransformLC() { }
 
-    public static GeoPoint toGeo(GridPoint grid, TransformParams params) {
+    public static GeoPoint toGeo(GridPoint grid, TransformParams xp) {
 
-        // Initialize the zone constants if necessary.
-        initTransform(params);
+        // Check that the zone constants are initialized.
+        initTransform(xp);
 
-        // Calculate the Longitude.
+        // Subtract the false northing/easting.
         GridPoint p = new GridPoint(grid).toMeters();
         double x = p.getX() - X0;
         double y = p.getY() - Y0;
 
-        double rho = Math.sqrt(Math.pow(x, 2.0) + Math.pow(rho0 - y, 2.0));
-        double theta = Math.atan2(x, rho0 - y);
-        double t = Math.pow(rho / (A * F), 1.0 / n);
-        double lon = theta / n + M0;
+        // Calculate the Longitude.
+        double lon = Math.atan2(x, rho0 - y) / n + M0;
 
         // Estimate the Latitude.
-        double lat0 = PI2 - (2.0 * Math.atan2(t, 1.0));
+        double rho = Math.sqrt(Math.pow(x, 2.0) + Math.pow(rho0 - y, 2.0));
+        double t = Math.pow(rho / (A * F), 1.0 / n);
+        double lat = PI2 - (2.0 * Math.atan2(t, 1.0));
 
         // Substitute the estimate into the iterative calculation
         // that converges on the correct Latitude value.
-        double part1 = (1.0 - E * Math.sin(lat0)) / (1.0 + E * Math.sin(lat0));
-        double lat1 = PI2 - 2.0 * Math.atan2(t * Math.pow(part1, E / 2.0), 1.0);
+        double lat1;
         do {
-            lat0 = lat1 ;
-            part1 = (1.0 - E * Math.sin(lat0)) / (1.0 + E * Math.sin(lat0));
-            lat1 = PI2 - 2.0 * Math.atan2(t * Math.pow(part1, E / 2.0), 1.0);
-        } while (Math.abs (lat1 - lat0) > 2e-9);
+            lat1 = lat ;
+            double es = E * Math.sin(lat1);
+            lat = PI2 - 2.0 * Math.atan2(t * Math.pow((1.0 - es) / (1.0 + es), E / 2.0), 1.0);
+        } while (Math.abs (lat - lat1) > 2e-9);
 
         // Return lat/lon in degrees.
-        return new GeoPoint(Math.toDegrees(lat1), Math.toDegrees(lon));
+        return new GeoPoint(Math.toDegrees(lat), Math.toDegrees(lon));
     }
 
-    public static GridPoint toGrid(double lat, double lon, TransformParams params) {
-        initTransform(params);
+    public static GridPoint toGrid(GeoPoint p, TransformParams xp) {
 
-        return new GridPoint(0.0, 0.0, Transforms.UNITS_METERS).setK(1.0).setTheta(0.0);
+        // Check that the zone constants are initialized.
+        initTransform(xp);
+
+        // Convert the lat/lon to grid coordinates.
+        double lat = Math.toRadians(p.getLat());
+        double lon = Math.toRadians(p.getLon());
+
+        double m = Math.cos(lat) / Math.sqrt(1 - Math.pow(E * Math.sin(lat), 2));
+        double t = Math.tan(PI4 - lat / 2.0)
+                / Math.pow((1.0 - E * Math.sin(lat)) / (1.0 + E * Math.sin(lat)), E / 2.0);
+        double rho = A * F * Math.pow(t, n);
+        double theta = n * (lon - M0);
+        double k = (rho * n) / (A * m) ;
+        double x = rho * Math.sin(theta) + X0 ;
+        double y = rho0 - rho * Math.cos(theta) + Y0 ;
+
+        return new GridPoint(x, y, Transforms.UNITS_METERS)
+                .setTheta(Math.toDegrees(theta))
+                .setK(k);
     }
 
-    private static void initTransform(TransformParams params) {
+    private static void initTransform(TransformParams xp) {
 
         // Check if zone constants need to be initialized.
-        if (sParams != null && sParams.equals(params)) return;
-        sParams = params;
+        if (sParams != null && sParams.equals(xp)) return;
+        sParams = xp;
 
         // Get the defining coordinate system constants for the zone
-        P1 = Math.toRadians(params.getP1());
-        P2 = Math.toRadians(params.getP2());
-        P0 = Math.toRadians(params.getP0());
-        M0 = Math.toRadians(params.getM0());
-        Y0 = params.getY0();
-        X0 = params.getX0();
+        P1 = Math.toRadians(xp.getP1());
+        P2 = Math.toRadians(xp.getP2());
+        P0 = Math.toRadians(xp.getP0());
+        M0 = Math.toRadians(xp.getM0());
+        Y0 = xp.getY0();
+        X0 = xp.getX0();
 
         // Calculate the derived coordinate system constants.
         m1 = Math.cos(P1) / Math.sqrt(1.0 - Math.pow(E * Math.sin(P1), 2.0));
