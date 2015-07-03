@@ -9,20 +9,20 @@ package com.asis.chasm.geolocal;
  * to geographic coordinates.
  */
 
-public class TransformTransverseMercator {
+public class TransformTM {
 
     private static TransformParams sParams;
 
-    private TransformTransverseMercator() { }
+    private TransformTM() { }
 
-    public static void toGeographic(Point pt, TransformParams params) {
+    public static GeoPoint toGeo(GridPoint pt, TransformParams params) {
         initTransform(params);
-        pt.setLatLon(0.0, 0.0);
+       return new GeoPoint(0.0, 0.0);
     }
 
-    public static void toLocal(Point pt, TransformParams params) {
+    public static GridPoint toLocal(GeoPoint pt, TransformParams params) {
         initTransform(params);
-        pt.setXY(0.0, 0.0);
+        return new GridPoint(0.0, 0.0).setK(1.0).setTheta(0.0);
     }
 
     private static void initTransform(TransformParams params) {

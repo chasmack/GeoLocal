@@ -112,12 +112,15 @@ public class PointsManagerFragment extends Fragment implements
                 .build();
         Cursor c = getActivity().getContentResolver().query(uri, null, null, null, null);
         if (c != null && c.moveToFirst()) {
-
-            Log.d(TAG, "point: " + c.getString(Points.INDEX_NAME)
-                    + " - " + c.getString(Points.INDEX_DESC));
+            TransformParams params = new TransformParams(getActivity(), "0401");
+            LocalPoint local = new LocalPoint(c.getDouble(Points.INDEX_X), c.getDouble(Points.INDEX_Y));
+            GridPoint grid = new GridPoint(local, params);
+            GeoPoint geo = TransformLC.toGeo(grid, params);
+            Log.d(TAG, "point " + c.getString(Points.INDEX_NAME) + " name: " + c.getString(Points.INDEX_DESC));
+            Log.d(TAG, "point " + c.getString(Points.INDEX_NAME) + " " + local.toString());
+            Log.d(TAG, "point " + c.getString(Points.INDEX_NAME) + " " + grid.toString());
+            Log.d(TAG, "point " + c.getString(Points.INDEX_NAME) + " " + geo.toString());
         }
-        
-        TransformParams params = new TransformParams(getActivity());
     }
 
     // Activity result codes

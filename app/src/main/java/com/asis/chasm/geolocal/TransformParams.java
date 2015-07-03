@@ -19,8 +19,9 @@ public class TransformParams {
     // All transform and grid calculations are in meters.
     private int units;
 
-    // Translation from local reference point to grid reference in meters.
-    private double dx, dy;
+    // Local (base) and grid reference points.
+    private double baseX, baseY;
+    private double gridX, gridY;
 
     // Rotation about reference point from local basis to grid in decimal degrees.
     // A negative value rotates right (clockwise) from local to grid.
@@ -44,18 +45,18 @@ public class TransformParams {
     // Transverse mercator central scale factor (1 - 1/SF)
     private double k0;
 
-    public TransformParams(Context appContext) {
+    public TransformParams(Context appContext, String code) {
 
         // TODO: Hook up units.
         units = Projections.UNITS_METERS;
 
         // TODO: Hook up local-grid transform.
-        dx = dy = 0.0;
-        rotate = 0.0;
+        baseX = 5000.00;
+        baseY = 10000.00;
+        gridX = 6069017.11;
+        gridY = 2118671.75;
+        rotate = -0.064167;
         scale = 1.0;
-
-        // TODO: Hook up projection.
-        final String code = "0401";
 
         // Initialize new transform parameters from the Transform content provider.
         Cursor c = appContext.getContentResolver().query(
@@ -83,10 +84,12 @@ public class TransformParams {
 
     public void setLocalTransform(
             int units,
-            double dx, double dy,
+            double baseX, double baseY,
+            double gridX, double gridY,
             double rotate, double scale) {
         this.units = units;
-        this.dx = dx; this.dy = dy;
+        this.baseX = baseX; this.baseY = baseY;
+        this.gridX = gridX; this.gridY = gridY;
         this.rotate = rotate;
         this.scale = scale;
     }
@@ -114,8 +117,10 @@ public class TransformParams {
     }
 
     public int getUnits(){ return units; }
-    public double getDx(){ return dx; }
-    public double getDy(){ return dy; }
+    public double getBaseX(){ return baseX; }
+    public double getBaseY(){ return baseY; }
+    public double getGridX(){ return gridX; }
+    public double getGridY(){ return gridY; }
     public double getRotate(){ return rotate; }
     public double getScale(){ return scale; }
     public int getProjection(){ return projection; }
@@ -136,7 +141,8 @@ public class TransformParams {
         // object is a non-null instance of TransformParams
         TransformParams params = (TransformParams) o;
         if (units == params.units
-                && dx == params.dx && dy == params.dy
+                && baseX == params.baseX && baseY == params.baseY
+                && gridX == params.gridX && gridY == params.gridY
                 && rotate == params.rotate
                 && scale == params.scale
                 && projection == params.projection
@@ -157,7 +163,10 @@ public class TransformParams {
         
         int hash = 7;
         hash = 31 * hash + units;
-        bits = Double.doubleToLongBits(dx) ^ Double.doubleToLongBits(dy);
+        bits = Double.doubleToLongBits(baseX) ^ Double.doubleToLongBits(baseY);
+        vcode = (int)(bits ^ (bits >> 32));
+        hash = 31 * hash + vcode;
+        bits = Double.doubleToLongBits(gridX) ^ Double.doubleToLongBits(gridY);
         vcode = (int)(bits ^ (bits >> 32));
         hash = 31 * hash + vcode;
         bits = Double.doubleToLongBits(rotate);
