@@ -190,7 +190,7 @@ public class PointsListFragment extends ListFragment
     static class PointsCursorAdapter extends CursorAdapter {
 
         private static final int DECIMAL_PLACES_GEOGRAPHIC = 6;
-        private static final int DECIMAL_PLACES_LOCAL = 3;
+        private static final int DECIMAL_PLACES_LOCAL = 2;
 
         private String formatLocal;
         private String formatGeographic;
@@ -233,15 +233,15 @@ public class PointsListFragment extends ListFragment
             if (showGeographic) {
                 v = (TextView) view.findViewById(R.id.coords);
                 v.setText(String.format(formatGeographic,
-                        cursor.getFloat(Points.INDEX_LAT),
-                        cursor.getFloat(Points.INDEX_LON)));
+                        cursor.getDouble(Points.INDEX_LAT),
+                        cursor.getDouble(Points.INDEX_LON)));
                 v = (TextView) view.findViewById(R.id.coord_type);
                 v.setText("Lat/Lon:");
             } else {
                 v = (TextView) view.findViewById(R.id.coords);
                 v.setText(String.format(formatLocal,
-                        cursor.getFloat(Points.INDEX_Y),
-                        cursor.getFloat(Points.INDEX_X)));
+                        cursor.getDouble(Points.INDEX_Y),
+                        cursor.getDouble(Points.INDEX_X)));
                 v = (TextView) view.findViewById(R.id.coord_type);
                 v.setText("N/E:");
             }

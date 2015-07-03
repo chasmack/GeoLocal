@@ -32,6 +32,27 @@ public class LocalPoint {
         this.units = params.getUnits();
     }
 
+    public GridPoint toGrid(TransformParams xp){
+        double x = (this.x - xp.getBaseX()) * xp.getScale();
+        double y = (this.y - xp.getBaseY()) * xp.getScale();
+        double rot = Math.toRadians(xp.getRotate());
+        GridPoint grid = new GridPoint(
+                x * Math.cos(rot) - y * Math.sin(rot) + xp.getGridX(),
+                x * Math.sin(rot) + y * Math.cos(rot) + xp.getGridY(),
+                this.units);
+        return grid;
+    }
+
+    public GeoPoint toGeo(TransformParams xp) {
+        double x = (this.x - xp.getBaseX()) * xp.getScale();
+        double y = (this.y - xp.getBaseY()) * xp.getScale();
+        double rot = Math.toRadians(xp.getRotate());
+        return TransformLC.toGeo(new GridPoint(
+            x * Math.cos(rot) - y * Math.sin(rot) + xp.getGridX(),
+            x * Math.sin(rot) + y * Math.cos(rot) + xp.getGridY(),
+            this.units), xp);
+    }
+
     public LocalPoint setX(double x) {
         this.x = x;
         return this;

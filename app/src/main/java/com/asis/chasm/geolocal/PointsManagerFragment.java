@@ -113,29 +113,22 @@ public class PointsManagerFragment extends Fragment implements
                 .buildUpon()
                 .appendPath(Long.toString(id))
                 .build();
-        uri = Uri.parse(Points.CONTENT_URI);
         Cursor c = getActivity().getContentResolver().query(uri, null, null, null, null);
-        TransformParams params = new TransformParams(getActivity(), "0401");
+        TransformParams xp = new TransformParams(getActivity(), "0401");
 
-        c.moveToFirst();
-        int cnt = 0;
-        do {
+        if (c != null && c.moveToFirst()) {
             LocalPoint local = new LocalPoint(
                     c.getDouble(Points.INDEX_X),
                     c.getDouble(Points.INDEX_Y),
                     c.getInt(Points.INDEX_UNITS));
-            GridPoint grid = new GridPoint(local, params);
-            GeoPoint geo = TransformLC.toGeo(grid, params);
-            cnt++;
+            GridPoint grid = local.toGrid(xp);
+            GeoPoint geo = grid.toGeo(xp);
 
-            // Log.d(TAG, "point " + c.getString(Points.INDEX_NAME) + " name: " + c.getString(Points.INDEX_DESC));
-            // Log.d(TAG, "point " + c.getString(Points.INDEX_NAME) + " " + local.toString());
-            // Log.d(TAG, "point " + c.getString(Points.INDEX_NAME) + " " + grid.toString());
-            // Log.d(TAG, "point " + c.getString(Points.INDEX_NAME) + " " + geo.toString());
-
-        } while (c.moveToNext());
-
-        Log.d(TAG, "Geographic points calculated: " + cnt);
+            Log.d(TAG, "point " + c.getString(Points.INDEX_NAME) + " desc: " + c.getString(Points.INDEX_DESC));
+            Log.d(TAG, "point " + c.getString(Points.INDEX_NAME) + " " + local.toString());
+            Log.d(TAG, "point " + c.getString(Points.INDEX_NAME) + " " + grid.toString());
+            Log.d(TAG, "point " + c.getString(Points.INDEX_NAME) + " " + geo.toString());
+        }
     }
 
     // Activity result codes
@@ -199,7 +192,7 @@ public class PointsManagerFragment extends Fragment implements
                 String line;
                 String[] parts;
 
-                TransformParams params = new TransformParams(getActivity(), "0401");
+                TransformParams xp = new TransformParams(getActivity(), "0401");
                 while ((line = reader.readLine()) != null) {
                     // Ignore blank lines and comment lines which start with #
                     if (line.length() == 0 || line.startsWith("#")) {
@@ -215,7 +208,7 @@ public class PointsManagerFragment extends Fragment implements
                             Double.parseDouble(parts[2]),
                             Double.parseDouble(parts[1]),
                             Points.UNITS_SURVEY_FT);
-                    GeoPoint geo = TransformLC.toGeo(new GridPoint(local, params), params);
+                    GeoPoint geo = local.toGeo(xp);
 
                     ContentValues values = new ContentValues();
 

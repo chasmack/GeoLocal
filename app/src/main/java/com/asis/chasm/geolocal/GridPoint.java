@@ -86,6 +86,10 @@ public class GridPoint {
         return units;
     }
 
+    public GeoPoint toGeo(TransformParams xp) {
+        return TransformLC.toGeo(this, xp);
+    }
+
     public GridPoint toMeters() {
         switch (units) {
             case Transforms.UNITS_SURVEY_FT:
