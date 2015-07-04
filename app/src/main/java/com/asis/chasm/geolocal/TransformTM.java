@@ -38,7 +38,7 @@ public class TransformTM {
 
     private static double u0, u2, u4, u6, u8;
     private static double v0, v2, v4, v6, v8;
-    private static double s0;
+    private static double S0;
 
     private static TransformParams sParams;
 
@@ -53,7 +53,7 @@ public class TransformTM {
         double x = p.getX();
         double y = p.getY();
 
-        double omega = (y - Y0 + s0) / (K0 * r);
+        double omega = (y - Y0 + S0) / (K0 * r);
         double sino = Math.sin(omega);
         double coso = Math.cos(omega);
         double coso2 = coso * coso;
@@ -68,7 +68,7 @@ public class TransformTM {
         double tanf2 = tanf * tanf;
         double tanf4 = tanf2 * tanf2;
         double tanf6 = tanf4 * tanf2;
-        double etf2 = e12 + cosf2;
+        double etf2 = e12 * cosf2;
         double etf4 = etf2 * etf2;
 
         double Q = (x - X0) / (K0 * a / Math.sqrt(1 - e2 * sinf2));
@@ -84,7 +84,7 @@ public class TransformTM {
         double b5 = (5 + 28 * tanf2 + 24 * tanf4 + etf2 * (6 + 8 * tanf2)) / 120;
         double b7 = (61 + 662 * tanf2 + 1320 * tanf4 + 720 * tanf6) / -5040;
 
-        double lon = Q * (1 + Q2 * (b3 + Q2 * (b5 + b7 * Q2)));
+        double lon = M0 + Q * (1 + Q2 * (b3 + Q2 * (b5 + b7 * Q2))) / cosf;
 
         return new GeoPoint(Math.toDegrees(lat), Math.toDegrees(lon));
     }
@@ -92,7 +92,7 @@ public class TransformTM {
     /**
      * Forward calculations of grid coordinates (northing/easting = y/x),
      * convergence angle (theta) and grid scale factor (k) from geographic
-     *coordinates (lat/lon).  Grid coordinates are in meters.
+     * coordinates (lat/lon).  Grid coordinates are in meters.
     */
     public static GridPoint toGrid(GeoPoint p, TransformParams xp) {
 
@@ -110,20 +110,20 @@ public class TransformTM {
         double cosp = Math.cos(lat);
         double cosp2 = cosp * cosp;
 
-        double s = K0 * (lat + sinp * cosp * (u0 + cosp2 * (u2 + cosp2 * (u4 + u6 * cosp2)))) * r;
+        double S = K0 * (lat + sinp * cosp * (u0 + cosp2 * (u2 + cosp2 * (u4 + u6 * cosp2)))) * r;
         double R = K0 * a / Math.sqrt(1 - e2 * sinp2);
 
         double tanp = Math.tan(lat);
         double tanp2 = tanp * tanp;
         double tanp4 = tanp2 * tanp2;
         double tanp6 = tanp4 * tanp2;
-        double et2 = e12 + cosp2;
+        double et2 = e12 * cosp2;
         double et4 = et2 * et2;
 
         double a2 = R * tanp / 2;
         double a4 = (5 - tanp2 + et2 * (9 + 4 * et2)) / 12;
-        double a6 = (61 - 58 * tanp2 + tanp2 * tanp2 + et2 * (270 - 330 * tanp2)) / 360;
-        double y  = s - s0 + Y0 + a2 * L2 * (1 + L2 * (a4 + a6 * L2));
+        double a6 = (61 - 58 * tanp2 + tanp4 + et2 * (270 - 330 * tanp2)) / 360;
+        double y  = S - S0 + Y0 + a2 * L2 * (1 + L2 * (a4 + a6 * L2));
 
         double a1 = -1 * R;
         double a3 = (1 - tanp2 + et2) / 6;
@@ -187,19 +187,6 @@ public class TransformTM {
         double sinp = Math.sin(P0);
         double cosp = Math.cos(P0);
         double cosp2 = cosp * cosp;
-        s0 = K0 * (P0 + sinp * cosp * (u0 + cosp2 * (u2 + cosp2 * (u4 + u6 * cosp2)))) * r;
-
-        Log.d(TAG, "Transform initialized.");
-        Log.d(TAG, " n=" + n);
-        Log.d(TAG, " r=" + r);
-        Log.d(TAG, "u0=" + u0);
-        Log.d(TAG, "u2=" + u2);
-        Log.d(TAG, "u4=" + u4);
-        Log.d(TAG, "u6=" + u6);
-        Log.d(TAG, "v0=" + v0);
-        Log.d(TAG, "v2=" + v2);
-        Log.d(TAG, "v4=" + v4);
-        Log.d(TAG, "v6=" + v6);
-        Log.d(TAG, "s0=" + s0);
+        S0 = K0 * (P0 + sinp * cosp * (u0 + cosp2 * (u2 + cosp2 * (u4 + u6 * cosp2)))) * r;
     }
 }
