@@ -48,6 +48,16 @@ public class PointsListFragment extends ListFragment
     // This is the Adapter being used to display the list's data.
     PointsCursorAdapter mAdapter;
 
+    // Display units factor.
+    // Internal coordinates are metric. The units factor is used
+    // to convert meters to display units set in preferences.
+    private static double mUnitsFactor = 1.0;
+
+    public void setUnitsFactor(double factor) {
+        mUnitsFactor = factor;
+        mAdapter.notifyDataSetChanged();
+    }
+
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
@@ -243,8 +253,8 @@ public class PointsListFragment extends ListFragment
 
                 // TODO: Hook up a display units setting.
                 v.setText(String.format(formatLocal,
-                        cursor.getDouble(Points.INDEX_Y) * Transforms.SURVEY_FT_PER_METER,
-                        cursor.getDouble(Points.INDEX_X) * Transforms.SURVEY_FT_PER_METER));
+                        cursor.getDouble(Points.INDEX_Y) * mUnitsFactor,
+                        cursor.getDouble(Points.INDEX_X) * mUnitsFactor));
                 v = (TextView) view.findViewById(R.id.coord_type);
                 v.setText("N/E:");
             }

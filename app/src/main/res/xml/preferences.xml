@@ -2,13 +2,20 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
     <PreferenceCategory
-        android:title="@string/inline_preferences">
+        android:title="@string/category_main">
 
         <SwitchPreference
-            android:key="checkbox_preference"
-            android:title="@string/title_checkbox_preference"
-            android:summary="@string/summary_checkbox_preference" />
+            android:key="pref_switch"
+            android:title="@string/pref_switch_title"
+            android:defaultValue="true" />
 
     </PreferenceCategory>
+
+    <ListPreference
+        android:key="pref_units"
+        android:title="@string/pref_units_title"
+        android:entries="@array/pref_units_entries"
+        android:entryValues="@array/pref_units_values"
+        android:defaultValue="@string/pref_units_default" />
 
 </PreferenceScreen>

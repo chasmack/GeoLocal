@@ -6,8 +6,10 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -19,9 +21,11 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 import com.asis.chasm.geolocal.PointsContract.Projections;
+import com.asis.chasm.geolocal.PointsContract.Transforms;
 
 public class MainActivity extends Activity implements
-        TransformSettingsFragment.OnFragmentInteractionListener {
+        TransformSettingsFragment.OnFragmentInteractionListener,
+        SharedPreferences.OnSharedPreferenceChangeListener {
 
     // Use for logging and debugging
     private static final String TAG = "MainActivity";
@@ -44,6 +48,9 @@ public class MainActivity extends Activity implements
         if (savedInstanceState != null) {
             return;
         }
+
+       // Set defaults for the shared preferences.
+       PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 
         // Get a fragment manager to add the points manager and points list fragments
         FragmentManager manager = getFragmentManager();
@@ -261,5 +268,25 @@ public class MainActivity extends Activity implements
         val = Integer.parseInt(parts[0]) + Integer.parseInt(parts[1])/60.0;
 
         return neg ? -1.0 * val : val;
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+        switch (key) {
+            case "pref_units":
+                PointsListFragment list =
+                        (PointsListFragment) getFragmentManager().findFragmentByTag(FRAGMENT_POINTS_LIST);
+                switch (prefs.getString(key, "")) {
+                    case "metric":
+                        list.setUnitsFactor(1.0);
+                        break;
+                    case "survey_feet":
+                        list.setUnitsFactor(Transforms.SURVEY_FT_PER_METER);
+                        break;
+                    case "international_feet":
+                        list.setUnitsFactor(Transforms.INTERNATIONAL_FT_PER_METER);
+                        break;
+                }
+        }
     }
 }
