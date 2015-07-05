@@ -4,12 +4,15 @@ import android.app.Activity;
 import android.app.ListFragment;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -23,6 +26,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.Set;
 
 import com.asis.chasm.geolocal.PointsContract.Points;
 import com.asis.chasm.geolocal.PointsContract.Transforms;
@@ -32,10 +37,51 @@ import com.asis.chasm.geolocal.PointsContract.Transforms;
  * A simple {@link Fragment} subclass.
  */
 public class PointsManagerFragment extends Fragment implements
-        PointsListFragment.OnListFragmentInteractionListener {
+        PointsListFragment.OnListFragmentInteractionListener,
+        SharedPreferences.OnSharedPreferenceChangeListener {
 
-    // Use for logging and debugging
-    private static final String TAG = "PointsManagerFragment";
+    private static final String TAG = "ManagerFragment";
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPrefs, String key) {
+        Log.d(TAG, "onSharedPreferenceChanged key: " + key);
+        updateTransformSetting(sharedPrefs, key);
+    }
+
+    private void updateTransformSetting(SharedPreferences sharedPrefs, String key) {
+        Log.d(TAG, "updateTransformSettings key: " + key);
+        switch (key) {
+            case TransformSettingsFragment.PREFERENCE_UNITS_KEY:
+                String value = sharedPrefs.getString(key, "");
+                switch(value) {
+                    case TransformSettingsFragment.PREFERENCE_UNITS_METRIC:
+                        mDisplayUnits = 1.0;
+                        break;
+                    case TransformSettingsFragment.PREFERENCE_UNITS_SURVEY_FEET:
+                        mDisplayUnits = Transforms.SURVEY_FT_PER_METER;
+                        break;
+                    case TransformSettingsFragment.PREFERENCE_UNITS_INTERNATIONAL_FEET:
+                        mDisplayUnits = Transforms.INTERNATIONAL_FT_PER_METER;
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Bad units setting: " + value);
+                }
+        }
+    }
+
+    private double mDisplayUnits = 1.0;
+
+    public double getDisplayUnits() { return mDisplayUnits; };
+
+    private void initTransformSettings() {
+        Log.d(TAG, "initTransformSettings");
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        Map<String,?> prefs = sharedPrefs.getAll();
+        Set<String> keys = prefs.keySet();
+        for (String key : keys) {
+            updateTransformSetting(sharedPrefs, key);
+        }
+    }
 
     public PointsManagerFragment() {
         // Required empty public constructor
@@ -45,6 +91,8 @@ public class PointsManagerFragment extends Fragment implements
     public void onAttach(Activity activity) {
         Log.d(TAG, "onAttach");
         super.onAttach(activity);
+
+        initTransformSettings();
     }
 
     @Override

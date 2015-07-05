@@ -23,9 +23,7 @@ import java.util.ArrayList;
 import com.asis.chasm.geolocal.PointsContract.Projections;
 import com.asis.chasm.geolocal.PointsContract.Transforms;
 
-public class MainActivity extends Activity implements
-        TransformSettingsFragment.OnFragmentInteractionListener,
-        SharedPreferences.OnSharedPreferenceChangeListener {
+public class MainActivity extends Activity {
 
     // Use for logging and debugging
     private static final String TAG = "MainActivity";
@@ -35,7 +33,7 @@ public class MainActivity extends Activity implements
     public static final String FRAGMENT_POINTS_MANAGER = "manager";
     public static final String FRAGMENT_SETTINGS = "settings";
 
-   @Override
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -126,11 +124,6 @@ public class MainActivity extends Activity implements
     public boolean onNavigateUp() {
         getFragmentManager().popBackStack();
         return true;
-    }
-
-    // Callback from TransformSettingsFragment
-    public void onTransformSettingsFragmentInteraction(int value) {
-        Toast.makeText(this, "List item: " + value, Toast.LENGTH_SHORT).show();
     }
 
     private void loadProjections(String filename) {
@@ -270,23 +263,4 @@ public class MainActivity extends Activity implements
         return neg ? -1.0 * val : val;
     }
 
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-        switch (key) {
-            case "pref_units":
-                PointsListFragment list =
-                        (PointsListFragment) getFragmentManager().findFragmentByTag(FRAGMENT_POINTS_LIST);
-                switch (prefs.getString(key, "")) {
-                    case "metric":
-                        list.setUnitsFactor(1.0);
-                        break;
-                    case "survey_feet":
-                        list.setUnitsFactor(Transforms.SURVEY_FT_PER_METER);
-                        break;
-                    case "international_feet":
-                        list.setUnitsFactor(Transforms.INTERNATIONAL_FT_PER_METER);
-                        break;
-                }
-        }
-    }
 }

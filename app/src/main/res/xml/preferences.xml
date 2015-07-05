@@ -5,14 +5,14 @@
         android:title="@string/category_main">
 
         <SwitchPreference
-            android:key="pref_switch"
+            android:key="@string/pref_switch_key"
             android:title="@string/pref_switch_title"
             android:defaultValue="true" />
 
     </PreferenceCategory>
 
     <ListPreference
-        android:key="pref_units"
+        android:key="@string/pref_units_key"
         android:title="@string/pref_units_title"
         android:entries="@array/pref_units_entries"
         android:entryValues="@array/pref_units_values"

@@ -2,48 +2,75 @@ package com.asis.chasm.geolocal;
 
 import android.app.Activity;
 import android.content.SharedPreferences;
-import android.net.Uri;
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
+import android.preference.PreferenceGroup;
+import android.preference.PreferenceManager;
 import android.preference.SwitchPreference;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.asis.chasm.geolocal.PointsContract.Transforms;
 
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link TransformSettingsFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
- */
+import java.util.prefs.Preferences;
 
 public class TransformSettingsFragment extends PreferenceFragment
-        implements SharedPreferences.OnSharedPreferenceChangeListener {
+        implements OnSharedPreferenceChangeListener {
 
-    private OnFragmentInteractionListener mListener;
+    private static final String TAG = "SettingsFragment";
+
+    // String constants for the preference.
+    public static final String PREFERENCE_SWITCH_KEY = "pref_switch";
+    public static final String PREFERENCE_UNITS_KEY = "pref_units";
+
+    public static final String PREFERENCE_UNITS_METRIC = "metric";
+    public static final String PREFERENCE_UNITS_SURVEY_FEET = "survey_feet";
+    public static final String PREFERENCE_UNITS_INTERNATIONAL_FEET = "international_feet";
 
     public TransformSettingsFragment() {
         // Required empty public constructor
     }
 
     @Override
-    public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-        switch (key) {
+    public void onSharedPreferenceChanged(SharedPreferences sharedPrefs, String key) {
+        Log.d(TAG, "onSharedPreferenceChanged key: " + key);
+        updatePreferenceSummary(findPreference(key));
+    }
 
-            case "pref_switch":
-                getPreferenceScreen().findPreference(key)
-                        .setSummary(prefs.getBoolean(key, false) ?
-                                R.string.pref_switch_summary_true :
-                                R.string.pref_switch_summary_false );
+    private void initPreferenceSummary(Preference pref) {
+        if (pref instanceof PreferenceGroup) {
+            PreferenceGroup prefGrp = (PreferenceGroup) pref;
+            for (int i = 0; i < prefGrp.getPreferenceCount(); i++) {
+                initPreferenceSummary(prefGrp.getPreference(i));
+            }
+        } else {
+            updatePreferenceSummary(pref);
+        }
+    }
+
+    /*
+    * Update the preference summary on a per-preference basis.
+    */
+    private void updatePreferenceSummary(Preference pref) {
+        Log.d(TAG, "updatePreferenceSummary key: " + pref.getKey());
+
+        switch (pref.getKey()) {
+
+            case PREFERENCE_SWITCH_KEY:
+                pref.setSummary(((SwitchPreference) pref).isChecked() ?
+                        R.string.pref_switch_summary_checked :
+                        R.string.pref_switch_summary_not_checked);
                 break;
 
-            case "pref_units":
-                Preference pref = findPreference(key);
-                pref.setSummary(((ListPreference)pref).getEntry());
+            case PREFERENCE_UNITS_KEY:
+                ListPreference listPref = (ListPreference) pref;
+                pref.setSummary(listPref.getEntry());
                 break;
         }
     }
@@ -51,19 +78,13 @@ public class TransformSettingsFragment extends PreferenceFragment
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        try {
-            mListener = (OnFragmentInteractionListener) activity;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString()
-                    + " must implement OnFragmentInteractionListener");
-        }
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Load the preferences from an XML resource
+        // Load the preferences from an XML resource.
         addPreferencesFromResource(R.xml.preferences);
     }
 
@@ -77,49 +98,32 @@ public class TransformSettingsFragment extends PreferenceFragment
     public void onResume() {
         super.onResume();
 
-        // Set preference summaries based on current values.
-        SharedPreferences prefs = getPreferenceScreen().getSharedPreferences();
+        // Initialize preference summaries and register the change listener.
+        initPreferenceSummary(getPreferenceScreen());
 
-        SwitchPreference switchPref = (SwitchPreference) getPreferenceScreen().findPreference("pref_switch");
-        if (switchPref.isChecked()) {
-            switchPref.setSummary(getString(R.string.pref_switch_summary_true));
-        } else {
-            switchPref.setSummary(getString(R.string.pref_switch_summary_false));
-        }
+        SharedPreferences sharedPrefs = getPreferenceScreen().getSharedPreferences();
 
-        ListPreference unitsPref = (ListPreference) getPreferenceScreen().findPreference("pref_units");
-        unitsPref.setSummary(unitsPref.getEntry());
-
-        prefs.registerOnSharedPreferenceChangeListener(this);
-        prefs.registerOnSharedPreferenceChangeListener((MainActivity) getActivity());
+        sharedPrefs.registerOnSharedPreferenceChangeListener(this);
+        sharedPrefs.registerOnSharedPreferenceChangeListener(
+                (PointsManagerFragment) getFragmentManager()
+                        .findFragmentByTag(MainActivity.FRAGMENT_POINTS_MANAGER));
     }
 
     @Override
-        public void onPause () {
-            super.onPause();
-        SharedPreferences prefs = getPreferenceScreen().getSharedPreferences();
-        prefs.unregisterOnSharedPreferenceChangeListener(this);
-        prefs.unregisterOnSharedPreferenceChangeListener((MainActivity) getActivity());
+    public void onPause () {
+        super.onPause();
+
+        SharedPreferences sharedPrefs = getPreferenceScreen().getSharedPreferences();
+
+        sharedPrefs.unregisterOnSharedPreferenceChangeListener(this);
+        sharedPrefs.unregisterOnSharedPreferenceChangeListener(
+                (PointsManagerFragment) getFragmentManager()
+                        .findFragmentByTag(MainActivity.FRAGMENT_POINTS_MANAGER));
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
-        mListener = null;
-    }
-
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p/>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
-    public interface OnFragmentInteractionListener {
-        public void onTransformSettingsFragmentInteraction(int value);
     }
 
 }
