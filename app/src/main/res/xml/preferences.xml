@@ -4,18 +4,27 @@
     <PreferenceCategory
         android:title="@string/category_main">
 
+        <ListPreference
+            android:key="@string/pref_units_key"
+            android:title="@string/pref_units_title"
+            android:entries="@array/pref_units_entries"
+            android:entryValues="@array/pref_units_values"
+            android:defaultValue="@string/pref_units_default" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/category_local">
+
+        <com.asis.chasm.geolocal.CoordPairPreference
+            android:key="@string/perf_local_base_key"
+            android:title="@string/perf_local_base_title"
+            android:defaultValue="@string/perf_local_base_default" />
+
         <SwitchPreference
             android:key="@string/pref_switch_key"
             android:title="@string/pref_switch_title"
             android:defaultValue="true" />
 
     </PreferenceCategory>
-
-    <ListPreference
-        android:key="@string/pref_units_key"
-        android:title="@string/pref_units_title"
-        android:entries="@array/pref_units_entries"
-        android:entryValues="@array/pref_units_values"
-        android:defaultValue="@string/pref_units_default" />
-
 </PreferenceScreen>

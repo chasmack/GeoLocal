@@ -13,12 +13,7 @@
     <string name="action_settings">Settings</string>
 
     <!-- Preference string resources -->
-    <string name="category_main">Transform settings</string>
-
-    <string name="pref_switch_key">pref_switch</string>
-    <string name="pref_switch_title">Switch option</string>
-    <string name="pref_switch_summary_checked">Option is ON.</string>
-    <string name="pref_switch_summary_not_checked">Option is OFF.</string>
+    <string name="category_main">Settings</string>
 
     <string name="pref_units_key">pref_units</string>
     <string name="pref_units_title">Units</string>
@@ -33,5 +28,16 @@
         <item>survey_feet</item>
         <item>international_feet</item>
     </string-array>
+
+    <string name="category_local">Local Basis</string>
+
+    <string name="perf_local_base_key">perf_local_base</string>
+    <string name="perf_local_base_title">Base point - local</string>
+    <string name="perf_local_base_default">0.000, 0.000</string>
+
+    <string name="pref_switch_key">pref_switch</string>
+    <string name="pref_switch_title">Switch option</string>
+    <string name="pref_switch_summary_checked">Option is ON.</string>
+    <string name="pref_switch_summary_not_checked">Option is OFF.</string>
 
 </resources>
