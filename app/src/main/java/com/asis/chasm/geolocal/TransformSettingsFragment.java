@@ -1,28 +1,20 @@
 package com.asis.chasm.geolocal;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
-import android.content.res.TypedArray;
 import android.os.Bundle;
-import android.app.Fragment;
-import android.preference.DialogPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceGroup;
-import android.preference.PreferenceManager;
 import android.preference.SwitchPreference;
-import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.asis.chasm.geolocal.PointsContract.Transforms;
-
-import java.util.prefs.Preferences;
 
 public class TransformSettingsFragment extends PreferenceFragment
         implements OnSharedPreferenceChangeListener {
@@ -32,6 +24,7 @@ public class TransformSettingsFragment extends PreferenceFragment
     // String constants for the preference.
     public static final String PREFERENCE_SWITCH_KEY = "pref_switch";
     public static final String PREFERENCE_UNITS_KEY = "pref_units";
+    public static final String PREFERENCE_LOCAL_BASE_KEY = "pref_local_base";
 
     public static final String PREFERENCE_UNITS_METRIC = "metric";
     public static final String PREFERENCE_UNITS_SURVEY_FEET = "survey_feet";
@@ -66,15 +59,20 @@ public class TransformSettingsFragment extends PreferenceFragment
 
         switch (pref.getKey()) {
 
+            case PREFERENCE_UNITS_KEY:
+                ListPreference listPref = (ListPreference) pref;
+                listPref.setSummary(listPref.getEntry());
+                break;
+
+            case PREFERENCE_LOCAL_BASE_KEY:
+                CoordPairPreference coordPref = (CoordPairPreference) pref;
+                coordPref.setSummary("N/E: " + coordPref.getValue());
+                break;
+
             case PREFERENCE_SWITCH_KEY:
                 pref.setSummary(((SwitchPreference) pref).isChecked() ?
                         R.string.pref_switch_summary_checked :
                         R.string.pref_switch_summary_not_checked);
-                break;
-
-            case PREFERENCE_UNITS_KEY:
-                ListPreference listPref = (ListPreference) pref;
-                pref.setSummary(listPref.getEntry());
                 break;
         }
     }
@@ -129,5 +127,4 @@ public class TransformSettingsFragment extends PreferenceFragment
     public void onDetach() {
         super.onDetach();
     }
-
 }
