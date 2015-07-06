@@ -2,7 +2,7 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
     <PreferenceCategory
-        android:title="@string/category_main">
+        android:title="@string/category_local">
 
         <ListPreference
             android:key="@string/pref_units_key"
@@ -11,15 +11,16 @@
             android:entryValues="@array/pref_units_values"
             android:defaultValue="@string/pref_units_default" />
 
-    </PreferenceCategory>
-
-    <PreferenceCategory
-        android:title="@string/category_local">
-
         <com.asis.chasm.geolocal.CoordPairPreference
             android:key="@string/perf_local_base_key"
             android:title="@string/perf_local_base_title"
-            android:defaultValue="@string/perf_local_base_default" />
+            android:dialogTitle="@string/perf_local_base_dialog_title"
+            android:defaultValue="@string/pref_local_base_default" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/category_geographic">
 
         <SwitchPreference
             android:key="@string/pref_switch_key"
@@ -27,4 +28,5 @@
             android:defaultValue="true" />
 
     </PreferenceCategory>
+
 </PreferenceScreen>
