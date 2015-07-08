@@ -14,18 +14,10 @@ public final class PointsContract {
     public static final String AUTHORITY = "com.asis.chasm.provider.Points";
     public static final String BASE_URI = "content://" + AUTHORITY + "/";
 
-    public static final int UNITS_METERS = 1;
-    public static final int UNITS_SURVEY_FT = 2;
-    public static final int UNITS_INTERNATIONAL_FT = 3;
-
     public static abstract class Points implements BaseColumns {
 
         public static final int TYPE_LOCAL = 1;
         public static final int TYPE_GEOGRAPHIC = 2;
-
-        public static final int UNITS_METERS = PointsContract.UNITS_METERS;
-        public static final int UNITS_SURVEY_FT = PointsContract.UNITS_SURVEY_FT;
-        public static final int UNITS_INTERNATIONAL_FT = PointsContract.UNITS_INTERNATIONAL_FT;
 
         public static final String CONTENT_PATH = "points";
         public static final String CONTENT_URI = BASE_URI + CONTENT_PATH;
@@ -132,11 +124,5 @@ public final class PointsContract {
         public static final String COLUMN_P2 = "p2";
         public static final String COLUMN_K0 = "k0";
 
-        public static final int UNITS_METERS = PointsContract.UNITS_METERS;
-        public static final int UNITS_SURVEY_FT = PointsContract.UNITS_SURVEY_FT;
-        public static final int UNITS_INTERNATIONAL_FT = PointsContract.UNITS_INTERNATIONAL_FT;
-
-        public static final double SURVEY_FT_PER_METER = 3937.0 / 1200.0;
-        public static final double INTERNATIONAL_FT_PER_METER = 1.0 / (0.0254 * 12);
     }
 }

@@ -2,6 +2,7 @@ package com.asis.chasm.geolocal;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.app.FragmentManager;
 import android.app.LoaderManager;
 import android.content.Context;
 import android.content.CursorLoader;
@@ -39,32 +40,17 @@ import com.asis.chasm.geolocal.PointsContract.Transforms;
 public class PointsListFragment extends ListFragment
         implements LoaderManager.LoaderCallbacks<Cursor> {
 
-    // Use for logging and debugging
     private static final String TAG = "ListFragment";
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p/>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
-    public interface OnListFragmentInteractionListener {
-        public void onListFragmentInteraction(long position);
-    }
-
-    // Hook back into main activity.
-    private OnListFragmentInteractionListener mListener;
+    // Points type to display in points list.
+    private static final int POINTS_TYPE_LOCAL = 1;
+    private static final int POINTS_TYPE_GEOGRAPHIC = 2;
 
     // This is the Adapter being used to display the list's data.
-    PointsCursorAdapter mAdapter;
+    private PointsCursorAdapter mAdapter;
 
-    // Display units factor. Internal coordinates are metric.
-    // The units factor is used to convert meters to display units.
-    private static double mDisplayUnitsFactor = 1.0;
+    // A hook back into main activity.
+    private OnListFragmentInteractionListener mListener;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -115,19 +101,23 @@ public class PointsListFragment extends ListFragment
         super.onActivityCreated(savedInstanceState);
         Log.d(TAG, "onActivityCreated");
 
-        // Set onClickListeners for the Local/Grid/Geographic buttons
-        RadioButton radio = (RadioButton) getActivity().findViewById(R.id.radio_local);
-        radio.setChecked(true);
-        radio.setOnClickListener(new OnClickListener() {
+        // Set onClickListeners for the Local/Geographic radio buttons
+        RadioButton local = (RadioButton) getActivity().findViewById(R.id.radio_local);
+        local.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
-                mAdapter.showLocalCoordinates();
+                mAdapter.setCoordinateType(POINTS_TYPE_LOCAL);
             }
         });
-        getActivity().findViewById(R.id.radio_geographic).setOnClickListener(new OnClickListener() {
+
+        RadioButton geo = (RadioButton) getActivity().findViewById(R.id.radio_geographic);
+        geo.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
-                mAdapter.showGeographicCoordinates();
+                mAdapter.setCoordinateType(POINTS_TYPE_GEOGRAPHIC);
             }
         });
+
+        // TODO: initialize radio button from savedInstanceState
+        local.setChecked(true);
 
         // We have a menu item to show in action bar.
         setHasOptionsMenu(true);
@@ -148,10 +138,6 @@ public class PointsListFragment extends ListFragment
     @Override
     public void onResume() {
         super.onResume();
-
-        // Get display units from the points manager.
-        mDisplayUnitsFactor = ((PointsManagerFragment) getFragmentManager()
-                .findFragmentByTag(MainActivity.FRAGMENT_POINTS_MANAGER)).getDisplayUnits();
     }
 
     @Override
@@ -221,65 +207,55 @@ public class PointsListFragment extends ListFragment
     * Custom cursor adapter for points list items
     */
 
-    static class PointsCursorAdapter extends CursorAdapter {
-
-        private static final int DECIMAL_PLACES_GEOGRAPHIC = 6;
-        private static final int DECIMAL_PLACES_LOCAL = 2;
-
-        private String formatLocal;
-        private String formatGeographic;
-
-        private boolean showGeographic = false;
+    private static class PointsCursorAdapter extends CursorAdapter {
 
         private LayoutInflater mInflater;
+        private TransformSettings mSettings;
+        private int mCoordinateType;
 
         public PointsCursorAdapter(Context context, Cursor c, int flags) {
             super(context, c, flags);
-
-            formatLocal = "%." + DECIMAL_PLACES_LOCAL + "f / %." + DECIMAL_PLACES_LOCAL + "f";
-            formatGeographic = "%." + DECIMAL_PLACES_GEOGRAPHIC + "f / %." + DECIMAL_PLACES_GEOGRAPHIC + "f";
-
             mInflater = LayoutInflater.from(context);
+            mSettings = TransformSettings.getSettings();
         }
 
-        public void showLocalCoordinates() {
-            showGeographic = false;
-            notifyDataSetChanged();
+        @Override
+        public void notifyDataSetChanged() {
+            super.notifyDataSetChanged();
         }
 
-        public void showGridCoordinates() {
-            showGeographic = true;
-            notifyDataSetChanged();
-        }
-
-        public void showGeographicCoordinates() {
-            showGeographic = true;
+        private void setCoordinateType(int type) {
+            mCoordinateType = type;
             notifyDataSetChanged();
         }
 
         @Override
         public void bindView(View view, Context context, Cursor cursor) {
-            TextView v;
-            v = (TextView) view.findViewById(R.id.name);
-            v.setText(cursor.getString(Points.INDEX_NAME));
-            v = (TextView) view.findViewById(R.id.desc);
-            v.setText(cursor.getString(Points.INDEX_DESC));
-            if (showGeographic) {
-                v = (TextView) view.findViewById(R.id.coords);
-                v.setText(String.format(formatGeographic,
-                        cursor.getDouble(Points.INDEX_LAT),
-                        cursor.getDouble(Points.INDEX_LON)));
-                v = (TextView) view.findViewById(R.id.coord_type);
-                v.setText("Lat/Lon:");
-            } else {
-                v = (TextView) view.findViewById(R.id.coords);
+            TextView tv;
+            tv = (TextView) view.findViewById(R.id.name);
+            tv.setText(cursor.getString(Points.INDEX_NAME));
+            tv = (TextView) view.findViewById(R.id.desc);
+            tv.setText(cursor.getString(Points.INDEX_DESC));
 
-                // TODO: Hook up a display units setting.
-                v.setText(String.format(formatLocal,
-                        cursor.getDouble(Points.INDEX_Y) * mDisplayUnitsFactor,
-                        cursor.getDouble(Points.INDEX_X) * mDisplayUnitsFactor));
-                v = (TextView) view.findViewById(R.id.coord_type);
-                v.setText("N/E:");
+            switch (mCoordinateType) {
+
+                case POINTS_TYPE_GEOGRAPHIC:
+                    tv = (TextView) view.findViewById(R.id.coord_values);
+                    tv.setText(String.format(mSettings.getGeographicCoordFormat(),
+                            cursor.getDouble(Points.INDEX_LAT),
+                            cursor.getDouble(Points.INDEX_LON)));
+                    tv = (TextView) view.findViewById(R.id.coord_prefix);
+                    tv.setText("lat/lon:");
+                    break;
+
+                case POINTS_TYPE_LOCAL:
+                    tv = (TextView) view.findViewById(R.id.coord_values);
+                    tv.setText(String.format(mSettings.getLocalCoordFormat(),
+                            cursor.getDouble(Points.INDEX_Y) * mSettings.getUnitsFactor(),
+                            cursor.getDouble(Points.INDEX_X) * mSettings.getUnitsFactor()));
+                    tv =(TextView) view.findViewById(R.id.coord_prefix);
+                    tv.setText("N/E:");
+                    break;
             }
         }
 
@@ -300,6 +276,7 @@ public class PointsListFragment extends ListFragment
     * LoaderCallbacks interface implementation
     */
 
+    @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 
         Log.d(TAG, "LoaderManager.LoaderCallbacks<?>.onCreateLoader");
@@ -317,6 +294,7 @@ public class PointsListFragment extends ListFragment
         return loader;
     }
 
+    @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         Log.d(TAG, "LoaderManager.LoaderCallbacks<?>.onLoadFinished");
         // Swap the new cursor in.  (The framework will take care of closing the
@@ -324,11 +302,26 @@ public class PointsListFragment extends ListFragment
         mAdapter.swapCursor(data);
     }
 
+    @Override
     public void onLoaderReset(Loader<Cursor> loader) {
         Log.d(TAG, "LoaderManager.LoaderCallbacks<?>.onLoaderReset");
         // This is called when the last Cursor provided to onLoadFinished()
         // above is about to be closed.  We need to make sure we are no
         // longer using it.
         mAdapter.swapCursor(null);
+    }
+
+    /**
+     * This interface must be implemented by activities that contain this
+     * fragment to allow an interaction in this fragment to be communicated
+     * to the activity and potentially other fragments contained in that
+     * activity.
+     * <p/>
+     * See the Android Training lesson <a href=
+     * "http://developer.android.com/training/basics/fragments/communicating.html"
+     * >Communicating with Other Fragments</a> for more information.
+     */
+    public interface OnListFragmentInteractionListener {
+        public void onListFragmentInteraction(long position);
     }
 }

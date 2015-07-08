@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.ListFragment;
 import android.content.ContentResolver;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -32,56 +31,14 @@ import java.util.Set;
 import com.asis.chasm.geolocal.PointsContract.Points;
 import com.asis.chasm.geolocal.PointsContract.Transforms;
 
-
 /**
  * A simple {@link Fragment} subclass.
  */
 public class PointsManagerFragment extends Fragment implements
-        PointsListFragment.OnListFragmentInteractionListener,
-        SharedPreferences.OnSharedPreferenceChangeListener {
+        PointsListFragment.OnListFragmentInteractionListener {
 
     private static final String TAG = "ManagerFragment";
 
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPrefs, String key) {
-        Log.d(TAG, "onSharedPreferenceChanged key: " + key);
-        updateTransformSetting(sharedPrefs, key);
-    }
-
-    private void updateTransformSetting(SharedPreferences sharedPrefs, String key) {
-        Log.d(TAG, "updateTransformSettings key: " + key);
-        switch (key) {
-            case TransformSettingsFragment.PREFERENCE_UNITS_KEY:
-                String value = sharedPrefs.getString(key, "");
-                switch(value) {
-                    case TransformSettingsFragment.PREFERENCE_UNITS_METRIC:
-                        mDisplayUnits = 1.0;
-                        break;
-                    case TransformSettingsFragment.PREFERENCE_UNITS_SURVEY_FEET:
-                        mDisplayUnits = Transforms.SURVEY_FT_PER_METER;
-                        break;
-                    case TransformSettingsFragment.PREFERENCE_UNITS_INTERNATIONAL_FEET:
-                        mDisplayUnits = Transforms.INTERNATIONAL_FT_PER_METER;
-                        break;
-                    default:
-                        throw new IllegalArgumentException("Bad units setting: " + value);
-                }
-        }
-    }
-
-    private double mDisplayUnits = 1.0;
-
-    public double getDisplayUnits() { return mDisplayUnits; };
-
-    private void initTransformSettings() {
-        Log.d(TAG, "initTransformSettings");
-        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        Map<String,?> prefs = sharedPrefs.getAll();
-        Set<String> keys = prefs.keySet();
-        for (String key : keys) {
-            updateTransformSetting(sharedPrefs, key);
-        }
-    }
 
     public PointsManagerFragment() {
         // Required empty public constructor
@@ -91,8 +48,6 @@ public class PointsManagerFragment extends Fragment implements
     public void onAttach(Activity activity) {
         Log.d(TAG, "onAttach");
         super.onAttach(activity);
-
-        initTransformSettings();
     }
 
     @Override
@@ -155,49 +110,7 @@ public class PointsManagerFragment extends Fragment implements
 
     // Interaction from points list fragment onListItemClick
     public void onListFragmentInteraction(long id) {
-
         Log.d(TAG, "onListFragmentInteraction id: " + id);
-        Uri uri = Uri.parse(Points.CONTENT_URI)
-                .buildUpon()
-                .appendPath(Long.toString(id))
-                .build();
-        Cursor c = getActivity()
-                .getContentResolver()
-                .query(uri, null, null, null, null);
-        c.moveToFirst();
-
-        TransformParams xp = new TransformParams(getActivity(), "0401");
-
-        LocalPoint local = new LocalPoint(c.getDouble(Points.INDEX_X), c.getDouble(Points.INDEX_Y));
-        GridPoint grid = local.toGrid(xp);
-        GeoPoint geo = grid.toGeo(xp);
-
-        Log.d(TAG, "point " + c.getString(Points.INDEX_NAME) + " inverse LC calculations.");
-        Log.d(TAG, "point " + c.getString(Points.INDEX_NAME) + " " + local.toString());
-        Log.d(TAG, "point " + c.getString(Points.INDEX_NAME) + " " + grid.toString());
-        Log.d(TAG, "point " + c.getString(Points.INDEX_NAME) + " " + geo.toString());
-
-        grid = geo.toGrid(xp);
-        local = grid.toLocal(xp);
-
-        Log.d(TAG, "point " + c.getString(Points.INDEX_NAME) + " forward LC calculations.");
-        Log.d(TAG, "point " + c.getString(Points.INDEX_NAME) + " " + geo.toString());
-        Log.d(TAG, "point " + c.getString(Points.INDEX_NAME) + " " + grid.toString());
-        Log.d(TAG, "point " + c.getString(Points.INDEX_NAME) + " " + local.toString());
-
-
-        xp = new TransformParams(getActivity(), "UTM10");
-
-        grid = geo.toGrid(xp);
-        Log.d(TAG, "point " + c.getString(Points.INDEX_NAME) + " forward TM calculations.");
-        Log.d(TAG, "point " + c.getString(Points.INDEX_NAME) + " " + geo.toString());
-        Log.d(TAG, "point " + c.getString(Points.INDEX_NAME) + " " + grid.toString());
-
-        geo = grid.toGeo(xp);
-        Log.d(TAG, "point " + c.getString(Points.INDEX_NAME) + " inverse TM calculations.");
-        Log.d(TAG, "point " + c.getString(Points.INDEX_NAME) + " " + grid.toString());
-        Log.d(TAG, "point " + c.getString(Points.INDEX_NAME) + " " + geo.toString());
-
     }
 
     // Activity result codes
@@ -261,7 +174,7 @@ public class PointsManagerFragment extends Fragment implements
                 String line;
                 String[] parts;
 
-                TransformParams xp = new TransformParams(getActivity(), "0401");
+                TransformSettings transform = TransformSettings.getSettings();
                 while ((line = reader.readLine()) != null) {
                     // Ignore blank lines and comment lines which start with #
                     if (line.length() == 0 || line.startsWith("#")) {
@@ -273,11 +186,13 @@ public class PointsManagerFragment extends Fragment implements
                         continue;
                     }
 
-                    // TODO: Hook up an option for points file units.
+                    // Convert user units to system units (meters).
                     LocalPoint local = new LocalPoint(
-                            Double.parseDouble(parts[2]) / Transforms.SURVEY_FT_PER_METER,
-                            Double.parseDouble(parts[1]) / Transforms.SURVEY_FT_PER_METER);
-                    GeoPoint geo = local.toGrid(xp).toGeo(xp);
+                            Double.parseDouble(parts[2]) / transform.getUnitsFactor(),
+                            Double.parseDouble(parts[1]) / transform.getUnitsFactor());
+
+                    // Convert local coordinates to geographic.
+                    GeoPoint geo = local.toGrid(transform).toGeo(transform);
 
                     ContentValues values = new ContentValues();
 

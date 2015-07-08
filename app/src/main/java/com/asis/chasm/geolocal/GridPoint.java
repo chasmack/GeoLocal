@@ -1,7 +1,6 @@
 package com.asis.chasm.geolocal;
 
 import com.asis.chasm.geolocal.PointsContract.Projections;
-import com.asis.chasm.geolocal.PointsContract.Transforms;
 
 import java.security.InvalidParameterException;
 
@@ -32,12 +31,12 @@ public class GridPoint {
     /*
     * Transform a local coordinates to grid using the transform parameters
     */
-    public GridPoint(LocalPoint pt, TransformParams params) {
-        double x = (pt.getX() - params.getBaseX()) * params.getScale();
-        double y = (pt.getY() - params.getBaseY()) * params.getScale();
-        double rot = Math.toRadians(params.getRotate());
-        this.x = x * Math.cos(rot) - y * Math.sin(rot) + params.getGridX();
-        this.y = x * Math.sin(rot) + y * Math.cos(rot) + params.getGridY();
+    public GridPoint(LocalPoint pt, TransformSettings settings) {
+        double x = (pt.getX() - settings.getBaseX()) * settings.getScale();
+        double y = (pt.getY() - settings.getBaseY()) * settings.getScale();
+        double rot = Math.toRadians(settings.getRotate());
+        this.x = x * Math.cos(rot) - y * Math.sin(rot) + settings.getGridX();
+        this.y = x * Math.sin(rot) + y * Math.cos(rot) + settings.getGridY();
         this.k = 1.0;
         this.theta = 0.0;
     }
@@ -72,26 +71,26 @@ public class GridPoint {
         return theta;
     }
 
-    public LocalPoint toLocal(TransformParams xp){
-        double x = (this.x - xp.getGridX()) / xp.getScale();
-        double y = (this.y - xp.getGridY()) / xp.getScale();
-        double rot = -1.0 * Math.toRadians(xp.getRotate());
+    public LocalPoint toLocal(TransformSettings settings){
+        double x = (this.x - settings.getGridX()) / settings.getScale();
+        double y = (this.y - settings.getGridY()) / settings.getScale();
+        double rot = -1.0 * Math.toRadians(settings.getRotate());
         return new LocalPoint(
-                x * Math.cos(rot) - y * Math.sin(rot) + xp.getBaseX(),
-                x * Math.sin(rot) + y * Math.cos(rot) + xp.getBaseY());
+                x * Math.cos(rot) - y * Math.sin(rot) + settings.getBaseX(),
+                x * Math.sin(rot) + y * Math.cos(rot) + settings.getBaseY());
     }
 
-    public GeoPoint toGeo(TransformParams xp) {
-        switch (xp.getProjection()) {
+    public GeoPoint toGeo(TransformSettings settings) {
+        switch (settings.getProjection()) {
 
             case Projections.PROJECTION_TM:
-                return TransformTM.toGeo(this, xp);
+                return TransformTM.toGeo(this, settings);
 
             case Projections.PROJECTION_LC:
-                return TransformLC.toGeo(this, xp);
+                return TransformLC.toGeo(this, settings);
 
             default:
-                throw new InvalidParameterException("Bad projection.");
+                throw new IllegalArgumentException("Bad projection: " + settings.getProjection());
         }
     }
 

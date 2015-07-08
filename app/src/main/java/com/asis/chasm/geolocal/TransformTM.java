@@ -1,9 +1,5 @@
 package com.asis.chasm.geolocal;
 
-import android.util.Log;
-
-import com.asis.chasm.geolocal.PointsContract.Transforms;
-
 /**
  * Transform between a local basis and geographic coordinates using
  * a Transverse Mercator projection as an intermediate basis.
@@ -40,12 +36,12 @@ public class TransformTM {
     private static double v0, v2, v4, v6, v8;
     private static double S0;
 
-    private static TransformParams sParams;
+    private static TransformSettings sParams;
 
     private TransformTM() { }
 
     // Inverse calculation from grid coordinates to lat/lon.
-    public static GeoPoint toGeo(GridPoint p, TransformParams xp) {
+    public static GeoPoint toGeo(GridPoint p, TransformSettings xp) {
 
         // Check that the zone constants are initialized.
         initTransform(xp);
@@ -94,7 +90,7 @@ public class TransformTM {
      * convergence angle (theta) and grid scale factor (k) from geographic
      * coordinates (lat/lon).  Grid coordinates are in meters.
     */
-    public static GridPoint toGrid(GeoPoint p, TransformParams xp) {
+    public static GridPoint toGrid(GeoPoint p, TransformSettings xp) {
 
         // Check that the zone constants are initialized.
         initTransform(xp);
@@ -145,7 +141,7 @@ public class TransformTM {
                 .setTheta(Math.toDegrees(theta));
     }
 
-    public static void initTransform(TransformParams xp) {
+    public static void initTransform(TransformSettings xp) {
 
         // Check if zone constants need to be initialized.
         if (sParams != null && sParams.equals(xp)) { return; }

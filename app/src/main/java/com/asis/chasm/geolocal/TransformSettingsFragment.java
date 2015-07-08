@@ -21,22 +21,13 @@ public class TransformSettingsFragment extends PreferenceFragment
 
     private static final String TAG = "SettingsFragment";
 
-    // String constants for the preference.
-    public static final String PREFERENCE_SWITCH_KEY = "pref_switch";
-    public static final String PREFERENCE_UNITS_KEY = "pref_units";
-    public static final String PREFERENCE_LOCAL_BASE_KEY = "pref_local_base";
-
-    public static final String PREFERENCE_UNITS_METRIC = "metric";
-    public static final String PREFERENCE_UNITS_SURVEY_FEET = "survey_feet";
-    public static final String PREFERENCE_UNITS_INTERNATIONAL_FEET = "international_feet";
-
-    public TransformSettingsFragment() {
-        // Required empty public constructor
-    }
+    // Required empty public constructor
+    public TransformSettingsFragment() { }
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPrefs, String key) {
         Log.d(TAG, "onSharedPreferenceChanged key: " + key);
+        TransformSettings.getSettings().update(getActivity(), key);
         updatePreferenceSummary(findPreference(key));
     }
 
@@ -59,17 +50,28 @@ public class TransformSettingsFragment extends PreferenceFragment
 
         switch (pref.getKey()) {
 
-            case PREFERENCE_UNITS_KEY:
+            case TransformSettings.PREFERENCE_KEY_UNITS:
                 ListPreference listPref = (ListPreference) pref;
                 listPref.setSummary(listPref.getEntry());
                 break;
 
-            case PREFERENCE_LOCAL_BASE_KEY:
-                CoordPairPreference coordPref = (CoordPairPreference) pref;
-                coordPref.setSummary("N/E: " + coordPref.getValue());
+            case TransformSettings.PREFERENCE_KEY_LOCAL_BASE:
+                CoordPairPreference coordsPref = (CoordPairPreference) pref;
+                String[] coords = coordsPref.getValue().split(", ");
+                if (coords.length == 2) {
+                    TransformSettings settings = TransformSettings.getSettings();
+                    double factor = settings.getUnitsFactor();
+                    double first = Double.parseDouble(coords[0]) * factor;
+                    double second = Double.parseDouble(coords[1]) * factor;
+                    coordsPref.setSummary(String.format(settings.getLocalCoordFormat(), first, second));
+                }
                 break;
 
-            case PREFERENCE_SWITCH_KEY:
+            case TransformSettings.PREFERENCE_KEY_PROJECTION:
+                pref.setSummary(TransformSettings.getSettings().getProjectionDesc());
+                break;
+
+            case TransformSettings.PREFERENCE_KEY_SWITCH:
                 pref.setSummary(((SwitchPreference) pref).isChecked() ?
                         R.string.pref_switch_summary_checked :
                         R.string.pref_switch_summary_not_checked);
@@ -103,24 +105,16 @@ public class TransformSettingsFragment extends PreferenceFragment
         // Initialize preference summaries and register the change listener.
         initPreferenceSummary(getPreferenceScreen());
 
-        SharedPreferences sharedPrefs = getPreferenceScreen().getSharedPreferences();
-
-        sharedPrefs.registerOnSharedPreferenceChangeListener(this);
-        sharedPrefs.registerOnSharedPreferenceChangeListener(
-                (PointsManagerFragment) getFragmentManager()
-                        .findFragmentByTag(MainActivity.FRAGMENT_POINTS_MANAGER));
+        getPreferenceScreen().getSharedPreferences()
+                .registerOnSharedPreferenceChangeListener(this);
     }
 
     @Override
     public void onPause () {
         super.onPause();
 
-        SharedPreferences sharedPrefs = getPreferenceScreen().getSharedPreferences();
-
-        sharedPrefs.unregisterOnSharedPreferenceChangeListener(this);
-        sharedPrefs.unregisterOnSharedPreferenceChangeListener(
-                (PointsManagerFragment) getFragmentManager()
-                        .findFragmentByTag(MainActivity.FRAGMENT_POINTS_MANAGER));
+        getPreferenceScreen().getSharedPreferences()
+                .unregisterOnSharedPreferenceChangeListener(this);
     }
 
     @Override

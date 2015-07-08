@@ -3,8 +3,6 @@ package com.asis.chasm.geolocal;
 import android.util.Log;
 import java.lang.Math;
 
-import com.asis.chasm.geolocal.PointsContract.Transforms;
-
 /**
  * Transform between a local basis and geographic coordinates using
  * a Lambert Conic projection as an intermediate basis.
@@ -18,7 +16,7 @@ public class TransformLC {
 
     private static final String TAG = "TransformLC";
 
-    private static TransformParams sParams;
+    private static TransformSettings sParams;
 
     // Coordinate system constants
     // private final static double A = 6378206.4;          // major radius of ellipsoid, meters (NAD27)
@@ -48,7 +46,7 @@ public class TransformLC {
 
     private TransformLC() { }
 
-    public static GeoPoint toGeo(GridPoint p, TransformParams xp) {
+    public static GeoPoint toGeo(GridPoint p, TransformSettings xp) {
 
         // Check that the zone constants are initialized.
         initTransform(xp);
@@ -78,7 +76,7 @@ public class TransformLC {
         return new GeoPoint(Math.toDegrees(lat), Math.toDegrees(lon));
     }
 
-    public static GridPoint toGrid(GeoPoint p, TransformParams xp) {
+    public static GridPoint toGrid(GeoPoint p, TransformSettings xp) {
 
         // Check that the zone constants are initialized.
         initTransform(xp);
@@ -101,7 +99,7 @@ public class TransformLC {
                 .setK(k);
     }
 
-    public static void initTransform(TransformParams xp) {
+    public static void initTransform(TransformSettings xp) {
 
         // Check if zone constants need to be initialized.
         if (sParams != null && sParams.equals(xp)) { return; }

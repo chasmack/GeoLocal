@@ -17,7 +17,7 @@ public class LocalPoint {
         this.y = y;
     }
 
-    public GridPoint toGrid(TransformParams xp){
+    public GridPoint toGrid(TransformSettings xp){
         double x = (this.x - xp.getBaseX()) * xp.getScale();
         double y = (this.y - xp.getBaseY()) * xp.getScale();
         double rot = Math.toRadians(xp.getRotate());

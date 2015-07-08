@@ -1,6 +1,7 @@
 package com.asis.chasm.geolocal;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.TypedArray;
 import android.preference.DialogPreference;
 import android.preference.ListPreference;
@@ -18,14 +19,14 @@ public class CoordPairPreference extends DialogPreference {
 
     private static final String TAG = "CoordPairPreference";
 
+    // References to the edit text views containing the coordinate values.
     private EditText mFirstValue, mSecondValue;
-    private String mUnits;
 
     private static final String DEFAULT_VALUE = "0.00, 0.00";
 
+    // Current value for the coordinate pair.
     private String mCurrentValue;
-
-    public String getValue() { return mCurrentValue; }
+    public  String getValue() { return mCurrentValue; }
 
     @Override
     public void setSummary(CharSequence summary) {
@@ -73,25 +74,10 @@ public class CoordPairPreference extends DialogPreference {
         mFirstValue = (EditText) view.findViewById(R.id.firstCoordValue);
         mSecondValue = (EditText) view.findViewById(R.id.secondCoordValue);
 
-        // Save current value of the units preference and set the units suffix.
-        String key = getContext().getString(R.string.pref_units_key);
-        ListPreference unitsPref = (ListPreference) findPreferenceInHierarchy(key);
-        mUnits = unitsPref.getValue();
-
-        String suffix = "";
-        switch (mUnits) {
-            case TransformSettingsFragment.PREFERENCE_UNITS_METRIC:
-                suffix = "m";
-                break;
-            case TransformSettingsFragment.PREFERENCE_UNITS_SURVEY_FEET:
-                suffix = "sft";
-                break;
-            case TransformSettingsFragment.PREFERENCE_UNITS_INTERNATIONAL_FEET:
-                suffix = "ft (international)";
-                break;
-        }
-        ((TextView)view.findViewById(R.id.firstCoordUnits)).setText(suffix);
-        ((TextView)view.findViewById(R.id.secondCoordUnits)).setText(suffix);
+        // Set the units suffix text.
+        String suffix = TransformSettings.getSettings().getLocalCoordSuffix();
+        ((TextView)view.findViewById(R.id.firstCoordSuffix)).setText(suffix);
+        ((TextView)view.findViewById(R.id.secondCoordSuffix)).setText(suffix);
     }
 
     @Override
@@ -100,13 +86,13 @@ public class CoordPairPreference extends DialogPreference {
 
         // When the user selects "OK", persist the new value
         if (positiveResult) {
-            String format = mUnits == TransformSettingsFragment.PREFERENCE_UNITS_METRIC ?
-                    "%.3f, %.3f" : "%.2f, %.2f";
 
-            mCurrentValue = String.format(format,
-                    Double.parseDouble(mFirstValue.getText().toString()),
-                    Double.parseDouble(mSecondValue.getText().toString()));
+            TransformSettings settings = TransformSettings.getSettings();
+            double factor = settings.getUnitsFactor();
+            Double first = Double.parseDouble(mFirstValue.getText().toString()) / factor;
+            Double second = Double.parseDouble(mSecondValue.getText().toString()) / factor;
 
+            mCurrentValue = String.format(TransformSettings.LOCAL_COORD_FORMAT_METERS, first, second);
             persistString(mCurrentValue);
         }
     }

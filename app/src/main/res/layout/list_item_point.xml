@@ -38,22 +38,20 @@
         android:textSize="16sp" />
 
     <TextView
-        android:id="@+id/coord_type"
+        android:id="@+id/coord_prefix"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_toRightOf="@id/icon"
         android:layout_alignParentBottom="true"
-        android:text="N/E:"
         android:textSize="16sp" />
 
     <TextView
-        android:id="@+id/coords"
+        android:id="@+id/coord_values"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_toRightOf="@id/coord_type"
+        android:layout_toRightOf="@id/coord_prefix"
         android:layout_marginLeft="10dp"
         android:layout_alignParentBottom="true"
-        android:text="0.00"
         android:textSize="14sp" />
 
 

@@ -34,7 +34,7 @@
             android:imeOptions="actionNext" />
 
         <TextView
-            android:id="@+id/firstCoordUnits"
+            android:id="@+id/firstCoordSuffix"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="5dp"
@@ -73,7 +73,7 @@
             android:imeOptions="actionDone" />
 
         <TextView
-            android:id="@+id/secondCoordUnits"
+            android:id="@+id/secondCoordSuffix"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="5dp"

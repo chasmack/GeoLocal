@@ -35,7 +35,7 @@ public class GeoPoint {
         return lon;
     }
 
-    public GridPoint toGrid(TransformParams xp) {
+    public GridPoint toGrid(TransformSettings xp) {
         switch (xp.getProjection()) {
 
             case Projections.PROJECTION_LC:
