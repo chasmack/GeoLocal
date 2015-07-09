@@ -35,9 +35,6 @@ public class MainActivity extends Activity {
     public static final String FRAGMENT_POINTS_MANAGER = "manager";
     public static final String FRAGMENT_SETTINGS = "settings";
 
-    // Name of the SharedPreferences used by preference manager.
-    public static final String SHARED_PREF_NAME = "transform_settings";
-
     // XML asset file with projection constants.
     private static final String PROJECTION_CONSTANTS = "projections.txt";
 
@@ -56,8 +53,7 @@ public class MainActivity extends Activity {
         }
 
         // Set defaults for the shared preferences.
-        PreferenceManager.setDefaultValues(
-                this, SHARED_PREF_NAME, Context.MODE_PRIVATE, R.xml.preferences, false);
+        PreferenceManager.setDefaultValues(this,  R.xml.preferences, false);
 
         // Load the Projections table
         loadProjections(PROJECTION_CONSTANTS);

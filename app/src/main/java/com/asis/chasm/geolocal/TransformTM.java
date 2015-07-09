@@ -1,5 +1,7 @@
 package com.asis.chasm.geolocal;
 
+import android.util.Log;
+
 /**
  * Transform between a local basis and geographic coordinates using
  * a Transverse Mercator projection as an intermediate basis.
@@ -36,15 +38,15 @@ public class TransformTM {
     private static double v0, v2, v4, v6, v8;
     private static double S0;
 
-    private static TransformSettings sParams;
+    private static String sCode = "";
 
     private TransformTM() { }
 
     // Inverse calculation from grid coordinates to lat/lon.
-    public static GeoPoint toGeo(GridPoint p, TransformSettings xp) {
+    public static GeoPoint toGeo(GridPoint p) {
 
-        // Check that the zone constants are initialized.
-        initTransform(xp);
+        // Make sure the zone constants are initialized.
+        initTransform();
 
         double x = p.getX();
         double y = p.getY();
@@ -90,10 +92,10 @@ public class TransformTM {
      * convergence angle (theta) and grid scale factor (k) from geographic
      * coordinates (lat/lon).  Grid coordinates are in meters.
     */
-    public static GridPoint toGrid(GeoPoint p, TransformSettings xp) {
+    public static GridPoint toGrid(GeoPoint p) {
 
-        // Check that the zone constants are initialized.
-        initTransform(xp);
+        // Make sure the zone constants are initialized.
+        initTransform();
 
         double lat = Math.toRadians(p.getLat());
         double lon = Math.toRadians(p.getLon());
@@ -141,23 +143,23 @@ public class TransformTM {
                 .setTheta(Math.toDegrees(theta));
     }
 
-    public static void initTransform(TransformSettings xp) {
+    public static void initTransform() {
 
         // Check if zone constants need to be initialized.
-        if (sParams != null && sParams.equals(xp)) { return; }
+        TransformSettings settings = TransformSettings.getSettings();
+        if (sCode.equals(settings.getProjectionCode())) { return; }
 
         // Check we are using a Lambert projection.
-        if (xp.getProjection() != PointsContract.Projections.PROJECTION_TM) {
+        if (settings.getProjection() != PointsContract.Projections.PROJECTION_TM) {
             throw new IllegalArgumentException("Bad TM transform parameters.");
         }
-        sParams = xp;
 
         // Get the defining coordinate system constants for the zone
-        P0 = Math.toRadians(xp.getP0());
-        M0 = Math.toRadians(xp.getM0());
-        Y0 = xp.getY0();
-        X0 = xp.getX0();
-        K0 = xp.getK0();
+        P0 = Math.toRadians(settings.getP0());
+        M0 = Math.toRadians(settings.getM0());
+        Y0 = settings.getY0();
+        X0 = settings.getX0();
+        K0 = settings.getK0();
 
         // Initialize the zone constants.
         u2 = -3 * n / 2 + 9 * n3 / 16;
@@ -184,5 +186,11 @@ public class TransformTM {
         double cosp = Math.cos(P0);
         double cosp2 = cosp * cosp;
         S0 = K0 * (P0 + sinp * cosp * (u0 + cosp2 * (u2 + cosp2 * (u4 + u6 * cosp2)))) * r;
+
+        Log.d(TAG, "Transform initialized: " + settings.getProjectionDesc()
+                + " (" + settings.getProjectionCode() + ")");
+
+        // Projection constants have been initialized.
+        sCode = settings.getProjectionCode();
     }
 }

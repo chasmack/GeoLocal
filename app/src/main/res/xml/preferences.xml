@@ -26,14 +26,4 @@
 
     </PreferenceCategory>
 
-    <PreferenceCategory
-        android:title="@string/category_geographic">
-
-        <SwitchPreference
-            android:key="@string/pref_switch_key"
-            android:title="@string/pref_switch_title"
-            android:defaultValue="true" />
-
-    </PreferenceCategory>
-
 </PreferenceScreen>

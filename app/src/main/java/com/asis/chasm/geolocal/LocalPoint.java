@@ -17,13 +17,14 @@ public class LocalPoint {
         this.y = y;
     }
 
-    public GridPoint toGrid(TransformSettings xp){
-        double x = (this.x - xp.getBaseX()) * xp.getScale();
-        double y = (this.y - xp.getBaseY()) * xp.getScale();
-        double rot = Math.toRadians(xp.getRotate());
+    public GridPoint toGrid(){
+        TransformSettings settings = TransformSettings.getSettings();
+        double x = (this.x - settings.getBaseX());
+        double y = (this.y - settings.getBaseY());
+        double rot = Math.toRadians(settings.getRotate());
         GridPoint grid = new GridPoint(
-                x * Math.cos(rot) - y * Math.sin(rot) + xp.getGridX(),
-                x * Math.sin(rot) + y * Math.cos(rot) + xp.getGridY());
+                x * Math.cos(rot) - y * Math.sin(rot) + settings.getGridX(),
+                x * Math.sin(rot) + y * Math.cos(rot) + settings.getGridY());
         return grid;
     }
 

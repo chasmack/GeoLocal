@@ -89,11 +89,16 @@ public class CoordPairPreference extends DialogPreference {
 
             TransformSettings settings = TransformSettings.getSettings();
             double factor = settings.getUnitsFactor();
+
+            // Parse coordinate values and convert to system units (meters).
             Double first = Double.parseDouble(mFirstValue.getText().toString()) / factor;
             Double second = Double.parseDouble(mSecondValue.getText().toString()) / factor;
 
+            // Format coordinate pair and persist to shared preferences.
             mCurrentValue = String.format(TransformSettings.LOCAL_COORD_FORMAT_METERS, first, second);
             persistString(mCurrentValue);
+
+            Log.d(TAG, "onDialogClosed mCurrentValue: " + mCurrentValue);
         }
     }
 }

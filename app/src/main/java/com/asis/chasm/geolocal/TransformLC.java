@@ -16,7 +16,7 @@ public class TransformLC {
 
     private static final String TAG = "TransformLC";
 
-    private static TransformSettings sParams;
+    private static String sCode = "";
 
     // Coordinate system constants
     // private final static double A = 6378206.4;          // major radius of ellipsoid, meters (NAD27)
@@ -46,10 +46,10 @@ public class TransformLC {
 
     private TransformLC() { }
 
-    public static GeoPoint toGeo(GridPoint p, TransformSettings xp) {
+    public static GeoPoint toGeo(GridPoint p) {
 
-        // Check that the zone constants are initialized.
-        initTransform(xp);
+        // Make sure the zone constants are initialized.
+        initTransform();
 
         // Subtract the false northing/easting.
         double x = p.getX() - X0;
@@ -76,10 +76,10 @@ public class TransformLC {
         return new GeoPoint(Math.toDegrees(lat), Math.toDegrees(lon));
     }
 
-    public static GridPoint toGrid(GeoPoint p, TransformSettings xp) {
+    public static GridPoint toGrid(GeoPoint p) {
 
-        // Check that the zone constants are initialized.
-        initTransform(xp);
+        // Make sure the zone constants are initialized.
+        initTransform();
 
         // Convert the lat/lon to grid coordinates.
         double lat = Math.toRadians(p.getLat());
@@ -99,24 +99,24 @@ public class TransformLC {
                 .setK(k);
     }
 
-    public static void initTransform(TransformSettings xp) {
+    public static void initTransform() {
 
         // Check if zone constants need to be initialized.
-        if (sParams != null && sParams.equals(xp)) { return; }
+        TransformSettings settings = TransformSettings.getSettings();
+        if (sCode.equals(settings.getProjectionCode())) { return; }
 
         // Check we are using a Lambert projection.
-        if (xp.getProjection() != PointsContract.Projections.PROJECTION_LC) {
+        if (settings.getProjection() != PointsContract.Projections.PROJECTION_LC) {
             throw new IllegalArgumentException("Bad LC transform parameters.");
         }
-        sParams = xp;
 
         // Get the defining coordinate system constants for the zone
-        P1 = Math.toRadians(xp.getP1());
-        P2 = Math.toRadians(xp.getP2());
-        P0 = Math.toRadians(xp.getP0());
-        M0 = Math.toRadians(xp.getM0());
-        Y0 = xp.getY0();
-        X0 = xp.getX0();
+        P1 = Math.toRadians(settings.getP1());
+        P2 = Math.toRadians(settings.getP2());
+        P0 = Math.toRadians(settings.getP0());
+        M0 = Math.toRadians(settings.getM0());
+        Y0 = settings.getY0();
+        X0 = settings.getX0();
 
         // Calculate the derived coordinate system constants.
         m1 = Math.cos(P1) / Math.sqrt(1.0 - Math.pow(E * Math.sin(P1), 2.0));
@@ -131,14 +131,18 @@ public class TransformLC {
         F = m1 / (n * Math.pow(t1, n));
         rho0 = A * F * Math.pow(t0, n);
 
-        Log.d(TAG, "Transform initialized.");
-        Log.d(TAG, "m1=" + m1);
-        Log.d(TAG, "m2=" + m2);
-        Log.d(TAG, "t1=" + t1);
-        Log.d(TAG, "t2=" + t2);
-        Log.d(TAG, "t0=" + t0);
-        Log.d(TAG, "n=" + n);
-        Log.d(TAG, "F=" + F);
-        Log.d(TAG, "rho0=" + rho0);
+        Log.d(TAG, "Transform initialized: " + settings.getProjectionDesc()
+                + " (" + settings.getProjectionCode() + ")");
+//        Log.d(TAG, "m1=" + m1);
+//        Log.d(TAG, "m2=" + m2);
+//        Log.d(TAG, "t1=" + t1);
+//        Log.d(TAG, "t2=" + t2);
+//        Log.d(TAG, "t0=" + t0);
+//        Log.d(TAG, "n=" + n);
+//        Log.d(TAG, "F=" + F);
+//        Log.d(TAG, "rho0=" + rho0);
+
+        // Projection constants have been initialized.
+        sCode = settings.getProjectionCode();
     }
 }

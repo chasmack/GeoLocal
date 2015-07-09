@@ -35,14 +35,15 @@ public class GeoPoint {
         return lon;
     }
 
-    public GridPoint toGrid(TransformSettings xp) {
-        switch (xp.getProjection()) {
+    public GridPoint toGrid() {
+        TransformSettings settings = TransformSettings.getSettings();
+        switch (settings.getProjection()) {
 
             case Projections.PROJECTION_LC:
-                return TransformLC.toGrid(this, xp);
+                return TransformLC.toGrid(this);
 
             case Projections.PROJECTION_TM:
-                return TransformTM.toGrid(this, xp);
+                return TransformTM.toGrid(this);
 
             default:
                 throw new IllegalArgumentException("Bad projection.");

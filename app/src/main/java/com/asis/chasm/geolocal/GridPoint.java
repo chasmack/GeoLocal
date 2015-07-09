@@ -28,19 +28,6 @@ public class GridPoint {
         this.theta = 0.0;
     }
 
-    /*
-    * Transform a local coordinates to grid using the transform parameters
-    */
-    public GridPoint(LocalPoint pt, TransformSettings settings) {
-        double x = (pt.getX() - settings.getBaseX()) * settings.getScale();
-        double y = (pt.getY() - settings.getBaseY()) * settings.getScale();
-        double rot = Math.toRadians(settings.getRotate());
-        this.x = x * Math.cos(rot) - y * Math.sin(rot) + settings.getGridX();
-        this.y = x * Math.sin(rot) + y * Math.cos(rot) + settings.getGridY();
-        this.k = 1.0;
-        this.theta = 0.0;
-    }
-
     public GridPoint setX(double x) {
         this.x = x;
         return this;
@@ -71,7 +58,8 @@ public class GridPoint {
         return theta;
     }
 
-    public LocalPoint toLocal(TransformSettings settings){
+    public LocalPoint toLocal(){
+        TransformSettings settings = TransformSettings.getSettings();
         double x = (this.x - settings.getGridX()) / settings.getScale();
         double y = (this.y - settings.getGridY()) / settings.getScale();
         double rot = -1.0 * Math.toRadians(settings.getRotate());
@@ -80,15 +68,13 @@ public class GridPoint {
                 x * Math.sin(rot) + y * Math.cos(rot) + settings.getBaseY());
     }
 
-    public GeoPoint toGeo(TransformSettings settings) {
+    public GeoPoint toGeo() {
+        TransformSettings settings = TransformSettings.getSettings();
         switch (settings.getProjection()) {
-
             case Projections.PROJECTION_TM:
-                return TransformTM.toGeo(this, settings);
-
+                return TransformTM.toGeo(this);
             case Projections.PROJECTION_LC:
-                return TransformLC.toGeo(this, settings);
-
+                return TransformLC.toGeo(this);
             default:
                 throw new IllegalArgumentException("Bad projection: " + settings.getProjection());
         }

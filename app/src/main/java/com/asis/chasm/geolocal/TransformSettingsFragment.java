@@ -53,6 +53,11 @@ public class TransformSettingsFragment extends PreferenceFragment
             case TransformSettings.PREFERENCE_KEY_UNITS:
                 ListPreference listPref = (ListPreference) pref;
                 listPref.setSummary(listPref.getEntry());
+
+                // Local base coordinate summary needs update when units change.
+                updatePreferenceSummary(
+                    findPreference(TransformSettings.PREFERENCE_KEY_LOCAL_BASE));
+
                 break;
 
             case TransformSettings.PREFERENCE_KEY_LOCAL_BASE:
@@ -63,18 +68,14 @@ public class TransformSettingsFragment extends PreferenceFragment
                     double factor = settings.getUnitsFactor();
                     double first = Double.parseDouble(coords[0]) * factor;
                     double second = Double.parseDouble(coords[1]) * factor;
-                    coordsPref.setSummary(String.format(settings.getLocalCoordFormat(), first, second));
+                    String summary = String.format(settings.getLocalCoordFormat(), first, second);
+                    summary += " (" + settings.getLocalCoordSuffix() + ")";
+                    coordsPref.setSummary(summary);
                 }
                 break;
 
             case TransformSettings.PREFERENCE_KEY_PROJECTION:
                 pref.setSummary(TransformSettings.getSettings().getProjectionDesc());
-                break;
-
-            case TransformSettings.PREFERENCE_KEY_SWITCH:
-                pref.setSummary(((SwitchPreference) pref).isChecked() ?
-                        R.string.pref_switch_summary_checked :
-                        R.string.pref_switch_summary_not_checked);
                 break;
         }
     }

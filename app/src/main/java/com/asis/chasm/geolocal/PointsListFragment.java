@@ -101,6 +101,16 @@ public class PointsListFragment extends ListFragment
         super.onActivityCreated(savedInstanceState);
         Log.d(TAG, "onActivityCreated");
 
+        // We have a menu item to show in action bar.
+        setHasOptionsMenu(true);
+
+        // Give some text to display if there is no data.  In a real
+        // application this would come from a resource.
+        setEmptyText("No points.");
+
+        // Create an empty adapter we will use to display the loaded data.
+        mAdapter = new PointsCursorAdapter(getActivity(), null, 0);
+
         // Set onClickListeners for the Local/Geographic radio buttons
         RadioButton local = (RadioButton) getActivity().findViewById(R.id.radio_local);
         local.setOnClickListener(new OnClickListener() {
@@ -118,16 +128,9 @@ public class PointsListFragment extends ListFragment
 
         // TODO: initialize radio button from savedInstanceState
         local.setChecked(true);
+        mAdapter.setCoordinateType(POINTS_TYPE_LOCAL);
 
-        // We have a menu item to show in action bar.
-        setHasOptionsMenu(true);
-
-        // Give some text to display if there is no data.  In a real
-        // application this would come from a resource.
-        setEmptyText("No points.");
-
-        // Create an empty adapter we will use to display the loaded data.
-        mAdapter = new PointsCursorAdapter(getActivity(), null, 0);
+        // Connect the cursor adapter to the points list.
         setListAdapter(mAdapter);
 
         // Prepare the loader.  Either re-connect with an existing one,
@@ -138,6 +141,8 @@ public class PointsListFragment extends ListFragment
     @Override
     public void onResume() {
         super.onResume();
+        TextView tv = (TextView) getView().findViewById(R.id.radio_local);
+        tv.setText("Local (" + TransformSettings.getSettings().getUnitsName() + ")");
     }
 
     @Override
@@ -255,6 +260,8 @@ public class PointsListFragment extends ListFragment
                             cursor.getDouble(Points.INDEX_X) * mSettings.getUnitsFactor()));
                     tv =(TextView) view.findViewById(R.id.coord_prefix);
                     tv.setText("N/E:");
+                    // tv =(TextView) view.findViewById(R.id.coord_suffix);
+                    // tv.setText("(" + mSettings.getLocalCoordSuffix() + ")");
                     break;
             }
         }

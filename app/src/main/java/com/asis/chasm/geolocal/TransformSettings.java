@@ -19,7 +19,6 @@ public class TransformSettings {
     private static final String TAG = "TransformSettings";
 
     // Preference keys.
-    public static final String PREFERENCE_KEY_SWITCH = "pref_switch";
     public static final String PREFERENCE_KEY_UNITS = "pref_units";
     public static final String PREFERENCE_KEY_LOCAL_BASE = "pref_local_base";
     public static final String PREFERENCE_KEY_ROTATE = "pref_rotate";
@@ -35,10 +34,19 @@ public class TransformSettings {
     private String mDisplayUnits;
     public  String getDisplayUnits() { return mDisplayUnits; }
 
+    // Units names.
+    public static final String UNITS_NAME_METERS = "meters";
+    public static final String UNITS_NAME_SURVEY_FEET = "survey ft";
+    public static final String UNITS_NAME_INTERNATIONAL_FEET = "international ft";
+    public static final String UNITS_NAME_GEOGRAPHIC = "degrees";
+
+    private String mUnitsName;
+    public  String getUnitsName() { return mUnitsName; }
+
     // Coordinate suffixes.
     public static final String LOCAL_COORD_SUFFIX_METERS = "m";
     public static final String LOCAL_COORD_SUFFIX_SURVEY_FEET = "sft";
-    public static final String LOCAL_COORD_SUFFIX_INTERNATIONAL_FEET = "ft (international)";
+    public static final String LOCAL_COORD_SUFFIX_INTERNATIONAL_FEET = "int ft";
 
     private String mLocalCoordSuffix;
     public  String getLocalCoordSuffix() { return mLocalCoordSuffix; }
@@ -128,8 +136,7 @@ public class TransformSettings {
             sInstance = new TransformSettings();
         }
 
-        SharedPreferences sharedPrefs = context
-                .getSharedPreferences(MainActivity.SHARED_PREF_NAME, Context.MODE_PRIVATE);
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
 
         Map<String, ?> prefs = sharedPrefs.getAll();
         for (String key : prefs.keySet()) {
@@ -138,41 +145,40 @@ public class TransformSettings {
     }
 
     public void update(Context context, String key) {
-        Log.d(TAG, "update key: " + key);
-
-        if (key.equals(PREFERENCE_KEY_SWITCH)) { return; }
 
         // TODO: Hook up transform settings.
-        baseX = 5000.00 / UNITS_FACTOR_SURVEY_FEET;
-        baseY = 10000.00 / UNITS_FACTOR_SURVEY_FEET;
         gridX = 6069017.11 / UNITS_FACTOR_SURVEY_FEET;
         gridY = 2118671.75 / UNITS_FACTOR_SURVEY_FEET;
         rotate = -1.2250;
         scale = 1.0;
 
-        SharedPreferences sharedPrefs = context
-                .getSharedPreferences(MainActivity.SHARED_PREF_NAME, Context.MODE_PRIVATE);
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
 
         String value = sharedPrefs.getString(key, "");
         if (value == null || value.isEmpty()) {
             throw new IllegalArgumentException("Unset preference key: " + key);
         }
 
+        Log.d(TAG, "update key: " + key + "=" + value);
+
         switch (key) {
             case PREFERENCE_KEY_UNITS:
                 switch(value) {
                     case PREFERENCE_UNITS_METERS:
                         mUnitsFactor = UNITS_FACTOR_METERS;
+                        mUnitsName = UNITS_NAME_METERS;
                         mLocalCoordSuffix = LOCAL_COORD_SUFFIX_METERS;
                         mLocalCoordFormat = LOCAL_COORD_FORMAT_METERS;
                         break;
                     case PREFERENCE_UNITS_SURVEY_FEET:
                         mUnitsFactor = UNITS_FACTOR_SURVEY_FEET;
+                        mUnitsName = UNITS_NAME_SURVEY_FEET;
                         mLocalCoordSuffix = LOCAL_COORD_SUFFIX_SURVEY_FEET;
                         mLocalCoordFormat = LOCAL_COORD_FORMAT_SURVEY_FEET;
                         break;
                     case PREFERENCE_UNITS_INTERNATIONAL_FEET:
                         mUnitsFactor = UNITS_FACTOR_INTERNATIONAL_FEET;
+                        mUnitsName = UNITS_NAME_INTERNATIONAL_FEET;
                         mLocalCoordSuffix = LOCAL_COORD_SUFFIX_INTERNATIONAL_FEET;
                         mLocalCoordFormat = LOCAL_COORD_FORMAT_INTERNATIONAL_FEET;
                         break;

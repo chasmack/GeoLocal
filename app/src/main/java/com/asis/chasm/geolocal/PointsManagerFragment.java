@@ -174,7 +174,7 @@ public class PointsManagerFragment extends Fragment implements
                 String line;
                 String[] parts;
 
-                TransformSettings transform = TransformSettings.getSettings();
+                TransformSettings settings = TransformSettings.getSettings();
                 while ((line = reader.readLine()) != null) {
                     // Ignore blank lines and comment lines which start with #
                     if (line.length() == 0 || line.startsWith("#")) {
@@ -188,11 +188,11 @@ public class PointsManagerFragment extends Fragment implements
 
                     // Convert user units to system units (meters).
                     LocalPoint local = new LocalPoint(
-                            Double.parseDouble(parts[2]) / transform.getUnitsFactor(),
-                            Double.parseDouble(parts[1]) / transform.getUnitsFactor());
+                            Double.parseDouble(parts[2]) / settings.getUnitsFactor(),
+                            Double.parseDouble(parts[1]) / settings.getUnitsFactor());
 
                     // Convert local coordinates to geographic.
-                    GeoPoint geo = local.toGrid(transform).toGeo(transform);
+                    GeoPoint geo = local.toGrid().toGeo();
 
                     ContentValues values = new ContentValues();
 

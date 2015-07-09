@@ -43,7 +43,7 @@
         android:layout_height="wrap_content"
         android:layout_toRightOf="@id/icon"
         android:layout_alignParentBottom="true"
-        android:textSize="16sp" />
+        android:textSize="14sp" />
 
     <TextView
         android:id="@+id/coord_values"
@@ -51,6 +51,15 @@
         android:layout_height="wrap_content"
         android:layout_toRightOf="@id/coord_prefix"
         android:layout_marginLeft="10dp"
+        android:layout_alignParentBottom="true"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/coord_suffix"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/coord_values"
+        android:layout_marginLeft="12dp"
         android:layout_alignParentBottom="true"
         android:textSize="14sp" />
 
