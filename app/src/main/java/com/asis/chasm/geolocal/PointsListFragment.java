@@ -166,25 +166,7 @@ public class PointsListFragment extends ListFragment
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        switch (id) {
-            case R.id.action_test:
-                test();
-                return true;
-        }
-
         return super.onOptionsItemSelected(item);
-    }
-
-    private void test() {
-        Toast.makeText(getActivity(), "Menu Item Test.",
-                Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -245,10 +227,24 @@ public class PointsListFragment extends ListFragment
             switch (mCoordinateType) {
 
                 case POINTS_TYPE_GEOGRAPHIC:
+                    // Log.d(TAG, "point: " + cursor.getString(Points.INDEX_NAME));
+
+                    LocalPoint local = new LocalPoint(
+                            cursor.getDouble(Points.INDEX_X),
+                            cursor.getDouble(Points.INDEX_Y));
+                    // Log.d(TAG, "local point (n/e): " + local.getY() + ", " + local.getX());
+
+                    GridPoint grid = local.toGrid();
+                    // Log.d(TAG, "grid point (n/e): " + grid.getY() + ", " + grid.getX());
+
+                    GeoPoint geo = grid.toGeo();
+                    // Log.d(TAG, "geo point (lat/lon): " + geo.getLat() + ", " + geo.getLon());
+
                     tv = (TextView) view.findViewById(R.id.coord_values);
                     tv.setText(String.format(mSettings.getGeographicCoordFormat(),
-                            cursor.getDouble(Points.INDEX_LAT),
-                            cursor.getDouble(Points.INDEX_LON)));
+                            geo.getLat(), geo.getLon()));
+                            // cursor.getDouble(Points.INDEX_LAT),
+                            // cursor.getDouble(Points.INDEX_LON)));
                     tv = (TextView) view.findViewById(R.id.coord_prefix);
                     tv.setText("lat/lon:");
                     break;

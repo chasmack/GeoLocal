@@ -96,16 +96,34 @@ public class PointsManagerFragment extends Fragment implements
             case R.id.action_read_points:
                 readPointsFile();
                 return true;
-            case R.id.action_test_transform:
-                testTransform();
+            case R.id.action_manager_test:
+                managerTest();
                 return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    private void testTransform() {
-        Toast.makeText(getActivity(), "Test Transform", Toast.LENGTH_SHORT).show();
+    private void managerTest() {
+        Toast.makeText(getActivity(), "managerTest()", Toast.LENGTH_SHORT).show();
+
+        TransformSettings settings = TransformSettings.getSettings();
+
+        LocalPoint local = new LocalPoint(settings.getBaseX(), settings.getBaseY());
+        Log.d(TAG, "local point (n/e): " + local.getY() + ", " + local.getX());
+
+        GridPoint grid = local.toGrid();
+        Log.d(TAG, "grid point (n/e): " + grid.getY() + ", " + grid.getX());
+
+        GeoPoint geo = grid.toGeo();
+        Log.d(TAG, "geo point (lat/lon): " + geo.getLat() + ", " + geo.getLon());
+
+        grid = geo.toGrid();
+        Log.d(TAG, "grid point (n/e): " + grid.getY() + ", " + grid.getX());
+
+        local = grid.toLocal();
+        Log.d(TAG, "local point (n/e): " + local.getY() + ", " + local.getX());
+
     }
 
     // Interaction from points list fragment onListItemClick
@@ -149,6 +167,53 @@ public class PointsManagerFragment extends Fragment implements
 
             // Run an AsyncTask to read points into the content provider.
             new ReadLocalPointsTask().execute(data.getData());
+        }
+    }
+
+    /*
+    * Background task to update geographic coordinates in the points
+    * database based on the current transform settings.
+    */
+
+    private class UpdateGeographicCoordinatesTask extends AsyncTask<Void, Void, Void> {
+        @Override
+        protected Void doInBackground(Void... params) {
+
+            Log.d(TAG, "UpdateGeographicCoordinatesTask");
+
+            ContentResolver resolver = getActivity().getContentResolver();
+            ContentValues values = new ContentValues();
+
+            final Uri POINTS_URI = Uri.parse(PointsContract.Points.CONTENT_URI);
+
+            String[] projection = {Points._ID, Points.COLUMN_X, Points.COLUMN_Y};
+            Cursor c = getActivity().getContentResolver().query(
+                    POINTS_URI,
+                    projection,
+                    Points.COLUMN_TYPE + "=?",
+                    new String[]{Integer.toString(Points.TYPE_LOCAL)},
+                    null);
+
+            if (c.moveToFirst()) {
+                while (!c.isAfterLast()) {
+
+                    LocalPoint local = new LocalPoint(c.getDouble(1), c.getDouble(2));
+                    GeoPoint geo = local.toGrid().toGeo();
+
+                    values.clear();
+                    values.put(Points.COLUMN_LAT, geo.getLat());
+                    values.put(Points.COLUMN_LON, geo.getLon());
+
+                    int cnt = resolver.update(POINTS_URI,
+                            values, Points._ID + "=" + c.getLong(0), null);
+                }
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+
         }
     }
 

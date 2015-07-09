@@ -7,13 +7,12 @@
     <string name="radio_geographic">Geographic</string>
 
     <!-- Menu items -->
-    <string name="action_test_transform">Test Transform</string>
-    <string name="action_test">Test</string>
-    <string name="action_read_points">Read Points</string>
+    <string name="action_read_points">Read points</string>
+    <string name="action_manager_test">Manager test</string>
     <string name="action_settings">Settings</string>
 
     <!-- Preference string resources -->
-    <string name="category_local">Local coordinates</string>
+    <string name="category_local">Transform settings</string>
 
     <string name="pref_units_key">pref_units</string>
     <string name="pref_units_title">Units</string>
@@ -30,14 +29,23 @@
     </string-array>
 
     <string name="perf_local_base_key">pref_local_base</string>
-    <string name="perf_local_base_title">Base point</string>
-    <string name="perf_local_base_dialog_title">Base point (local)</string>
+    <string name="perf_local_base_title">Local base</string>
+    <string name="perf_local_base_dialog_title">Local base</string>
     <string name="pref_local_base_default">0.000, 0.000</string>
-    <string name="pref_local_base_hint">0.00</string>
-    <string name="pref_local_base_units">m</string>
+    <string name="pref_local_base_hint">0</string>
     <string name="pref_local_base_first_title">N:</string>
     <string name="pref_local_base_second_title">E:</string>
-    <string name="local_base_message">Northing/Easting for the local base.</string>
+    <string name="local_base_message">Northing/Easting for the local base point.</string>
+
+    <string name="perf_geo_base_key">pref_geo_base</string>
+    <string name="perf_geo_base_title">Geographic base</string>
+    <string name="perf_geo_base_dialog_title">Geographic base</string>
+    <string name="pref_geo_base_default">0.000000, 0.000000</string>
+    <string name="pref_geo_base_hint">0</string>
+    <string name="pref_geo_base_units">deg</string>
+    <string name="pref_geo_base_first_title">lat:</string>
+    <string name="pref_geo_base_second_title">lon:</string>
+    <string name="geo_base_message">Lat/lon for the geographic base.</string>
 
     <string name="pref_projection_key">pref_projection</string>
     <string name="pref_projection_title">Coordinate system projection</string>
@@ -48,6 +56,18 @@
         <item>CA Zone 3</item>
         <item>CA Zone 4</item>
         <item>CA Zone 5</item>
+        <item>UTM Zone 1</item>
+        <item>UTM Zone 2</item>
+        <item>UTM Zone 3</item>
+        <item>UTM Zone 4</item>
+        <item>UTM Zone 5</item>
+        <item>UTM Zone 6</item>
+        <item>UTM Zone 7</item>
+        <item>UTM Zone 8</item>
+        <item>UTM Zone 9</item>
+        <item>UTM Zone 10</item>
+        <item>UTM Zone 11</item>
+        <item>UTM Zone 12</item>
     </string-array>
     <string-array name="pref_projection_values">
         <item>0401</item>
@@ -55,6 +75,18 @@
         <item>0403</item>
         <item>0404</item>
         <item>0405</item>
+        <item>UTM01</item>
+        <item>UTM02</item>
+        <item>UTM03</item>
+        <item>UTM04</item>
+        <item>UTM05</item>
+        <item>UTM06</item>
+        <item>UTM07</item>
+        <item>UTM08</item>
+        <item>UTM09</item>
+        <item>UTM10</item>
+        <item>UTM11</item>
+        <item>UTM12</item>
     </string-array>
 
 </resources>

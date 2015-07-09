@@ -23,7 +23,7 @@ public class TransformSettings {
     public static final String PREFERENCE_KEY_LOCAL_BASE = "pref_local_base";
     public static final String PREFERENCE_KEY_ROTATE = "pref_rotate";
     public static final String PREFERENCE_KEY_SCALE = "pref_scale";
-    public static final String PREFERENCE_KEY_GRID_BASE = "pref_geo_base";
+    public static final String PREFERENCE_KEY_GEO_BASE = "pref_geo_base";
     public static final String PREFERENCE_KEY_PROJECTION = "pref_projection";
 
     // Display units preference values.
@@ -44,12 +44,14 @@ public class TransformSettings {
     public  String getUnitsName() { return mUnitsName; }
 
     // Coordinate suffixes.
-    public static final String LOCAL_COORD_SUFFIX_METERS = "m";
-    public static final String LOCAL_COORD_SUFFIX_SURVEY_FEET = "sft";
-    public static final String LOCAL_COORD_SUFFIX_INTERNATIONAL_FEET = "int ft";
+    private static final String LOCAL_COORD_SUFFIX_METERS = "m";
+    private static final String LOCAL_COORD_SUFFIX_SURVEY_FEET = "sft";
+    private static final String LOCAL_COORD_SUFFIX_INTERNATIONAL_FEET = "int ft";
+    private static final String GEOGRAPHIC_COORD_SUFFIX = "deg";
 
     private String mLocalCoordSuffix;
     public  String getLocalCoordSuffix() { return mLocalCoordSuffix; }
+    public  String getGeographicCoordSuffix() { return GEOGRAPHIC_COORD_SUFFIX; }
 
     // Local coordinate pair formats.
     public static final String LOCAL_COORD_FORMAT_METERS = "%.3f, %.3f";
@@ -60,7 +62,7 @@ public class TransformSettings {
     public  String getLocalCoordFormat() { return mLocalCoordFormat; }
 
     // Geographic coordinate pair format.
-    public static final String GEOGRAPHIC_COORD_FORMAT = "%.6f, %.6f";
+    private static final String GEOGRAPHIC_COORD_FORMAT = "%.8f, %.8f";
 
     public  String getGeographicCoordFormat() { return GEOGRAPHIC_COORD_FORMAT; }
 
@@ -81,6 +83,11 @@ public class TransformSettings {
     private double gridX, gridY;
     public  double getGridX() { return gridX; }
     public  double getGridY() { return gridY; }
+
+    // Geographic base point coordinates.
+    private double baseLat, baseLon;
+    public  double getBaseLat() { return baseLat; }
+    public  double getBsaeLon() { return baseLon; }
 
     // Rotation about reference point from local basis to grid in degrees.
     // A negative value rotates right (clockwise) from local to grid.
@@ -147,8 +154,6 @@ public class TransformSettings {
     public void update(Context context, String key) {
 
         // TODO: Hook up transform settings.
-        gridX = 6069017.11 / UNITS_FACTOR_SURVEY_FEET;
-        gridY = 2118671.75 / UNITS_FACTOR_SURVEY_FEET;
         rotate = -1.2250;
         scale = 1.0;
 
@@ -159,7 +164,7 @@ public class TransformSettings {
             throw new IllegalArgumentException("Unset preference key: " + key);
         }
 
-        Log.d(TAG, "update key: " + key + "=" + value);
+        Log.d(TAG, "update key=" + key + " value=" + value);
 
         switch (key) {
             case PREFERENCE_KEY_UNITS:
@@ -188,10 +193,10 @@ public class TransformSettings {
                 break;
 
             case PREFERENCE_KEY_LOCAL_BASE:
-                String[] coords = value.split(", ");
-                if (coords.length == 2) {
-                    baseX = Double.parseDouble(coords[0]);
-                    baseY = Double.parseDouble(coords[1]);
+                String[] localPair = value.split(", ");
+                if (localPair.length == 2) {
+                    baseY = Double.parseDouble(localPair[0]);
+                    baseX = Double.parseDouble(localPair[1]);
                 } else {
                     throw new IllegalArgumentException("Bad local base coordinates: " + value);
                 }
@@ -203,7 +208,23 @@ public class TransformSettings {
             case PREFERENCE_KEY_SCALE:
                 break;
 
-            case PREFERENCE_KEY_GRID_BASE:
+            case PREFERENCE_KEY_GEO_BASE:
+                String[] geoPair = value.split(", ");
+                if (geoPair.length == 2) {
+                    baseLat = Double.parseDouble(geoPair[0]);
+                    baseLon = Double.parseDouble(geoPair[1]);
+
+                    // Update the grid base point.
+                    GridPoint grid = new GeoPoint(baseLat, baseLon).toGrid();
+                    gridX = grid.getX();
+                    gridY = grid.getY();
+
+                    Log.d(TAG, "update grid base (y,x): " + gridY + ", " + gridX);
+
+                } else {
+                    throw new IllegalArgumentException("Bad geographic base coordinates: " + value);
+                }
+
                 break;
 
             case PREFERENCE_KEY_PROJECTION:
@@ -231,59 +252,17 @@ public class TransformSettings {
                     p2 = c.getDouble(Projections.INDEX_P2);
                     k0 = c.getDouble(Projections.INDEX_K0);
 
+                    // Recalculate grid base.
+                    GridPoint grid = new GeoPoint(baseLat, baseLon).toGrid();
+                    gridX = grid.getX();
+                    gridY = grid.getY();
+
+                    Log.d(TAG, "update grid base (n,e): " + gridY + ", " + gridX);
+
                 } else {
                     throw new IllegalArgumentException("Bad projection code: " + value);
                 }
                 break;
         }
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) { return true; }
-        if (o == null || o.getClass() != this.getClass()) {
-            return false;
-        }
-        // object is a non-null instance of TransformSettings
-        TransformSettings xp = (TransformSettings) o;
-        if (baseX == xp.baseX && baseY == xp.baseY
-                && gridX == xp.gridX && gridY == xp.gridY
-                && rotate == xp.rotate
-                && scale == xp.scale
-                && projection == xp.projection
-                && p0 == xp.p0 && m0 == xp.m0
-                && x0 == xp.m0 && y0 == xp.y0
-                && p1 == xp.p1 && p2 == xp.p2
-                && k0 == xp.k0) {
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public int hashCode() {
-
-        int vcode;
-        long bits;
-        
-        int hash = 7;
-        bits = Double.doubleToLongBits(baseX) ^ Double.doubleToLongBits(baseY);
-        vcode = (int)(bits ^ (bits >> 32));
-        hash = 31 * hash + vcode;
-        bits = Double.doubleToLongBits(gridX) ^ Double.doubleToLongBits(gridY);
-        vcode = (int)(bits ^ (bits >> 32));
-        hash = 31 * hash + vcode;
-        bits = Double.doubleToLongBits(rotate);
-        vcode = (int)(bits ^ (bits >> 32));
-        hash = 31 * hash + vcode;
-        hash = 31 * hash + projection;
-        bits = Double.doubleToLongBits(p0) ^ Double.doubleToLongBits(m0);
-        vcode = (int)(bits ^ (bits >> 32));
-        hash = 31 * hash + vcode;
-        bits = Double.doubleToLongBits(x0) ^ Double.doubleToLongBits(y0);
-        vcode = (int)(bits ^ (bits >> 32));
-        hash = 31 * hash + vcode;
-
-        return hash;
     }
 }

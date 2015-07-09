@@ -7,8 +7,8 @@
         android:orderInCategory="20"
         app:showAsAction="never" />
 
-    <item android:id="@+id/action_test_transform"
-        android:title="@string/action_test_transform"
+    <item android:id="@+id/action_manager_test"
+        android:title="@string/action_manager_test"
         android:orderInCategory="30"
         app:showAsAction="never" />
 

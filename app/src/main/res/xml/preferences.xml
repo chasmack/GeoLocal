@@ -11,18 +11,24 @@
             android:entryValues="@array/pref_units_values"
             android:defaultValue="@string/pref_units_default" />
 
-        <com.asis.chasm.geolocal.CoordPairPreference
-            android:key="@string/perf_local_base_key"
-            android:title="@string/perf_local_base_title"
-            android:dialogTitle="@string/perf_local_base_dialog_title"
-            android:defaultValue="@string/pref_local_base_default" />
-
         <ListPreference
             android:key="@string/pref_projection_key"
             android:title="@string/pref_projection_title"
             android:entries="@array/pref_projection_entries"
             android:entryValues="@array/pref_projection_values"
             android:defaultValue="@string/pref_projection_default" />
+
+        <com.asis.chasm.geolocal.CoordPairPreference
+            android:key="@string/perf_local_base_key"
+            android:title="@string/perf_local_base_title"
+            android:dialogTitle="@string/perf_local_base_dialog_title"
+            android:defaultValue="@string/pref_local_base_default" />
+
+        <com.asis.chasm.geolocal.GeoPairPreference
+            android:key="@string/perf_geo_base_key"
+            android:title="@string/perf_geo_base_title"
+            android:dialogTitle="@string/perf_geo_base_dialog_title"
+            android:defaultValue="@string/pref_geo_base_default" />
 
     </PreferenceCategory>
 

@@ -62,15 +62,28 @@ public class TransformSettingsFragment extends PreferenceFragment
 
             case TransformSettings.PREFERENCE_KEY_LOCAL_BASE:
                 CoordPairPreference coordsPref = (CoordPairPreference) pref;
-                String[] coords = coordsPref.getValue().split(", ");
-                if (coords.length == 2) {
+                String[] localPair = coordsPref.getValue().split(", ");
+                if (localPair.length == 2) {
                     TransformSettings settings = TransformSettings.getSettings();
                     double factor = settings.getUnitsFactor();
-                    double first = Double.parseDouble(coords[0]) * factor;
-                    double second = Double.parseDouble(coords[1]) * factor;
+                    double first = Double.parseDouble(localPair[0]) * factor;
+                    double second = Double.parseDouble(localPair[1]) * factor;
                     String summary = String.format(settings.getLocalCoordFormat(), first, second);
                     summary += " (" + settings.getLocalCoordSuffix() + ")";
                     coordsPref.setSummary(summary);
+                }
+                break;
+
+            case TransformSettings.PREFERENCE_KEY_GEO_BASE:
+                GeoPairPreference geoPref = (GeoPairPreference) pref;
+                String[] geoPair = geoPref.getValue().split(", ");
+                if (geoPair.length == 2) {
+                    TransformSettings settings = TransformSettings.getSettings();
+                    double first = Double.parseDouble(geoPair[0]);
+                    double second = Double.parseDouble(geoPair[1]);
+                    String summary = String.format(settings.getGeographicCoordFormat(), first, second);
+                    summary += " (" + settings.getGeographicCoordSuffix() + ")";
+                    geoPref.setSummary(summary);
                 }
                 break;
 
