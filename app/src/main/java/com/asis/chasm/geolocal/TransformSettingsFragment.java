@@ -14,8 +14,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.asis.chasm.geolocal.PointsContract.Transforms;
-
 public class TransformSettingsFragment extends PreferenceFragment
         implements OnSharedPreferenceChangeListener {
 

@@ -3,19 +3,15 @@ package com.asis.chasm.geolocal;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
-import android.app.FragmentTransaction;
+import android.app.ListFragment;
 import android.content.ContentResolver;
 import android.content.ContentValues;
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -23,7 +19,6 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 import com.asis.chasm.geolocal.PointsContract.Projections;
-import com.asis.chasm.geolocal.PointsContract.Transforms;
 
 public class MainActivity extends Activity {
 
@@ -36,7 +31,7 @@ public class MainActivity extends Activity {
     public static final String FRAGMENT_SETTINGS = "settings";
 
     // XML asset file with projection constants.
-    private static final String PROJECTION_CONSTANTS = "projections.txt";
+    private static final String PROJECTION_CONSTANTS_ASSET = "projections.txt";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,47 +47,26 @@ public class MainActivity extends Activity {
             return;
         }
 
-        // Set defaults for the shared preferences.
-        PreferenceManager.setDefaultValues(this,  R.xml.preferences, false);
 
         // Load the Projections table
-        loadProjections(PROJECTION_CONSTANTS);
+        loadProjections(PROJECTION_CONSTANTS_ASSET);
+
+        // Set defaults for the shared preferences.
+        PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 
         // Initialize the transform settings.
         TransformSettings.initialize(this);
 
-        // Create the Non-UI points manager fragment
-        // Get a fragment manager to add the points manager and points list fragments
+        // Create the Non-UI points manager fragment.
         FragmentManager manager = getFragmentManager();
-
+        Fragment fragment = new PointsManagerFragment();
         manager.beginTransaction()
-               .add((Fragment) new PointsManagerFragment(), FRAGMENT_POINTS_MANAGER)
-               .commit();
-        Log.d(TAG, "PointsManagerFragment new/add/commit.");
+               .add((Fragment) fragment, FRAGMENT_POINTS_MANAGER).commit();
 
-        // Create a new Fragment to be placed in the activity layout
-        PointsListFragment list = new PointsListFragment();
-        Log.d(TAG, "PointsListFragment new");
-
-        // In case this activity was started with special instructions from an
-        // Intent, pass the Intent's extras to the fragment as arguments
-        list.setArguments(getIntent().getExtras());
-
-       // Add the points list fragment to the 'container' FrameLayout
+       // Create the points list fragment.
+        fragment = new PointsListFragment();
         manager.beginTransaction()
-                .add(R.id.container, (Fragment) list, FRAGMENT_POINTS_LIST)
-                .commit();
-       Log.d(TAG, "PointsListFragment add/commit");
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
+                .add(R.id.container, fragment, FRAGMENT_POINTS_LIST).commit();
     }
 
     @Override
@@ -134,12 +108,12 @@ public class MainActivity extends Activity {
         return true;
     }
 
-    private void loadProjections(String filename) {
+    /*
+    * Read projection data from a resource data file and
+    * write it to the content provider's Projections table.
+    */
 
-        /*
-        * Read projection data from a resource data file and
-        * write it to the content provider's Projections table.
-        */
+    private void loadProjections(String filename) {
 
         ArrayList<ContentValues> valuesList = new ArrayList<ContentValues>();
         ContentResolver resolver = getContentResolver();
@@ -230,10 +204,9 @@ public class MainActivity extends Activity {
                 }
             }
         }
-        // Perform the bulk insert
-        int cnt = valuesList.size();
-        resolver.bulkInsert(PROJECTIONS_URI, valuesList.toArray(new ContentValues[cnt]));
 
+        // Perform the bulk insert
+        int cnt = resolver.bulkInsert(PROJECTIONS_URI, valuesList.toArray(new ContentValues[0]));
         Log.d(TAG, "Projections loaded: " + cnt);
     }
 
@@ -260,117 +233,5 @@ public class MainActivity extends Activity {
         val = Integer.parseInt(parts[0]) + Integer.parseInt(parts[1])/60.0;
 
         return neg ? -1.0 * val : val;
-    }
-
-    private void loadProjectionsAsync(String filename) {
-
-        /*
-        * Background task to read projection data from a resource data file
-        * and write it to the content provider's Projections table
-        */
-
-        final String fn = filename;
-
-        new Thread(new Runnable() {
-
-            @Override
-            public void run() {
-
-                ArrayList<ContentValues> valuesList = new ArrayList<ContentValues>();
-                ContentResolver resolver = getContentResolver();
-
-                final Uri PROJECTIONS_URI = Uri.parse(PointsContract.Projections.CONTENT_URI);
-
-                BufferedReader reader = null;
-                try {
-                    reader = new BufferedReader(
-                            new InputStreamReader(getAssets().open(fn), "UTF-8"));
-
-                    String line;
-                    String[] parts;
-
-                    // Delete any entries already in the Coordinate Systems table
-                    int cnt = resolver.delete(PROJECTIONS_URI, null, null);
-                    Log.d(TAG, "Projections deleted: " + cnt);
-
-                    READLINE:
-                    while ((line = reader.readLine()) != null) {
-
-                        if (line.startsWith("#"))
-                            continue;       // comment lines start with #
-
-                        parts = line.split(",", 11);
-                        if (parts.length != 11) {
-                            Log.d(TAG, "File format error: " + line);
-                            continue;
-                        }
-
-                        ContentValues values = new ContentValues();
-
-                        // 0-CODE, 1-DESC, 2-TYPE, 3-PROJ, 4-P0, 5-M0, 6-X0, 7-Y0, 8-P1, 9-P2, 10-SF
-                        values.put(Projections.COLUMN_CODE, parts[0]);
-                        values.put(Projections.COLUMN_DESC, parts[1]);
-                        switch (parts[2]) {
-                            case "SPCS":
-                                values.put(Projections.COLUMN_COORD_SYSTEM, Projections.COORD_SYSTEM_SPCS);
-                                break;
-                            case "UTM":
-                                values.put(Projections.COLUMN_COORD_SYSTEM, Projections.COORD_SYSTEM_UTM);
-                                break;
-                            case "USER":
-                                values.put(Projections.COLUMN_COORD_SYSTEM, Projections.COORD_SYSTEM_USER);
-                                break;
-                            default:
-                                Log.d(TAG, "Invalid projection TYPE: " + line);
-                                continue READLINE;
-                        }
-                        switch (parts[3]) {
-                            case "L":
-                                values.put(Projections.COLUMN_PROJECTION, Projections.PROJECTION_LC);
-                                break;
-                            case "T":
-                                values.put(Projections.COLUMN_PROJECTION, Projections.PROJECTION_TM);
-                                break;
-                            case "O":
-                                values.put(Projections.COLUMN_PROJECTION, Projections.PROJECTION_OM);
-                                break;
-                            default:
-                                Log.d(TAG, "Invalid projection PROJ: " + line);
-                                continue READLINE;
-                        }
-                        values.put(Projections.COLUMN_P0, parseDegMin(parts[4]));
-                        values.put(Projections.COLUMN_M0, parseDegMin(parts[5]));
-                        values.put(Projections.COLUMN_X0, Double.parseDouble(parts[6]));
-                        values.put(Projections.COLUMN_Y0, Double.parseDouble(parts[7]));
-                        values.put(Projections.COLUMN_P1, parseDegMin(parts[8]));
-                        values.put(Projections.COLUMN_P2, parseDegMin(parts[9]));
-
-                        // Convert integer scale factor to K0 = 1 - 1/SF
-                        values.put(Projections.COLUMN_K0,
-                                parts[10].isEmpty() ? 0.0 :
-                                        1.0 - 1.0 / Long.parseLong(parts[10]));
-
-                        valuesList.add(values);
-                    }
-
-                } catch (IOException e) {
-                    Log.d(TAG, e.toString());
-
-                } finally {
-                    if (reader != null) {
-                        try {
-                            reader.close();
-                        } catch (IOException e) {
-                            Log.d(TAG, e.toString());
-                        }
-                    }
-                }
-                // Perform the bulk insert
-                int cnt = valuesList.size();
-                resolver.bulkInsert(PROJECTIONS_URI, valuesList.toArray(new ContentValues[cnt]));
-
-                Log.d(TAG, "Projections loaded: " + cnt);
-            }
-        }).start();
     }
 }

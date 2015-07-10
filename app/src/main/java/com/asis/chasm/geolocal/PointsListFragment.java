@@ -2,7 +2,6 @@ package com.asis.chasm.geolocal;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.app.FragmentManager;
 import android.app.LoaderManager;
 import android.content.Context;
 import android.content.CursorLoader;
@@ -18,18 +17,14 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.view.View.OnClickListener;
-import android.widget.Toast;
 
 import com.asis.chasm.geolocal.PointsContract.Points;
-import com.asis.chasm.geolocal.PointsContract.Transforms;
 
 /**
  * A fragment representing a list of Items.
@@ -132,8 +127,7 @@ public class PointsListFragment extends ListFragment
         // Connect the cursor adapter to the points list.
         setListAdapter(mAdapter);
 
-        // Prepare the loader.  Either re-connect with an existing one,
-        // or start a new one.
+        // Prepare the loader.  Either re-connect with an existing one, or start a new one.
         getLoaderManager().initLoader(0, null, this);
     }
 
@@ -142,6 +136,7 @@ public class PointsListFragment extends ListFragment
         Log.d(TAG, "onViewStateRestored");
         super.onViewStateRestored(savedInstanceState);
 
+        // Initialize the coordinate type setting default if necessary.
         RadioGroup group = (RadioGroup) getActivity().findViewById(R.id.radio_group);
         int checked = group.getCheckedRadioButtonId();
         switch (group.getCheckedRadioButtonId()) {
@@ -157,14 +152,16 @@ public class PointsListFragment extends ListFragment
                 break;
         }
 
+        // Add a units label to the Local Coordinates radio button
+        TextView tv = (TextView) getView().findViewById(R.id.radio_local);
+        tv.setText("Local (" + TransformSettings.getSettings().getUnitsName() + ")");
+
     }
 
     @Override
     public void onResume() {
         Log.d(TAG, "onResume");
         super.onResume();
-        TextView tv = (TextView) getView().findViewById(R.id.radio_local);
-        tv.setText("Local (" + TransformSettings.getSettings().getUnitsName() + ")");
     }
 
     @Override
@@ -178,12 +175,6 @@ public class PointsListFragment extends ListFragment
         Log.d(TAG, "onDetach");
         super.onDetach();
         mListener = null;
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        Log.d(TAG, "onSaveInstanceState");
-        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -226,13 +217,11 @@ public class PointsListFragment extends ListFragment
     private static class PointsCursorAdapter extends CursorAdapter {
 
         private LayoutInflater mInflater;
-        private TransformSettings mSettings;
         private int mCoordinateType;
 
         public PointsCursorAdapter(Context context, Cursor c, int flags) {
             super(context, c, flags);
             mInflater = LayoutInflater.from(context);
-            mSettings = TransformSettings.getSettings();
         }
 
         @Override
@@ -253,40 +242,29 @@ public class PointsListFragment extends ListFragment
             tv = (TextView) view.findViewById(R.id.desc);
             tv.setText(cursor.getString(Points.INDEX_DESC));
 
+
+            TransformSettings settings = TransformSettings.getSettings();
             switch (mCoordinateType) {
 
                 case COORDINATE_TYPE_GEOGRAPHIC:
-                    // Log.d(TAG, "point: " + cursor.getString(Points.INDEX_NAME));
-
-                    LocalPoint local = new LocalPoint(
+                    GeoPoint geo = new LocalPoint(
                             cursor.getDouble(Points.INDEX_X),
-                            cursor.getDouble(Points.INDEX_Y));
-                    // Log.d(TAG, "local point (n/e): " + local.getY() + ", " + local.getX());
-
-                    GridPoint grid = local.toGrid();
-                    // Log.d(TAG, "grid point (n/e): " + grid.getY() + ", " + grid.getX());
-
-                    GeoPoint geo = grid.toGeo();
-                    // Log.d(TAG, "geo point (lat/lon): " + geo.getLat() + ", " + geo.getLon());
+                            cursor.getDouble(Points.INDEX_Y)).toGrid().toGeo();
 
                     tv = (TextView) view.findViewById(R.id.coord_values);
-                    tv.setText(String.format(mSettings.getGeographicCoordFormat(),
+                    tv.setText(String.format(settings.getGeographicCoordFormat(),
                             geo.getLat(), geo.getLon()));
-                            // cursor.getDouble(Points.INDEX_LAT),
-                            // cursor.getDouble(Points.INDEX_LON)));
                     tv = (TextView) view.findViewById(R.id.coord_prefix);
                     tv.setText("lat/lon:");
                     break;
 
                 case COORDINATE_TYPE_LOCAL:
                     tv = (TextView) view.findViewById(R.id.coord_values);
-                    tv.setText(String.format(mSettings.getLocalCoordFormat(),
-                            cursor.getDouble(Points.INDEX_Y) * mSettings.getUnitsFactor(),
-                            cursor.getDouble(Points.INDEX_X) * mSettings.getUnitsFactor()));
+                    tv.setText(String.format(settings.getLocalCoordFormat(),
+                            cursor.getDouble(Points.INDEX_Y) * settings.getUnitsFactor(),
+                            cursor.getDouble(Points.INDEX_X) * settings.getUnitsFactor()));
                     tv =(TextView) view.findViewById(R.id.coord_prefix);
                     tv.setText("N/E:");
-                    // tv =(TextView) view.findViewById(R.id.coord_suffix);
-                    // tv.setText("(" + mSettings.getLocalCoordSuffix() + ")");
                     break;
             }
         }
@@ -317,7 +295,7 @@ public class PointsListFragment extends ListFragment
                 Uri.parse(Points.CONTENT_URI),
                 Points.PROJECTION,      // Projection to return
                 null,                   // No selection clause
-                null,                    // No selection arguments
+                null,                   // No selection arguments
                 null                    // Default sort order
         );
 

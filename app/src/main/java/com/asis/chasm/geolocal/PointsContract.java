@@ -1,6 +1,5 @@
 package com.asis.chasm.geolocal;
 
-import android.content.ContentResolver;
 import android.provider.BaseColumns;
 
 /**
@@ -31,20 +30,15 @@ public final class PointsContract {
         public static final String COLUMN_TYPE = "type";
         public static final String COLUMN_X = "x";
         public static final String COLUMN_Y = "y";
-        public static final String COLUMN_LAT = "lat";
-        public static final String COLUMN_LON = "lon";
 
         public static final int INDEX_NAME = 1;
         public static final int INDEX_DESC = 2;
         public static final int INDEX_TYPE = 3;
         public static final int INDEX_X = 4;
         public static final int INDEX_Y = 5;
-        public static final int INDEX_LAT = 6;
-        public static final int INDEX_LON = 7;
 
         public static final String[] PROJECTION = { _ID,
-                COLUMN_NAME, COLUMN_DESC, COLUMN_TYPE,
-                COLUMN_X, COLUMN_Y, COLUMN_LAT, COLUMN_LON
+                COLUMN_NAME, COLUMN_DESC, COLUMN_TYPE, COLUMN_X, COLUMN_Y
         };
 
         // Default sort order sorts numerically.
@@ -96,33 +90,5 @@ public final class PointsContract {
 
         // Default sort order sorts numerically.
         public static final String DEFAULT_ORDER_BY = null;
-    }
-
-    public static abstract class Transforms implements BaseColumns {
-
-        public static final String CONTENT_PATH = "transforms";
-        public static final String CONTENT_URI = BASE_URI + CONTENT_PATH;
-        public static final String CONTENT_TYPE = "vnd.android.cursor.dir/vnd.chasm.transform";
-        public static final String CONTENT_TYPE_ITEM = "vnd.android.cursor.item/vnd.chasm.transform";
-
-        public static final String TABLE = "transforms";
-        public static final String COLUMN_REF_X = "ref_x";
-        public static final String COLUMN_REF_Y = "ref_y";
-        public static final String COLUMN_REF_LAT = "ref_lat";
-        public static final String COLUMN_REF_LON = "ref_lon";
-        public static final String COLUMN_ROTATE = "rot";
-        public static final String COLUMN_SCALE = "scale";
-        public static final String COLUMN_CODE = "code";
-        public static final String COLUMN_DESC = "desc";
-        public static final String COLUMN_COORD_SYSTEM = "system";
-        public static final String COLUMN_PROJECTION = "proj";
-        public static final String COLUMN_P0 = "p0";
-        public static final String COLUMN_M0 = "m0";
-        public static final String COLUMN_X0 = "x0";
-        public static final String COLUMN_Y0 = "y0";
-        public static final String COLUMN_P1 = "p1";
-        public static final String COLUMN_P2 = "p2";
-        public static final String COLUMN_K0 = "k0";
-
     }
 }

@@ -17,7 +17,6 @@ import java.util.HashMap;
 
 import com.asis.chasm.geolocal.PointsContract.Points;
 import com.asis.chasm.geolocal.PointsContract.Projections;
-import com.asis.chasm.geolocal.PointsContract.Transforms;
 
 public class PointsProvider extends ContentProvider {
 
@@ -38,8 +37,6 @@ public class PointsProvider extends ContentProvider {
     private static final int POINTS_ID = 2;
     private static final int PROJECTIONS = 3;
     private static final int PROJECTIONS_ID = 4;
-    private static final int TRANSFORMS = 5;
-    private static final int TRANSFORMS_ID = 6;
 
     static {
 
@@ -51,8 +48,6 @@ public class PointsProvider extends ContentProvider {
         sUriMatcher.addURI(PointsContract.AUTHORITY, Points.CONTENT_PATH + "/#", POINTS_ID);
         sUriMatcher.addURI(PointsContract.AUTHORITY, Projections.CONTENT_PATH, PROJECTIONS);
         sUriMatcher.addURI(PointsContract.AUTHORITY, Projections.CONTENT_PATH + "/#", PROJECTIONS_ID);
-        sUriMatcher.addURI(PointsContract.AUTHORITY, Transforms.CONTENT_PATH, TRANSFORMS);
-        sUriMatcher.addURI(PointsContract.AUTHORITY, Transforms.CONTENT_PATH + "/#", TRANSFORMS_ID);
     }
 
     class PointsDbHelper extends SQLiteOpenHelper {
@@ -69,10 +64,7 @@ public class PointsProvider extends ContentProvider {
                         + Points.COLUMN_DESC + " TEXT" + COMMA_SEP
                         + Points.COLUMN_TYPE + " INTEGER" + COMMA_SEP
                         + Points.COLUMN_X + " REAL" + COMMA_SEP
-                        + Points.COLUMN_Y + " REAL" + COMMA_SEP
-                        + Points.COLUMN_LAT + " REAL" + COMMA_SEP
-                        + Points.COLUMN_LON + " REAL"
-                        + ")";
+                        + Points.COLUMN_Y + " REAL" + ")";
 
         private static final String SQL_CREATE_PROJECTIONS =
                 "CREATE TABLE " + PointsContract.Projections.TABLE + " ("
@@ -87,30 +79,7 @@ public class PointsProvider extends ContentProvider {
                         + Projections.COLUMN_Y0 + " REAL" + COMMA_SEP
                         + Projections.COLUMN_P1 + " REAL" + COMMA_SEP
                         + Projections.COLUMN_P2 + " REAL" + COMMA_SEP
-                        + Projections.COLUMN_K0 + " REAL"
-                        + ")";
-
-        private static final String SQL_CREATE_TRANSFORMS =
-                "CREATE TABLE " + PointsContract.Transforms.TABLE + " ("
-                        + Transforms._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                        + Transforms.COLUMN_REF_X + " REAL" + COMMA_SEP
-                        + Transforms.COLUMN_REF_Y + " REAL" + COMMA_SEP
-                        + Transforms.COLUMN_REF_LAT + " REAL" + COMMA_SEP
-                        + Transforms.COLUMN_REF_LON + " REAL" + COMMA_SEP
-                        + Transforms.COLUMN_ROTATE + " REAL" + COMMA_SEP
-                        + Transforms.COLUMN_SCALE + " REAL" + COMMA_SEP
-                        + Transforms.COLUMN_CODE + " TEXT" + COMMA_SEP
-                        + Transforms.COLUMN_DESC + " TEXT" + COMMA_SEP
-                        + Transforms.COLUMN_COORD_SYSTEM + " INTEGER" + COMMA_SEP
-                        + Transforms.COLUMN_PROJECTION + " INTEGER" + COMMA_SEP
-                        + Transforms.COLUMN_P0 + " REAL" + COMMA_SEP
-                        + Transforms.COLUMN_M0 + " REAL" + COMMA_SEP
-                        + Transforms.COLUMN_X0 + " REAL" + COMMA_SEP
-                        + Transforms.COLUMN_Y0 + " REAL" + COMMA_SEP
-                        + Transforms.COLUMN_P1 + " REAL" + COMMA_SEP
-                        + Transforms.COLUMN_P2 + " REAL" + COMMA_SEP
-                        + Transforms.COLUMN_K0 + " REAL"
-                        + ")";
+                        + Projections.COLUMN_K0 + " REAL" + ")";
 
         private static final String SQL_DROP_POINTS =
                 "DROP TABLE IF EXISTS " + Points.TABLE;
@@ -118,26 +87,18 @@ public class PointsProvider extends ContentProvider {
         private static final String SQL_DROP_PROJECTIONS =
                 "DROP TABLE IF EXISTS " + Projections.TABLE;
 
-        private static final String SQL_DROP_TRANSFORMS =
-                "DROP TABLE IF EXISTS " + Transforms.TABLE;
-
         public PointsDbHelper(Context context) {
             super(context, DATABASE_NAME, null, DATABASE_VERSION);
         }
 
         public void onCreate(SQLiteDatabase db){
-            // Create the tables
             db.execSQL(SQL_CREATE_POINTS);
             db.execSQL(SQL_CREATE_PROJECTIONS);
-            db.execSQL(SQL_CREATE_TRANSFORMS);
-
-
         }
 
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
             db.execSQL(SQL_DROP_POINTS);
             db.execSQL(SQL_DROP_PROJECTIONS);
-            db.execSQL(SQL_DROP_TRANSFORMS);
             onCreate(db);
         }
 
@@ -198,8 +159,6 @@ public class PointsProvider extends ContentProvider {
                 }
                 break;
 
-            case TRANSFORMS:
-            case TRANSFORMS_ID:
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
         }
@@ -239,10 +198,6 @@ public class PointsProvider extends ContentProvider {
                 return Projections.CONTENT_TYPE;
             case PROJECTIONS_ID:
                 return Projections.CONTENT_TYPE_ITEM;
-            case TRANSFORMS:
-                return Transforms.CONTENT_TYPE;
-            case TRANSFORMS_ID:
-                return Transforms.CONTENT_TYPE_ITEM;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
         }
@@ -258,9 +213,6 @@ public class PointsProvider extends ContentProvider {
                 break;
             case PROJECTIONS:
                 table = Projections.TABLE;
-                break;
-            case TRANSFORMS:
-                table = Transforms.TABLE;
                 break;
             default:
                 throw new IllegalArgumentException("Illegal URI: " + uri);
@@ -280,7 +232,6 @@ public class PointsProvider extends ContentProvider {
     @Override
     public int bulkInsert(Uri uri, ContentValues[] values) {
 
-
         String table;
         switch (sUriMatcher.match(uri)) {
             case POINTS:
@@ -288,9 +239,6 @@ public class PointsProvider extends ContentProvider {
                 break;
             case PROJECTIONS:
                 table = Projections.TABLE;
-                break;
-            case TRANSFORMS:
-                table = Transforms.TABLE;
                 break;
             default:
                 throw new IllegalArgumentException("Illegal URI: " + uri);
@@ -345,10 +293,6 @@ public class PointsProvider extends ContentProvider {
                 rows = db.delete(Projections.TABLE, fullSelect, selectArgs);
                 break;
 
-            case TRANSFORMS_ID:
-            case TRANSFORMS:
-                return 0;
-
             default:
                 throw new IllegalArgumentException("Illegal URI: " + uri);
         }
@@ -361,7 +305,8 @@ public class PointsProvider extends ContentProvider {
     @Override
     public int update(Uri uri, ContentValues values, String selection,
                       String[] selectionArgs) {
-        // TODO: Implement this to handle requests to update one or more rows.
+
+        // TODO: Implement content resolver update requests.
         throw new UnsupportedOperationException("Not yet implemented");
     }
 }

@@ -14,7 +14,7 @@
     <!-- Preference string resources -->
     <string name="pref_units_key">pref_units</string>
     <string name="pref_units_title">Units</string>
-    <string name="pref_units_default">meters</string>
+    <string name="pref_units_default">survey_feet</string>
     <string-array name="pref_units_entries">
         <item>Meters</item>
         <item>US Survey Feet</item>
