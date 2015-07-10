@@ -21,7 +21,7 @@ public class TransformSettings {
     // Preference keys.
     public static final String PREFERENCE_KEY_UNITS = "pref_units";
     public static final String PREFERENCE_KEY_LOCAL_BASE = "pref_local_base";
-    public static final String PREFERENCE_KEY_ROTATE = "pref_rotate";
+    public static final String PREFERENCE_KEY_ROTATION = "pref_rotation";
     public static final String PREFERENCE_KEY_SCALE = "pref_scale";
     public static final String PREFERENCE_KEY_GEO_BASE = "pref_geo_base";
     public static final String PREFERENCE_KEY_PROJECTION = "pref_projection";
@@ -63,8 +63,11 @@ public class TransformSettings {
 
     // Geographic coordinate pair format.
     private static final String GEOGRAPHIC_COORD_FORMAT = "%.8f, %.8f";
-
     public  String getGeographicCoordFormat() { return GEOGRAPHIC_COORD_FORMAT; }
+
+    // Rotation angle format.
+    private static final String ROTATION_ANGLE_FORMAT = "%.6f";
+    public  String getRotationAngleFormat() { return ROTATION_ANGLE_FORMAT; }
 
     // Conversion factors from internal system units (meters) to display units.
     public static final double UNITS_FACTOR_METERS = 1.0;
@@ -79,10 +82,13 @@ public class TransformSettings {
     public  double getBaseX() { return baseX; }
     public  double getBaseY() { return baseY; }
 
-    // Grid reference point coordinates in meters.
+    // Grid reference point coordinates (meters), theta and scale factor.
     private double gridX, gridY;
+    private double gridTheta, gridSF;
     public  double getGridX() { return gridX; }
     public  double getGridY() { return gridY; }
+    public  double getGridTheta() { return gridTheta; }
+    public  double getGridSF() { return gridSF; }
 
     // Geographic base point coordinates.
     private double baseLat, baseLon;
@@ -91,8 +97,8 @@ public class TransformSettings {
 
     // Rotation about reference point from local basis to grid in degrees.
     // A negative value rotates right (clockwise) from local to grid.
-    private double rotate;
-    public  double getRotate() { return rotate; }
+    private double rotation;
+    public  double getRotation() { return rotation; }
 
     // Scale factor from local distances to geographic distance.
     private double scale;
@@ -153,8 +159,7 @@ public class TransformSettings {
 
     public void update(Context context, String key) {
 
-        // TODO: Hook up transform settings.
-        rotate = -1.2250;
+        // TODO: Figure out what to do with the local scale factor.
         scale = 1.0;
 
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
@@ -202,10 +207,12 @@ public class TransformSettings {
                 }
                 break;
 
-            case PREFERENCE_KEY_ROTATE:
+            case PREFERENCE_KEY_ROTATION:
+                rotation = Double.parseDouble(value);
                 break;
 
             case PREFERENCE_KEY_SCALE:
+                scale = Double.parseDouble(value);
                 break;
 
             case PREFERENCE_KEY_GEO_BASE:
@@ -214,10 +221,12 @@ public class TransformSettings {
                     baseLat = Double.parseDouble(geoPair[0]);
                     baseLon = Double.parseDouble(geoPair[1]);
 
-                    // Update the grid base point.
+                    // Update the grid base coordinates, theta and scale factor.
                     GridPoint grid = new GeoPoint(baseLat, baseLon).toGrid();
                     gridX = grid.getX();
                     gridY = grid.getY();
+                    gridTheta = grid.getTheta();
+                    gridSF = grid.getK();
 
                     Log.d(TAG, "update grid base (y,x): " + gridY + ", " + gridX);
 
@@ -256,6 +265,8 @@ public class TransformSettings {
                     GridPoint grid = new GeoPoint(baseLat, baseLon).toGrid();
                     gridX = grid.getX();
                     gridY = grid.getY();
+                    gridTheta = grid.getTheta();
+                    gridSF = grid.getK();
 
                     Log.d(TAG, "update grid base (n,e): " + gridY + ", " + gridX);
 

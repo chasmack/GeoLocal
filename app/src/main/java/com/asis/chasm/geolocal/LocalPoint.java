@@ -21,7 +21,10 @@ public class LocalPoint {
         TransformSettings settings = TransformSettings.getSettings();
         double x = (this.x - settings.getBaseX());
         double y = (this.y - settings.getBaseY());
-        double rot = Math.toRadians(settings.getRotate());
+
+        // Grid to ground rotation is sum of the theta at the
+        // grid reference point and the ground to true roataion setting.
+        double rot = Math.toRadians(settings.getRotation() + settings.getGridTheta());
         GridPoint grid = new GridPoint(
                 x * Math.cos(rot) - y * Math.sin(rot) + settings.getGridX(),
                 x * Math.sin(rot) + y * Math.cos(rot) + settings.getGridY());

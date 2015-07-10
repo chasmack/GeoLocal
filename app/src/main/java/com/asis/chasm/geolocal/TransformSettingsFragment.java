@@ -69,9 +69,13 @@ public class TransformSettingsFragment extends PreferenceFragment
                     double first = Double.parseDouble(localPair[0]) * factor;
                     double second = Double.parseDouble(localPair[1]) * factor;
                     String summary = String.format(settings.getLocalCoordFormat(), first, second);
-                    summary += " (" + settings.getLocalCoordSuffix() + ")";
                     coordsPref.setSummary(summary);
                 }
+                break;
+
+            case TransformSettings.PREFERENCE_KEY_ROTATION:
+                RotationPreference rotatePref = (RotationPreference) pref;
+                rotatePref.setSummary(rotatePref.getValue());
                 break;
 
             case TransformSettings.PREFERENCE_KEY_GEO_BASE:
@@ -82,7 +86,6 @@ public class TransformSettingsFragment extends PreferenceFragment
                     double first = Double.parseDouble(geoPair[0]);
                     double second = Double.parseDouble(geoPair[1]);
                     String summary = String.format(settings.getGeographicCoordFormat(), first, second);
-                    summary += " (" + settings.getGeographicCoordSuffix() + ")";
                     geoPref.setSummary(summary);
                 }
                 break;

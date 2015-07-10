@@ -22,6 +22,7 @@ import android.widget.Button;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.view.View.OnClickListener;
@@ -43,8 +44,8 @@ public class PointsListFragment extends ListFragment
     private static final String TAG = "ListFragment";
 
     // Points type to display in points list.
-    private static final int POINTS_TYPE_LOCAL = 1;
-    private static final int POINTS_TYPE_GEOGRAPHIC = 2;
+    private static final int COORDINATE_TYPE_LOCAL = 1;
+    private static final int COORDINATE_TYPE_GEOGRAPHIC = 2;
 
     // This is the Adapter being used to display the list's data.
     private PointsCursorAdapter mAdapter;
@@ -98,8 +99,10 @@ public class PointsListFragment extends ListFragment
     }
 
     @Override public void onActivityCreated(Bundle savedInstanceState) {
+        Log.d(TAG, "onActivityCreated bundle="
+                + (savedInstanceState == null ? "null" : savedInstanceState.toString()));
+
         super.onActivityCreated(savedInstanceState);
-        Log.d(TAG, "onActivityCreated");
 
         // We have a menu item to show in action bar.
         setHasOptionsMenu(true);
@@ -115,20 +118,16 @@ public class PointsListFragment extends ListFragment
         RadioButton local = (RadioButton) getActivity().findViewById(R.id.radio_local);
         local.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
-                mAdapter.setCoordinateType(POINTS_TYPE_LOCAL);
+                mAdapter.setCoordinateType(COORDINATE_TYPE_LOCAL);
             }
         });
 
         RadioButton geo = (RadioButton) getActivity().findViewById(R.id.radio_geographic);
         geo.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
-                mAdapter.setCoordinateType(POINTS_TYPE_GEOGRAPHIC);
+                mAdapter.setCoordinateType(COORDINATE_TYPE_GEOGRAPHIC);
             }
         });
-
-        // TODO: initialize radio button from savedInstanceState
-        local.setChecked(true);
-        mAdapter.setCoordinateType(POINTS_TYPE_LOCAL);
 
         // Connect the cursor adapter to the points list.
         setListAdapter(mAdapter);
@@ -139,7 +138,30 @@ public class PointsListFragment extends ListFragment
     }
 
     @Override
+    public void onViewStateRestored(Bundle savedInstanceState) {
+        Log.d(TAG, "onViewStateRestored");
+        super.onViewStateRestored(savedInstanceState);
+
+        RadioGroup group = (RadioGroup) getActivity().findViewById(R.id.radio_group);
+        int checked = group.getCheckedRadioButtonId();
+        switch (group.getCheckedRadioButtonId()) {
+            case R.id.radio_local:
+                mAdapter.setCoordinateType(COORDINATE_TYPE_LOCAL);
+                break;
+            case R.id.radio_geographic:
+                mAdapter.setCoordinateType(COORDINATE_TYPE_GEOGRAPHIC);
+                break;
+            default:
+                group.check(R.id.radio_local);
+                mAdapter.setCoordinateType(COORDINATE_TYPE_LOCAL);
+                break;
+        }
+
+    }
+
+    @Override
     public void onResume() {
+        Log.d(TAG, "onResume");
         super.onResume();
         TextView tv = (TextView) getView().findViewById(R.id.radio_local);
         tv.setText("Local (" + TransformSettings.getSettings().getUnitsName() + ")");
@@ -147,6 +169,7 @@ public class PointsListFragment extends ListFragment
 
     @Override
     public void onPause() {
+        Log.d(TAG, "onPause");
         super.onPause();
     }
 
@@ -155,6 +178,12 @@ public class PointsListFragment extends ListFragment
         Log.d(TAG, "onDetach");
         super.onDetach();
         mListener = null;
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        Log.d(TAG, "onSaveInstanceState");
+        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -226,7 +255,7 @@ public class PointsListFragment extends ListFragment
 
             switch (mCoordinateType) {
 
-                case POINTS_TYPE_GEOGRAPHIC:
+                case COORDINATE_TYPE_GEOGRAPHIC:
                     // Log.d(TAG, "point: " + cursor.getString(Points.INDEX_NAME));
 
                     LocalPoint local = new LocalPoint(
@@ -249,7 +278,7 @@ public class PointsListFragment extends ListFragment
                     tv.setText("lat/lon:");
                     break;
 
-                case POINTS_TYPE_LOCAL:
+                case COORDINATE_TYPE_LOCAL:
                     tv = (TextView) view.findViewById(R.id.coord_values);
                     tv.setText(String.format(mSettings.getLocalCoordFormat(),
                             cursor.getDouble(Points.INDEX_Y) * mSettings.getUnitsFactor(),

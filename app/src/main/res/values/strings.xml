@@ -12,44 +12,46 @@
     <string name="action_settings">Settings</string>
 
     <!-- Preference string resources -->
-    <string name="category_local">Transform settings</string>
-
     <string name="pref_units_key">pref_units</string>
     <string name="pref_units_title">Units</string>
     <string name="pref_units_default">meters</string>
     <string-array name="pref_units_entries">
         <item>Meters</item>
         <item>US Survey Feet</item>
-        <item>International Feet</item>
     </string-array>
     <string-array name="pref_units_values">
         <item>meters</item>
         <item>survey_feet</item>
-        <item>int_feet</item>
     </string-array>
 
     <string name="perf_local_base_key">pref_local_base</string>
-    <string name="perf_local_base_title">Local base</string>
-    <string name="perf_local_base_dialog_title">Local base</string>
+    <string name="perf_local_base_title">Local reference point</string>
+    <string name="perf_local_base_dialog_title">Local reference point</string>
     <string name="pref_local_base_default">0.000, 0.000</string>
-    <string name="pref_local_base_hint">0</string>
     <string name="pref_local_base_first_title">N:</string>
     <string name="pref_local_base_second_title">E:</string>
-    <string name="local_base_message">Northing/Easting for the local base point.</string>
+    <string name="local_base_message">Northing/Easting of the local reference point.</string>
 
     <string name="perf_geo_base_key">pref_geo_base</string>
-    <string name="perf_geo_base_title">Geographic base</string>
-    <string name="perf_geo_base_dialog_title">Geographic base</string>
-    <string name="pref_geo_base_default">0.000000, 0.000000</string>
-    <string name="pref_geo_base_hint">0</string>
+    <string name="perf_geo_base_title">Geographic reference point</string>
+    <string name="perf_geo_base_dialog_title">Geographic reference point</string>
+    <string name="pref_geo_base_default">0.00000000, 0.00000000</string>
     <string name="pref_geo_base_units">deg</string>
     <string name="pref_geo_base_first_title">lat:</string>
     <string name="pref_geo_base_second_title">lon:</string>
-    <string name="geo_base_message">Lat/lon for the geographic base.</string>
+    <string name="geo_base_message">Lat/lon of the geographic reference point.</string>
 
     <string name="pref_projection_key">pref_projection</string>
     <string name="pref_projection_title">Coordinate system projection</string>
     <string name="pref_projection_default">0401</string>
+
+    <string name="pref_rotation_key">pref_rotation</string>
+    <string name="pref_rotation_title">Rotation to true</string>
+    <string name="pref_rotation_dialog_title">Rotation to true</string>
+    <string name="pref_rotation_suffix">deg</string>
+    <string name="pref_rotation_default">0.000000</string>
+    <string name="pref_rotation_message">Rotation from ground to geographic (negative values rotates clockwise)</string>
+
     <string-array name="pref_projection_entries">
         <item>CA Zone 1</item>
         <item>CA Zone 2</item>

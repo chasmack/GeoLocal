@@ -62,7 +62,10 @@ public class GridPoint {
         TransformSettings settings = TransformSettings.getSettings();
         double x = (this.x - settings.getGridX()) / settings.getScale();
         double y = (this.y - settings.getGridY()) / settings.getScale();
-        double rot = -1.0 * Math.toRadians(settings.getRotate());
+
+        // Grid to ground rotation is sum of the theta at the
+        // grid reference point and the ground to true roataion setting.
+        double rot = -1.0 * Math.toRadians(settings.getRotation() + settings.getGridTheta());
         return new LocalPoint(
                 x * Math.cos(rot) - y * Math.sin(rot) + settings.getBaseX(),
                 x * Math.sin(rot) + y * Math.cos(rot) + settings.getBaseY());

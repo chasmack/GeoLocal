@@ -29,7 +29,6 @@
             android:background="#00000000"
             android:inputType="numberDecimal|numberSigned"
             android:gravity="right"
-            android:hint="@string/pref_local_base_hint"
             android:minWidth="60dp"
             android:imeOptions="actionNext" />
 
@@ -68,7 +67,6 @@
             android:background="#00000000"
             android:inputType="numberDecimal|numberSigned"
             android:gravity="right"
-            android:hint="@string/pref_local_base_hint"
             android:minWidth="60dp"
             android:imeOptions="actionDone" />
 
