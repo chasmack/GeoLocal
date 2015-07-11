@@ -22,8 +22,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Map;
-import java.util.Set;
 
 import com.asis.chasm.geolocal.PointsContract.Points;
 
@@ -102,24 +100,6 @@ public class PointsManagerFragment extends Fragment implements
 
     private void managerTest() {
         Toast.makeText(getActivity(), "managerTest()", Toast.LENGTH_SHORT).show();
-
-        TransformSettings settings = TransformSettings.getSettings();
-
-        LocalPoint local = new LocalPoint(settings.getBaseX(), settings.getBaseY());
-        Log.d(TAG, "local point (n/e): " + local.getY() + ", " + local.getX());
-
-        GridPoint grid = local.toGrid();
-        Log.d(TAG, "grid point (n/e): " + grid.getY() + ", " + grid.getX());
-
-        GeoPoint geo = grid.toGeo();
-        Log.d(TAG, "geo point (lat/lon): " + geo.getLat() + ", " + geo.getLon());
-
-        grid = geo.toGrid();
-        Log.d(TAG, "grid point (n/e): " + grid.getY() + ", " + grid.getX());
-
-        local = grid.toLocal();
-        Log.d(TAG, "local point (n/e): " + local.getY() + ", " + local.getX());
-
     }
 
     // Interaction from points list fragment onListItemClick

@@ -7,7 +7,6 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.TextView;
 
 /*
 * Coordinate pair preference.
@@ -17,10 +16,10 @@ public class GeoPairPreference extends DialogPreference {
 
     private static final String TAG = "GeoPairPreference";
 
-    // References to the edit text views containing the coordinate values.
-    private EditText mFirstValue, mSecondValue;
+    // Reference to the dialog view.
+    private View mDialogView;
 
-    private static final String DEFAULT_VALUE = "0.000000, 0.000000";
+    private static final String DEFAULT_VALUE = "0.00000000, 0.00000000";
 
     // Current value for the coordinate pair.
     private String mCurrentValue;
@@ -36,7 +35,7 @@ public class GeoPairPreference extends DialogPreference {
 
         Log.d(TAG, "Constructor");
 
-        setDialogLayoutResource(R.layout.dialog_coord_pair);
+        setDialogLayoutResource(R.layout.dialog_geo_pair);
         setPositiveButtonText(android.R.string.ok);
         setNegativeButtonText(android.R.string.cancel);
 
@@ -68,14 +67,8 @@ public class GeoPairPreference extends DialogPreference {
     protected void onBindDialogView(View view) {
         super.onBindDialogView(view);
 
-        // Save references to the coordinate values.
-        mFirstValue = (EditText) view.findViewById(R.id.firstCoordValue);
-        mSecondValue = (EditText) view.findViewById(R.id.secondCoordValue);
-
-        // Set the units suffix text.
-        String suffix = TransformSettings.getSettings().getGeographicCoordSuffix();
-        ((TextView)view.findViewById(R.id.firstCoordSuffix)).setText(suffix);
-        ((TextView)view.findViewById(R.id.secondCoordSuffix)).setText(suffix);
+        // Save a reference to the dialog view.
+        mDialogView = view;
     }
 
     @Override
@@ -85,12 +78,16 @@ public class GeoPairPreference extends DialogPreference {
         // When the user selects "OK", persist the new value
         if (positiveResult) {
 
+            // TODO: Validate the user input.
+
             TransformSettings settings = TransformSettings.getSettings();
             double factor = settings.getUnitsFactor();
 
-            // Parse coordinate values and convert to system units (meters).
-            Double first = Double.parseDouble(mFirstValue.getText().toString());
-            Double second = Double.parseDouble(mSecondValue.getText().toString());
+            // Parse coordinate pair into doubles.
+            double first = Double.parseDouble(((EditText) mDialogView
+                    .findViewById(R.id.firstValue)).getText().toString());
+            double second = Double.parseDouble(((EditText) mDialogView
+                    .findViewById(R.id.secondValue)).getText().toString());
 
             // Format coordinate pair and persist to shared preferences.
             mCurrentValue = String.format(settings.getGeographicCoordFormat(), first, second);

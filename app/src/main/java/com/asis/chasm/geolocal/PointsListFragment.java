@@ -249,7 +249,7 @@ public class PointsListFragment extends ListFragment
                 case COORDINATE_TYPE_GEOGRAPHIC:
                     GeoPoint geo = new LocalPoint(
                             cursor.getDouble(Points.INDEX_X),
-                            cursor.getDouble(Points.INDEX_Y)).toGrid().toGeo();
+                            cursor.getDouble(Points.INDEX_Y)).toGeo();
 
                     tv = (TextView) view.findViewById(R.id.coord_values);
                     tv.setText(String.format(settings.getGeographicCoordFormat(),

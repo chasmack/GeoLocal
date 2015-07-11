@@ -47,7 +47,6 @@ public class MainActivity extends Activity {
             return;
         }
 
-
         // Load the Projections table
         loadProjections(PROJECTION_CONSTANTS_ASSET);
 

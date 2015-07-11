@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/prefGeo"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical" >
 
     <LinearLayout
-        android:id="@+id/firstCoord"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -13,15 +13,15 @@
         android:layout_marginStart="30dp" >
 
         <TextView
-            android:id="@+id/firstCoordTitle"
+            android:id="@+id/firstTitle"
             android:layout_width="20dp"
             android:layout_height="wrap_content"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:text="@string/pref_local_base_first_title" />
+            android:text="@string/pref_geo_first_title" />
 
         <EditText
-            android:id="@+id/firstCoordValue"
+            android:id="@+id/firstValue"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"
@@ -29,21 +29,21 @@
             android:background="#00000000"
             android:inputType="numberDecimal|numberSigned"
             android:gravity="right"
-            android:minWidth="60dp"
+            android:minWidth="80dp"
             android:imeOptions="actionNext" />
 
         <TextView
-            android:id="@+id/firstCoordSuffix"
+            android:id="@+id/firstSuffix"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="5dp"
-            android:textSize="18sp" />
+            android:textSize="18sp"
+            android:text="@string/pref_geo_suffix" />
 
     </LinearLayout>
 
 
     <LinearLayout
-        android:id="@+id/secondCoord"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -51,15 +51,15 @@
         android:layout_marginStart="30dp" >
 
         <TextView
-            android:id="@+id/secondCoordTitle"
+            android:id="@+id/secondTitle"
             android:layout_width="20dp"
             android:layout_height="wrap_content"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:text="@string/pref_local_base_second_title" />
+            android:text="@string/pref_geo_second_title" />
 
         <EditText
-            android:id="@+id/secondCoordValue"
+            android:id="@+id/secondValue"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"
@@ -67,15 +67,16 @@
             android:background="#00000000"
             android:inputType="numberDecimal|numberSigned"
             android:gravity="right"
-            android:minWidth="60dp"
+            android:minWidth="80dp"
             android:imeOptions="actionDone" />
 
         <TextView
-            android:id="@+id/secondCoordSuffix"
+            android:id="@+id/secondSuffix"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="5dp"
-            android:textSize="18sp" />
+            android:textSize="18sp"
+            android:text="@string/pref_geo_suffix" />
 
     </LinearLayout>
 
@@ -85,6 +86,6 @@
         android:layout_height="wrap_content"
         android:layout_margin="20dp"
         android:textSize="16sp"
-        android:text="@string/local_base_message" />
+        android:text="@string/pref_geo_message" />
 
 </LinearLayout>

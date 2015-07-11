@@ -7,8 +7,6 @@ import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-import java.util.Map;
-
 import com.asis.chasm.geolocal.PointsContract.Projections;
 
 /**
@@ -20,11 +18,11 @@ public class TransformSettings {
 
     // Preference keys.
     public static final String PREFERENCE_KEY_UNITS = "pref_units";
-    public static final String PREFERENCE_KEY_LOCAL_BASE = "pref_local_base";
+    public static final String PREFERENCE_KEY_PROJECTION = "pref_projection";
+    public static final String PREFERENCE_KEY_LOCAL = "pref_local";
+    public static final String PREFERENCE_KEY_GEO = "pref_geo";
     public static final String PREFERENCE_KEY_ROTATION = "pref_rotation";
     public static final String PREFERENCE_KEY_SCALE = "pref_scale";
-    public static final String PREFERENCE_KEY_GEO_BASE = "pref_geo_base";
-    public static final String PREFERENCE_KEY_PROJECTION = "pref_projection";
 
     // Display units preference values.
     public static final String PREFERENCE_UNITS_METERS = "meters";
@@ -77,23 +75,19 @@ public class TransformSettings {
     private double mUnitsFactor;
     public  double getUnitsFactor() { return mUnitsFactor; };
 
-    // Local base point coordinates in meters.
-    private double baseX, baseY;
-    public  double getBaseX() { return baseX; }
-    public  double getBaseY() { return baseY; }
+    // Local reference point in meters.
+    private double refX, refY;
+    public  double getRefX() { return refX; }
+    public  double getRefY() { return refY; }
 
-    // Grid reference point coordinates (meters), theta and scale factor.
-    private double gridX, gridY;
-    private double gridTheta, gridSF;
-    public  double getGridX() { return gridX; }
-    public  double getGridY() { return gridY; }
-    public  double getGridTheta() { return gridTheta; }
-    public  double getGridSF() { return gridSF; }
+    // Geographic reference point.
+    private double refLat, refLon;
+    public  double getRefLat() { return refLat; }
+    public  double getRefLon() { return refLon; }
 
-    // Geographic base point coordinates.
-    private double baseLat, baseLon;
-    public  double getBaseLat() { return baseLat; }
-    public  double getBsaeLon() { return baseLon; }
+    // Grid theta and scale factor at geographic reference.
+    public double getGridTheta() { return new GeoPoint(refLat, refLon).getTheta(); }
+    public double getGridSF() { return new GeoPoint(refLat, refLon).getK(); }
 
     // Rotation about reference point from local basis to grid in degrees.
     // A negative value rotates right (clockwise) from local to grid.
@@ -150,11 +144,10 @@ public class TransformSettings {
         }
 
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
-
-        Map<String, ?> prefs = sharedPrefs.getAll();
-        for (String key : prefs.keySet()) {
+        for (String key : sharedPrefs.getAll().keySet()){
             sInstance.update(context, key);
         }
+        Log.d(TAG, "initialize complete");
     }
 
     public void update(Context context, String key) {
@@ -197,13 +190,13 @@ public class TransformSettings {
                 }
                 break;
 
-            case PREFERENCE_KEY_LOCAL_BASE:
+            case PREFERENCE_KEY_LOCAL:
                 String[] localPair = value.split(", ");
                 if (localPair.length == 2) {
-                    baseY = Double.parseDouble(localPair[0]);
-                    baseX = Double.parseDouble(localPair[1]);
+                    refY = Double.parseDouble(localPair[0]);
+                    refX = Double.parseDouble(localPair[1]);
                 } else {
-                    throw new IllegalArgumentException("Bad local base coordinates: " + value);
+                    throw new IllegalArgumentException("Bad local reference coordinates: " + value);
                 }
                 break;
 
@@ -215,23 +208,14 @@ public class TransformSettings {
                 scale = Double.parseDouble(value);
                 break;
 
-            case PREFERENCE_KEY_GEO_BASE:
+            case PREFERENCE_KEY_GEO:
                 String[] geoPair = value.split(", ");
                 if (geoPair.length == 2) {
-                    baseLat = Double.parseDouble(geoPair[0]);
-                    baseLon = Double.parseDouble(geoPair[1]);
-
-                    // Update the grid base coordinates, theta and scale factor.
-                    GridPoint grid = new GeoPoint(baseLat, baseLon).toGrid();
-                    gridX = grid.getX();
-                    gridY = grid.getY();
-                    gridTheta = grid.getTheta();
-                    gridSF = grid.getK();
-
-                    Log.d(TAG, "update grid base (y,x): " + gridY + ", " + gridX);
+                    refLat = Double.parseDouble(geoPair[0]);
+                    refLon = Double.parseDouble(geoPair[1]);
 
                 } else {
-                    throw new IllegalArgumentException("Bad geographic base coordinates: " + value);
+                    throw new IllegalArgumentException("Bad geographic reference coordinates: " + value);
                 }
 
                 break;
@@ -261,18 +245,13 @@ public class TransformSettings {
                     p2 = c.getDouble(Projections.INDEX_P2);
                     k0 = c.getDouble(Projections.INDEX_K0);
 
-                    // Recalculate grid base.
-                    GridPoint grid = new GeoPoint(baseLat, baseLon).toGrid();
-                    gridX = grid.getX();
-                    gridY = grid.getY();
-                    gridTheta = grid.getTheta();
-                    gridSF = grid.getK();
-
-                    Log.d(TAG, "update grid base (n,e): " + gridY + ", " + gridX);
-
                 } else {
                     throw new IllegalArgumentException("Bad projection code: " + value);
                 }
+                break;
+
+            default:
+                Log.d(TAG, "Unknown preference key: " + key);
                 break;
         }
     }

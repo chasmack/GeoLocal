@@ -54,11 +54,11 @@ public class TransformSettingsFragment extends PreferenceFragment
 
                 // Local base coordinate summary needs update when units change.
                 updatePreferenceSummary(
-                    findPreference(TransformSettings.PREFERENCE_KEY_LOCAL_BASE));
+                    findPreference(TransformSettings.PREFERENCE_KEY_LOCAL));
 
                 break;
 
-            case TransformSettings.PREFERENCE_KEY_LOCAL_BASE:
+            case TransformSettings.PREFERENCE_KEY_LOCAL:
                 CoordPairPreference coordsPref = (CoordPairPreference) pref;
                 String[] localPair = coordsPref.getValue().split(", ");
                 if (localPair.length == 2) {
@@ -76,7 +76,7 @@ public class TransformSettingsFragment extends PreferenceFragment
                 rotatePref.setSummary(rotatePref.getValue());
                 break;
 
-            case TransformSettings.PREFERENCE_KEY_GEO_BASE:
+            case TransformSettings.PREFERENCE_KEY_GEO:
                 GeoPairPreference geoPref = (GeoPairPreference) pref;
                 String[] geoPair = geoPref.getValue().split(", ");
                 if (geoPair.length == 2) {

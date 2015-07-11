@@ -90,13 +90,31 @@ public class TransformLC {
                 / Math.pow((1.0 - E * Math.sin(lat)) / (1.0 + E * Math.sin(lat)), E / 2.0);
         double rho = A * F * Math.pow(t, n);
         double theta = n * (lon - M0);
-        double k = (rho * n) / (A * m) ;
-        double x = rho * Math.sin(theta) + X0 ;
-        double y = rho0 - rho * Math.cos(theta) + Y0 ;
+        double k = (rho * n) / (A * m);
+        double x = rho * Math.sin(theta) + X0;
+        double y = rho0 - rho * Math.cos(theta) + Y0;
 
-        return new GridPoint(x, y)
-                .setTheta(Math.toDegrees(theta))
-                .setK(k);
+        return new GridPoint(x, y).setTheta(Math.toDegrees(theta)).setK(k);
+    }
+
+    public static double getTheta(GeoPoint p) {
+
+        // Make sure the zone constants are initialized.
+        initTransform();
+
+        double lon = Math.toRadians(p.getLon());
+        return Math.toDegrees(n * (lon - M0));
+    }
+
+    public static double getK(GeoPoint p) {
+
+        // Make sure the zone constants are initialized.
+        initTransform();
+
+        double lat = Math.toRadians(p.getLat());
+        double t = Math.tan(PI4 - lat / 2.0)
+                / Math.pow((1.0 - E * Math.sin(lat)) / (1.0 + E * Math.sin(lat)), E / 2.0);
+        return A * F * Math.pow(t, n);
     }
 
     public static void initTransform() {

@@ -138,9 +138,57 @@ public class TransformTM {
         double f4 = (5 - 4 * tanp2 + et2 * (9 - 24 * tanp2)) / 12;
         double k = K0 * (1 + f2 * L2 * (1 + f4 * L2));
 
-        return new GridPoint(x, y)
-                .setK(k)
-                .setTheta(Math.toDegrees(theta));
+        return new GridPoint(x, y).setK(k).setTheta(Math.toDegrees(theta));
+    }
+
+    public static double getTheta(GeoPoint p) {
+
+        // Make sure the zone constants are initialized.
+        initTransform();
+
+        double lat = Math.toRadians(p.getLat());
+        double lon = Math.toRadians(p.getLon());
+
+        double L = (M0 - lon) * Math.cos(lat);
+        double L2 = L * L;
+
+        double cosp = Math.cos(lat);
+        double cosp2 = cosp * cosp;
+        double tanp = Math.tan(lat);
+        double tanp2 = tanp * tanp;
+        double et2 = e12 * cosp2;
+        double et4 = et2 * et2;
+
+        double c1 = -1 * tanp;
+        double c3 = (1 + 3 * et2 + 2 * et4) / 3;
+        double c5 = (2 - tanp2) / 15;
+        double theta = c1 * L * (1 + L2 * (c3 + c5 * L2));
+
+        return Math.toDegrees(theta);
+    }
+
+    public static double getK(GeoPoint p) {
+
+        // Make sure the zone constants are initialized.
+        initTransform();
+
+        double lat = Math.toRadians(p.getLat());
+        double lon = Math.toRadians(p.getLon());
+
+        double L = (M0 - lon) * Math.cos(lat);
+        double L2 = L * L;
+
+        double cosp = Math.cos(lat);
+        double cosp2 = cosp * cosp;
+        double tanp = Math.tan(lat);
+        double tanp2 = tanp * tanp;
+        double et2 = e12 * cosp2;
+
+        double f2 = (1 + et2) / 2;
+        double f4 = (5 - 4 * tanp2 + et2 * (9 - 24 * tanp2)) / 12;
+        double k = K0 * (1 + f2 * L2 * (1 + f4 * L2));
+
+        return k;
     }
 
     public static void initTransform() {

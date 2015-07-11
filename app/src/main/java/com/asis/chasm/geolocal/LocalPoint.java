@@ -11,33 +11,25 @@ public class LocalPoint {
     private double x;
     private double y;
 
-    public LocalPoint() { }
     public LocalPoint(double x, double y) {
         this.x = x;
         this.y = y;
     }
 
-    public GridPoint toGrid(){
+    public GeoPoint toGeo() {
         TransformSettings settings = TransformSettings.getSettings();
-        double x = (this.x - settings.getBaseX());
-        double y = (this.y - settings.getBaseY());
+        double x = (this.x - settings.getRefX());
+        double y = (this.y - settings.getRefY());
+
+        // Convert the geographic reference point to grid coordinates.
+        GridPoint gridRef = new GeoPoint(settings.getRefLat(), settings.getRefLon()).toGrid();
 
         // Grid to ground rotation is sum of the theta at the
         // grid reference point and the ground to true roataion setting.
-        double rot = Math.toRadians(settings.getRotation() + settings.getGridTheta());
-        GridPoint grid = new GridPoint(
-                x * Math.cos(rot) - y * Math.sin(rot) + settings.getGridX(),
-                x * Math.sin(rot) + y * Math.cos(rot) + settings.getGridY());
-        return grid;
-    }
-
-    public LocalPoint setX(double x) {
-        this.x = x;
-        return this;
-    }
-    public LocalPoint setY(double y) {
-        this.y = y;
-        return this;
+        double rot = Math.toRadians(settings.getRotation() + gridRef.getTheta());
+        return new GridPoint(
+                x * Math.cos(rot) - y * Math.sin(rot) + gridRef.getX(),
+                x * Math.sin(rot) + y * Math.cos(rot) + gridRef.getY()).toGeo();
     }
 
     public double getX() {

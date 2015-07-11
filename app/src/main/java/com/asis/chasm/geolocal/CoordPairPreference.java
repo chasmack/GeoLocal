@@ -1,10 +1,8 @@
 package com.asis.chasm.geolocal;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.content.res.TypedArray;
 import android.preference.DialogPreference;
-import android.preference.ListPreference;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
@@ -19,10 +17,10 @@ public class CoordPairPreference extends DialogPreference {
 
     private static final String TAG = "CoordPairPreference";
 
-    // References to the edit text views containing the coordinate values.
-    private EditText mFirstValue, mSecondValue;
+    // Reference to the dialog view.
+    private View mDialogView;
 
-    private static final String DEFAULT_VALUE = "0.00, 0.00";
+    private static final String DEFAULT_VALUE = "0.000, 0.000";
 
     // Current value for the coordinate pair.
     private String mCurrentValue;
@@ -38,7 +36,7 @@ public class CoordPairPreference extends DialogPreference {
 
         Log.d(TAG, "Constructor");
 
-        setDialogLayoutResource(R.layout.dialog_coord_pair);
+        setDialogLayoutResource(R.layout.dialog_local_pair);
         setPositiveButtonText(android.R.string.ok);
         setNegativeButtonText(android.R.string.cancel);
 
@@ -70,14 +68,13 @@ public class CoordPairPreference extends DialogPreference {
     protected void onBindDialogView(View view) {
         super.onBindDialogView(view);
 
-        // Save references to the coordinate values.
-        mFirstValue = (EditText) view.findViewById(R.id.firstCoordValue);
-        mSecondValue = (EditText) view.findViewById(R.id.secondCoordValue);
+        // Save references to the dialog view.
+        mDialogView = view;
 
         // Set the units suffix text.
         String suffix = TransformSettings.getSettings().getLocalCoordSuffix();
-        ((TextView)view.findViewById(R.id.firstCoordSuffix)).setText(suffix);
-        ((TextView)view.findViewById(R.id.secondCoordSuffix)).setText(suffix);
+        ((TextView)view.findViewById(R.id.firstSuffix)).setText(suffix);
+        ((TextView)view.findViewById(R.id.secondSuffix)).setText(suffix);
     }
 
     @Override
@@ -87,12 +84,16 @@ public class CoordPairPreference extends DialogPreference {
         // When the user selects "OK", persist the new value
         if (positiveResult) {
 
+            // TODO: Validate the user input.
+
             TransformSettings settings = TransformSettings.getSettings();
             double factor = settings.getUnitsFactor();
 
-            // Parse coordinate values and convert to system units (meters).
-            Double first = Double.parseDouble(mFirstValue.getText().toString()) / factor;
-            Double second = Double.parseDouble(mSecondValue.getText().toString()) / factor;
+            // Parse coordinate pair into doubles and convert to meters.
+            double first = Double.parseDouble(((EditText) mDialogView
+                    .findViewById(R.id.firstValue)).getText().toString()) / factor;
+            double second = Double.parseDouble(((EditText) mDialogView
+                    .findViewById(R.id.secondValue)).getText().toString()) / factor;
 
             // Format coordinate pair and persist to shared preferences.
             mCurrentValue = String.format(TransformSettings.LOCAL_COORD_FORMAT_METERS, first, second);

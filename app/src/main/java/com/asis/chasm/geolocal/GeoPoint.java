@@ -46,7 +46,37 @@ public class GeoPoint {
                 return TransformTM.toGrid(this);
 
             default:
-                throw new IllegalArgumentException("Bad projection.");
+                throw new IllegalArgumentException("Bad projection: " + settings.getProjection());
+        }
+    }
+
+    public double getTheta() {
+        TransformSettings settings = TransformSettings.getSettings();
+        switch (settings.getProjection()) {
+
+            case Projections.PROJECTION_LC:
+                return TransformLC.getTheta(this);
+
+            case Projections.PROJECTION_TM:
+                return TransformTM.getTheta(this);
+
+            default:
+                throw new IllegalArgumentException("Bad projection: " + settings.getProjection());
+        }
+    }
+
+    public double getK() {
+        TransformSettings settings = TransformSettings.getSettings();
+        switch (settings.getProjection()) {
+
+            case Projections.PROJECTION_LC:
+                return TransformLC.getK(this);
+
+            case Projections.PROJECTION_TM:
+                return TransformTM.getK(this);
+
+            default:
+                throw new IllegalArgumentException("Bad projection: " + settings.getProjection());
         }
     }
 

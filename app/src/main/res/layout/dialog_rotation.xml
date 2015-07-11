@@ -30,6 +30,7 @@
             android:inputType="numberDecimal|numberSigned"
             android:gravity="right"
             android:minWidth="60dp"
+            android:selectAllOnFocus="true"
             android:imeOptions="actionDone" />
 
         <TextView

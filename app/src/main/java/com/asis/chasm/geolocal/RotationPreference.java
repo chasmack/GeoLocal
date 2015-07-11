@@ -6,6 +6,7 @@ import android.preference.DialogPreference;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.EditText;
 
 /*
@@ -73,7 +74,15 @@ public class RotationPreference extends DialogPreference {
         EditText v = (EditText) view.findViewById(R.id.value);
         TransformSettings settings = TransformSettings.getSettings();
         v.setText(String.format(settings.getRotationAngleFormat(), settings.getRotation()));
-        // v.setSelected(true);
+
+//        v.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+//            @Override
+//            public void onFocusChange(View v, boolean hasFocus) {
+//                if (hasFocus) {
+//                    getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+//                }
+//            }
+//        });
     }
 
     @Override
@@ -83,11 +92,13 @@ public class RotationPreference extends DialogPreference {
         // When the user selects "OK", persist the new value
         if (positiveResult) {
 
-            // Parse coordinate values and convert to system units (meters).
+            // TODO: Validate the user input.
+
+            // Parse the preference value into a double.
             EditText v = (EditText) mDialogView.findViewById(R.id.value);
             Double value = Double.parseDouble(v.getText().toString());
 
-            // Format coordinate pair and persist to shared preferences.
+            // Format and persist to the shared preferences.
             mCurrentValue = String.format(TransformSettings.getSettings().getRotationAngleFormat(), value);
             persistString(mCurrentValue);
 

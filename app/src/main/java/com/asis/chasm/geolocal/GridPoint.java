@@ -2,8 +2,6 @@ package com.asis.chasm.geolocal;
 
 import com.asis.chasm.geolocal.PointsContract.Projections;
 
-import java.security.InvalidParameterException;
-
 /**
  * Grid point with x/y coordinates.
  */
@@ -24,26 +22,17 @@ public class GridPoint {
     public GridPoint(double x, double y) {
         this.x = x;
         this.y = y;
-        this.k = 1.0;
         this.theta = 0.0;
-    }
-
-    public GridPoint setX(double x) {
-        this.x = x;
-        return this;
-    }
-    public GridPoint setY(double y) {
-        this.y = y;
-        return this;
-    }
-    public GridPoint setK(double k) {
-        this.k = k;
-        return this;
+        this.k = 1.0;
     }
     public GridPoint setTheta(double theta) {
         this.theta = theta;
         return this;
     }
+    public GridPoint setK(double k) {
+        this.k = k;
+        return this;
+    };
 
     public double getX() {
         return x;
@@ -58,26 +47,16 @@ public class GridPoint {
         return theta;
     }
 
-    public LocalPoint toLocal(){
-        TransformSettings settings = TransformSettings.getSettings();
-        double x = (this.x - settings.getGridX()) / settings.getScale();
-        double y = (this.y - settings.getGridY()) / settings.getScale();
-
-        // Grid to ground rotation is sum of the theta at the
-        // grid reference point and the ground to true roataion setting.
-        double rot = -1.0 * Math.toRadians(settings.getRotation() + settings.getGridTheta());
-        return new LocalPoint(
-                x * Math.cos(rot) - y * Math.sin(rot) + settings.getBaseX(),
-                x * Math.sin(rot) + y * Math.cos(rot) + settings.getBaseY());
-    }
-
     public GeoPoint toGeo() {
         TransformSettings settings = TransformSettings.getSettings();
         switch (settings.getProjection()) {
-            case Projections.PROJECTION_TM:
-                return TransformTM.toGeo(this);
+
             case Projections.PROJECTION_LC:
                 return TransformLC.toGeo(this);
+
+            case Projections.PROJECTION_TM:
+                return TransformTM.toGeo(this);
+
             default:
                 throw new IllegalArgumentException("Bad projection: " + settings.getProjection());
         }
