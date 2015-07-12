@@ -19,8 +19,8 @@ public class TransformSettings {
     // Preference keys.
     public static final String PREFERENCE_KEY_UNITS = "pref_units";
     public static final String PREFERENCE_KEY_PROJECTION = "pref_projection";
-    public static final String PREFERENCE_KEY_LOCAL = "pref_local";
-    public static final String PREFERENCE_KEY_GEO = "pref_geo";
+    public static final String PREFERENCE_KEY_LOCAL_REF = "pref_local_ref";
+    public static final String PREFERENCE_KEY_GEO_REF = "pref_geo_ref";
     public static final String PREFERENCE_KEY_ROTATION = "pref_rotation";
     public static final String PREFERENCE_KEY_SCALE = "pref_scale";
 
@@ -29,54 +29,51 @@ public class TransformSettings {
     public static final String PREFERENCE_UNITS_SURVEY_FEET = "survey_feet";
     public static final String PREFERENCE_UNITS_INTERNATIONAL_FEET = "int_feet";
 
-    private String mDisplayUnits;
-    public  String getDisplayUnits() { return mDisplayUnits; }
-
     // Units names.
-    public static final String UNITS_NAME_METERS = "meters";
-    public static final String UNITS_NAME_SURVEY_FEET = "survey ft";
-    public static final String UNITS_NAME_INTERNATIONAL_FEET = "international ft";
-    public static final String UNITS_NAME_GEOGRAPHIC = "degrees";
+    private static final String UNITS_NAME_METERS = "meters";
+    private static final String UNITS_NAME_SURVEY_FEET = "survey ft";
+    private static final String UNITS_NAME_INTERNATIONAL_FEET = "international ft";
+    private static final String UNITS_NAME_DEGREES = "degrees";
 
-    private String mUnitsName;
-    public  String getUnitsName() { return mUnitsName; }
+    private String mLocalUnitsName;
+    public  String getLocalUnitsName() { return mLocalUnitsName; }
+    public  String getGeographicUnitsName() { return UNITS_NAME_DEGREES; }
+    public  String getRotationUnitsName() { return UNITS_NAME_DEGREES; }
 
-    // Coordinate suffixes.
-    private static final String LOCAL_COORD_SUFFIX_METERS = "m";
-    private static final String LOCAL_COORD_SUFFIX_SURVEY_FEET = "sft";
-    private static final String LOCAL_COORD_SUFFIX_INTERNATIONAL_FEET = "int ft";
-    private static final String GEOGRAPHIC_COORD_SUFFIX = "deg";
+    // Units suffixes.
+    private static final String UNITS_ABBREV_METERS = "m";
+    private static final String UNITS_ABBREV_SURVEY_FEET = "sft";
+    private static final String UNITS_ABBREV_INTERNATIONAL_FEET = "int ft";
+    private static final String UNITS_ABBREV_DEGREES = "deg";
 
-    private String mLocalCoordSuffix;
-    public  String getLocalCoordSuffix() { return mLocalCoordSuffix; }
-    public  String getGeographicCoordSuffix() { return GEOGRAPHIC_COORD_SUFFIX; }
+    private String mLocalUnitsAbbrev;
+    public  String getLocalUnitsAbbrev() { return mLocalUnitsAbbrev; }
+    public  String getGeographicUnitsAbbrev() { return UNITS_ABBREV_DEGREES; }
+    public  String getRotationUnitsAbbrev() { return UNITS_ABBREV_DEGREES; }
 
-    // Local coordinate pair formats.
-    public static final String LOCAL_COORD_FORMAT_METERS = "%.3f, %.3f";
-    public static final String LOCAL_COORD_FORMAT_SURVEY_FEET = "%.2f, %.2f";
-    public static final String LOCAL_COORD_FORMAT_INTERNATIONAL_FEET = "%.2f, %.2f";
+    // Units formats.
+    private static final String UNITS_FORMAT_METERS = "%.3f";
+    private static final String UNITS_FORMAT_SURVEY_FEET = "%.2f";
+    private static final String UNITS_FORMAT_INTERNATIONAL_FEET = "%.2f";
+    private static final String UNITS_FORMAT_GEOGRAPHIC = "%.8f";
+    private static final String UNITS_FORMAT_ROTATION = "%.6f";
 
-    private String mLocalCoordFormat;
-    public  String getLocalCoordFormat() { return mLocalCoordFormat; }
-
-    // Geographic coordinate pair format.
-    private static final String GEOGRAPHIC_COORD_FORMAT = "%.8f, %.8f";
-    public  String getGeographicCoordFormat() { return GEOGRAPHIC_COORD_FORMAT; }
-
-    // Rotation angle format.
-    private static final String ROTATION_ANGLE_FORMAT = "%.6f";
-    public  String getRotationAngleFormat() { return ROTATION_ANGLE_FORMAT; }
+    private String mLocalUnitsFormat;
+    public  String getLocalUnitsFormat() { return mLocalUnitsFormat; }
+    public  String getGeographicUnitsFormat() { return UNITS_FORMAT_GEOGRAPHIC; }
+    public  String getRotationUnitsFormat() { return UNITS_FORMAT_ROTATION; }
 
     // Conversion factors from internal system units (meters) to display units.
     public static final double UNITS_FACTOR_METERS = 1.0;
     public static final double UNITS_FACTOR_SURVEY_FEET = 3937.0 / 1200.0;
     public static final double UNITS_FACTOR_INTERNATIONAL_FEET = 1.0 / (0.0254 * 12);
 
-    private double mUnitsFactor;
-    public  double getUnitsFactor() { return mUnitsFactor; };
+    private double mLocalUnitsFactor;
+    public  double getUnitsFactor() { return mLocalUnitsFactor; };
 
     // Local reference point in meters.
     private double refX, refY;
+    public LocalPt getLocalRef() { return new LocalPt(refX, refY); }
     public  double getRefX() { return refX; }
     public  double getRefY() { return refY; }
 
@@ -85,9 +82,20 @@ public class TransformSettings {
     public  double getRefLat() { return refLat; }
     public  double getRefLon() { return refLon; }
 
+    // Grid reference point derived from geographic reference.
+    private GridPt gridRef = null;
+    public GridPt getGridRef() {
+        if (gridRef == null) {
+            gridRef = new GeoPt(refLat, refLon).toGrid();
+        }
+        return gridRef;
+    }
+    public  void invalidateGridRef() { gridRef = null; }
+
     // Grid theta and scale factor at geographic reference.
-    public double getGridTheta() { return new GeoPoint(refLat, refLon).getTheta(); }
-    public double getGridSF() { return new GeoPoint(refLat, refLon).getK(); }
+    // These methods are quicker if the grid x/y coordinates are not needed.
+    public double getGridTheta() { return new GeoPt(refLat, refLon).getTheta(); }
+    public double getGridSF() { return new GeoPt(refLat, refLon).getK(); }
 
     // Rotation about reference point from local basis to grid in degrees.
     // A negative value rotates right (clockwise) from local to grid.
@@ -98,7 +106,7 @@ public class TransformSettings {
     private double scale;
     public  double getScale() { return scale; }
 
-    // Type of grid projection, e.g. TM, LC, OM.
+    // Type of grid projection, e.g. Projections.PROJECTION_TM, _LC, _OM.
     private int projection;
     public  int getProjection() { return projection; }
 
@@ -168,33 +176,34 @@ public class TransformSettings {
             case PREFERENCE_KEY_UNITS:
                 switch(value) {
                     case PREFERENCE_UNITS_METERS:
-                        mUnitsFactor = UNITS_FACTOR_METERS;
-                        mUnitsName = UNITS_NAME_METERS;
-                        mLocalCoordSuffix = LOCAL_COORD_SUFFIX_METERS;
-                        mLocalCoordFormat = LOCAL_COORD_FORMAT_METERS;
+                        mLocalUnitsFactor = UNITS_FACTOR_METERS;
+                        mLocalUnitsName = UNITS_NAME_METERS;
+                        mLocalUnitsAbbrev = UNITS_ABBREV_METERS;
+                        mLocalUnitsFormat = UNITS_FORMAT_METERS;
                         break;
                     case PREFERENCE_UNITS_SURVEY_FEET:
-                        mUnitsFactor = UNITS_FACTOR_SURVEY_FEET;
-                        mUnitsName = UNITS_NAME_SURVEY_FEET;
-                        mLocalCoordSuffix = LOCAL_COORD_SUFFIX_SURVEY_FEET;
-                        mLocalCoordFormat = LOCAL_COORD_FORMAT_SURVEY_FEET;
+                        mLocalUnitsFactor = UNITS_FACTOR_SURVEY_FEET;
+                        mLocalUnitsName = UNITS_NAME_SURVEY_FEET;
+                        mLocalUnitsAbbrev = UNITS_ABBREV_SURVEY_FEET;
+                        mLocalUnitsFormat = UNITS_FORMAT_SURVEY_FEET;
                         break;
                     case PREFERENCE_UNITS_INTERNATIONAL_FEET:
-                        mUnitsFactor = UNITS_FACTOR_INTERNATIONAL_FEET;
-                        mUnitsName = UNITS_NAME_INTERNATIONAL_FEET;
-                        mLocalCoordSuffix = LOCAL_COORD_SUFFIX_INTERNATIONAL_FEET;
-                        mLocalCoordFormat = LOCAL_COORD_FORMAT_INTERNATIONAL_FEET;
+                        mLocalUnitsFactor = UNITS_FACTOR_INTERNATIONAL_FEET;
+                        mLocalUnitsName = UNITS_NAME_INTERNATIONAL_FEET;
+                        mLocalUnitsAbbrev = UNITS_ABBREV_INTERNATIONAL_FEET;
+                        mLocalUnitsFormat = UNITS_FORMAT_INTERNATIONAL_FEET;
                         break;
                     default:
                         throw new IllegalArgumentException("Bad units setting: " + value);
                 }
                 break;
 
-            case PREFERENCE_KEY_LOCAL:
-                String[] localPair = value.split(", ");
-                if (localPair.length == 2) {
-                    refY = Double.parseDouble(localPair[0]);
-                    refX = Double.parseDouble(localPair[1]);
+            case PREFERENCE_KEY_LOCAL_REF:
+                // Value is a comma separated coordinate pair formatted as y, x.
+                String[] localCoords = value.split(", ");
+                if (localCoords.length == 2) {
+                    refY = Double.parseDouble(localCoords[0]);
+                    refX = Double.parseDouble(localCoords[1]);
                 } else {
                     throw new IllegalArgumentException("Bad local reference coordinates: " + value);
                 }
@@ -208,16 +217,16 @@ public class TransformSettings {
                 scale = Double.parseDouble(value);
                 break;
 
-            case PREFERENCE_KEY_GEO:
-                String[] geoPair = value.split(", ");
-                if (geoPair.length == 2) {
-                    refLat = Double.parseDouble(geoPair[0]);
-                    refLon = Double.parseDouble(geoPair[1]);
-
+            case PREFERENCE_KEY_GEO_REF:
+                // Value is a comma separated coordinate pair formatted as lat, lon.
+                String[] geoCoords = value.split(", ");
+                if (geoCoords.length == 2) {
+                    refLat = Double.parseDouble(geoCoords[0]);
+                    refLon = Double.parseDouble(geoCoords[1]);
+                    invalidateGridRef();
                 } else {
                     throw new IllegalArgumentException("Bad geographic reference coordinates: " + value);
                 }
-
                 break;
 
             case PREFERENCE_KEY_PROJECTION:
@@ -244,7 +253,7 @@ public class TransformSettings {
                     p1 = c.getDouble(Projections.INDEX_P1);
                     p2 = c.getDouble(Projections.INDEX_P2);
                     k0 = c.getDouble(Projections.INDEX_K0);
-
+                    invalidateGridRef();
                 } else {
                     throw new IllegalArgumentException("Bad projection code: " + value);
                 }

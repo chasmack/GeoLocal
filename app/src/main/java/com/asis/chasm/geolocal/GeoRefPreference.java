@@ -7,36 +7,42 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.TextView;
 
 /*
 * Coordinate pair preference.
 */
 
-public class CoordPairPreference extends DialogPreference {
+public class GeoRefPreference extends DialogPreference {
 
-    private static final String TAG = "CoordPairPreference";
+    private static final String TAG = "GeoRefPreference";
 
-    // Reference to the dialog view.
-    private View mDialogView;
+    // TODO: Add a "Read from GPX" button to read a waypoint from a GPX file.
+    // TODO: Add a "Read from Location Service" option.
 
-    private static final String DEFAULT_VALUE = "0.000, 0.000";
+    // Geographic reference coordinates are saved in shared preferences
+    // as a string formatted lat, lon.
+    private static final String SHARED_PREFERENCES_COORD_FORMAT = "%.8f, %.8f";
+
+    private static final String DEFAULT_VALUE = "0.00000000, 0.00000000";
 
     // Current value for the coordinate pair.
     private String mCurrentValue;
     public  String getValue() { return mCurrentValue; }
+
+    // Reference to the dialog view.
+    private View mDialogView;
 
     @Override
     public void setSummary(CharSequence summary) {
         super.setSummary(summary);
     }
 
-    public CoordPairPreference(Context context, AttributeSet attrs) {
+    public GeoRefPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
 
         Log.d(TAG, "Constructor");
 
-        setDialogLayoutResource(R.layout.dialog_local_pair);
+        setDialogLayoutResource(R.layout.dialog_geo_ref);
         setPositiveButtonText(android.R.string.ok);
         setNegativeButtonText(android.R.string.cancel);
 
@@ -68,13 +74,15 @@ public class CoordPairPreference extends DialogPreference {
     protected void onBindDialogView(View view) {
         super.onBindDialogView(view);
 
-        // Save references to the dialog view.
+        // Save a reference to the dialog view.
         mDialogView = view;
 
-        // Set the units suffix text.
-        String suffix = TransformSettings.getSettings().getLocalCoordSuffix();
-        ((TextView)view.findViewById(R.id.firstSuffix)).setText(suffix);
-        ((TextView)view.findViewById(R.id.secondSuffix)).setText(suffix);
+        // Initialize the values.
+        TransformSettings s = TransformSettings.getSettings();
+        ((EditText) view.findViewById(R.id.firstValue))
+                .setText(String.format(s.getGeographicUnitsFormat(), s.getRefLat()));
+        ((EditText) view.findViewById(R.id.secondValue))
+                .setText(String.format(s.getGeographicUnitsFormat(), s.getRefLon()));
     }
 
     @Override
@@ -84,19 +92,16 @@ public class CoordPairPreference extends DialogPreference {
         // When the user selects "OK", persist the new value
         if (positiveResult) {
 
-            // TODO: Validate the user input.
+            // TODO: Validate the user input for geographic reference.
 
-            TransformSettings settings = TransformSettings.getSettings();
-            double factor = settings.getUnitsFactor();
-
-            // Parse coordinate pair into doubles and convert to meters.
+            // Parse coordinate pair into doubles.
             double first = Double.parseDouble(((EditText) mDialogView
-                    .findViewById(R.id.firstValue)).getText().toString()) / factor;
+                    .findViewById(R.id.firstValue)).getText().toString());
             double second = Double.parseDouble(((EditText) mDialogView
-                    .findViewById(R.id.secondValue)).getText().toString()) / factor;
+                    .findViewById(R.id.secondValue)).getText().toString());
 
             // Format coordinate pair and persist to shared preferences.
-            mCurrentValue = String.format(TransformSettings.LOCAL_COORD_FORMAT_METERS, first, second);
+            mCurrentValue = String.format(SHARED_PREFERENCES_COORD_FORMAT, first, second);
             persistString(mCurrentValue);
 
             Log.d(TAG, "onDialogClosed mCurrentValue: " + mCurrentValue);

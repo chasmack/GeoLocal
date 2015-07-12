@@ -5,7 +5,7 @@ import com.asis.chasm.geolocal.PointsContract.Projections;
 /**
  * Geographic point with lat/lon coordinates.
  */
-public class GeoPoint {
+public class GeoPt {
 
     /*
     * Latitude and longitude in decimal degrees.
@@ -14,20 +14,10 @@ public class GeoPoint {
     private double lat;
     private double lon;
 
-    public GeoPoint(double lat, double lon) {
+    public GeoPt(double lat, double lon) {
         this.lat = lat;
         this.lon = lon;
     }
-
-    public GeoPoint setLat(double lat) {
-        this.lat = lat;
-        return this;
-    }
-    public GeoPoint setLon(double lon) {
-        this.lon = lon;
-        return this;
-    }
-
     public double getLat() {
         return lat;
     }
@@ -35,48 +25,63 @@ public class GeoPoint {
         return lon;
     }
 
-    public GridPoint toGrid() {
-        TransformSettings settings = TransformSettings.getSettings();
-        switch (settings.getProjection()) {
+    public LocalPt toLocal() {
+        TransformSettings s = TransformSettings.getSettings();
+
+        // Get grid coordinates for the geographic reference point.
+        GridPt gridRef = s.getGridRef();
+
+        // Convert coordinates to grid and subtract off the grid reference.
+        GridPt grid = this.toGrid();
+        double x = grid.getX() - gridRef.getX();
+        double y = grid.getY() - gridRef.getY();
+
+        // Grid to ground rotation -1.0 times the sum of theta at the
+        // grid reference point and the ground-to-true roataion setting.
+        double rot = -1.0 * Math.toRadians(gridRef.getTheta() + s.getRotation());
+
+        // Rotate, add in the local reference and return local point.
+        return new LocalPt(
+                x * Math.cos(rot) - y * Math.sin(rot) + s.getRefX(),
+                x * Math.sin(rot) + y * Math.cos(rot) + s.getRefY());
+    }
+
+    public GridPt toGrid() {
+        TransformSettings s = TransformSettings.getSettings();
+        switch (s.getProjection()) {
 
             case Projections.PROJECTION_LC:
                 return TransformLC.toGrid(this);
-
             case Projections.PROJECTION_TM:
                 return TransformTM.toGrid(this);
-
             default:
-                throw new IllegalArgumentException("Bad projection: " + settings.getProjection());
+                throw new IllegalArgumentException("Bad projection: " + s.getProjection());
         }
     }
 
     public double getTheta() {
-        TransformSettings settings = TransformSettings.getSettings();
-        switch (settings.getProjection()) {
+        TransformSettings s = TransformSettings.getSettings();
+        switch (s.getProjection()) {
 
             case Projections.PROJECTION_LC:
                 return TransformLC.getTheta(this);
-
             case Projections.PROJECTION_TM:
                 return TransformTM.getTheta(this);
-
             default:
-                throw new IllegalArgumentException("Bad projection: " + settings.getProjection());
+                throw new IllegalArgumentException("Bad projection: " + s.getProjection());
         }
     }
 
     public double getK() {
-        TransformSettings settings = TransformSettings.getSettings();
-        switch (settings.getProjection()) {
+        TransformSettings s = TransformSettings.getSettings();
+        switch (s.getProjection()) {
 
             case Projections.PROJECTION_LC:
                 return TransformLC.getK(this);
-
             case Projections.PROJECTION_TM:
                 return TransformTM.getK(this);
-
             default:
-                throw new IllegalArgumentException("Bad projection: " + settings.getProjection());
+                throw new IllegalArgumentException("Bad projection: " + s.getProjection());
         }
     }
 
@@ -86,8 +91,8 @@ public class GeoPoint {
         if (o == null || o.getClass() != this.getClass()) {
             return false;
         }
-        // object is a non-null instance of GeoPoint
-        GeoPoint p = (GeoPoint) o;
+        // object is a non-null instance of GeoPt
+        GeoPt p = (GeoPt) o;
         if (this.lat == p.lat && this.lon == p.lon) { return true; }
         return false;
     }

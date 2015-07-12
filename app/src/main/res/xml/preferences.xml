@@ -15,17 +15,17 @@
         android:entryValues="@array/pref_projection_values"
         android:defaultValue="@string/pref_projection_default" />
 
-    <com.asis.chasm.geolocal.CoordPairPreference
-        android:key="@string/perf_local_key"
-        android:title="@string/perf_local_title"
-        android:dialogTitle="@string/perf_local_dialog_title"
-        android:defaultValue="@string/pref_local_default" />
+    <com.asis.chasm.geolocal.LocalRefPreference
+        android:key="@string/perf_local_ref_key"
+        android:title="@string/perf_local_ref_title"
+        android:dialogTitle="@string/perf_local_ref_dialog_title"
+        android:defaultValue="@string/pref_local_ref_default" />
 
-    <com.asis.chasm.geolocal.GeoPairPreference
-        android:key="@string/perf_geo_key"
-        android:title="@string/perf_geo_title"
-        android:dialogTitle="@string/perf_geo_dialog_title"
-        android:defaultValue="@string/pref_geo_default" />
+    <com.asis.chasm.geolocal.GeoRefPreference
+        android:key="@string/perf_geo_ref_key"
+        android:title="@string/perf_geo_ref_title"
+        android:dialogTitle="@string/perf_geo_ref_dialog_title"
+        android:defaultValue="@string/pref_geo_ref_default" />
 
     <com.asis.chasm.geolocal.RotationPreference
         android:key="@string/pref_rotation_key"

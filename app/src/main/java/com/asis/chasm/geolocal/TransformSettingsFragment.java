@@ -8,7 +8,6 @@ import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceGroup;
-import android.preference.SwitchPreference;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -46,45 +45,45 @@ public class TransformSettingsFragment extends PreferenceFragment
     private void updatePreferenceSummary(Preference pref) {
         Log.d(TAG, "updatePreferenceSummary key: " + pref.getKey());
 
+        TransformSettings s = TransformSettings.getSettings();
         switch (pref.getKey()) {
 
             case TransformSettings.PREFERENCE_KEY_UNITS:
                 ListPreference listPref = (ListPreference) pref;
                 listPref.setSummary(listPref.getEntry());
 
-                // Local base coordinate summary needs update when units change.
+                // Local reference summary needs update when the units change.
                 updatePreferenceSummary(
-                    findPreference(TransformSettings.PREFERENCE_KEY_LOCAL));
+                    findPreference(TransformSettings.PREFERENCE_KEY_LOCAL_REF));
 
                 break;
 
-            case TransformSettings.PREFERENCE_KEY_LOCAL:
-                CoordPairPreference coordsPref = (CoordPairPreference) pref;
-                String[] localPair = coordsPref.getValue().split(", ");
-                if (localPair.length == 2) {
-                    TransformSettings settings = TransformSettings.getSettings();
-                    double factor = settings.getUnitsFactor();
-                    double first = Double.parseDouble(localPair[0]) * factor;
-                    double second = Double.parseDouble(localPair[1]) * factor;
-                    String summary = String.format(settings.getLocalCoordFormat(), first, second);
-                    coordsPref.setSummary(summary);
+            case TransformSettings.PREFERENCE_KEY_LOCAL_REF:
+                LocalRefPreference coordsPref = (LocalRefPreference) pref;
+                String[] localCoords = coordsPref.getValue().split(", ");
+                if (localCoords.length == 2) {
+                    double factor = s.getUnitsFactor();
+                    double first = Double.parseDouble(localCoords[0]) * factor;
+                    double second = Double.parseDouble(localCoords[1]) * factor;
+                    String format = s.getLocalUnitsFormat() + ", " + s.getLocalUnitsFormat();
+                    coordsPref.setSummary(String.format(format, first, second));
                 }
                 break;
 
             case TransformSettings.PREFERENCE_KEY_ROTATION:
                 RotationPreference rotatePref = (RotationPreference) pref;
-                rotatePref.setSummary(rotatePref.getValue());
+                double rotation = Double.parseDouble(rotatePref.getValue());
+                rotatePref.setSummary(String.format(s.getRotationUnitsFormat(), rotation));
                 break;
 
-            case TransformSettings.PREFERENCE_KEY_GEO:
-                GeoPairPreference geoPref = (GeoPairPreference) pref;
-                String[] geoPair = geoPref.getValue().split(", ");
-                if (geoPair.length == 2) {
-                    TransformSettings settings = TransformSettings.getSettings();
-                    double first = Double.parseDouble(geoPair[0]);
-                    double second = Double.parseDouble(geoPair[1]);
-                    String summary = String.format(settings.getGeographicCoordFormat(), first, second);
-                    geoPref.setSummary(summary);
+            case TransformSettings.PREFERENCE_KEY_GEO_REF:
+                GeoRefPreference geoPref = (GeoRefPreference) pref;
+                String[] geoCoords = geoPref.getValue().split(", ");
+                if (geoCoords.length == 2) {
+                    double first = Double.parseDouble(geoCoords[0]);
+                    double second = Double.parseDouble(geoCoords[1]);
+                    String format = s.getGeographicUnitsFormat() + ", " + s.getGeographicUnitsFormat();
+                    geoPref.setSummary(String.format(format, first, second));
                 }
                 break;
 

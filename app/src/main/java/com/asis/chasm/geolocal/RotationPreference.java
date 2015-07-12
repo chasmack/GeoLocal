@@ -17,13 +17,17 @@ public class RotationPreference extends DialogPreference {
 
     private static final String TAG = "RotationPreference";
 
-    private static final String DEFAULT_VALUE = "0.000000";
+    // Rotation saved in shared preferences as a formatted string in degrees.
+    private static final String SHARED_PREFERENCES_COORD_FORMAT = "%.8f";
 
-    private View mDialogView = null;
+    private static final String DEFAULT_VALUE = "0.00000000";
 
     // Current value.
     private String mCurrentValue;
     public  String getValue() { return mCurrentValue; }
+
+    // Reference to the dialog view.
+    private View mDialogView = null;
 
     @Override
     public void setSummary(CharSequence summary) {
@@ -72,8 +76,8 @@ public class RotationPreference extends DialogPreference {
 
         // Initialize the value with the current value.
         EditText v = (EditText) view.findViewById(R.id.value);
-        TransformSettings settings = TransformSettings.getSettings();
-        v.setText(String.format(settings.getRotationAngleFormat(), settings.getRotation()));
+        TransformSettings s = TransformSettings.getSettings();
+        v.setText(String.format(s.getRotationUnitsFormat(), s.getRotation()));
 
 //        v.setOnFocusChangeListener(new View.OnFocusChangeListener() {
 //            @Override
@@ -92,14 +96,14 @@ public class RotationPreference extends DialogPreference {
         // When the user selects "OK", persist the new value
         if (positiveResult) {
 
-            // TODO: Validate the user input.
+            // TODO: Validate the user input for the rotation.
 
             // Parse the preference value into a double.
-            EditText v = (EditText) mDialogView.findViewById(R.id.value);
-            Double value = Double.parseDouble(v.getText().toString());
+            double value = Double.parseDouble(((EditText) mDialogView
+                    .findViewById(R.id.value)).getText().toString());
 
             // Format and persist to the shared preferences.
-            mCurrentValue = String.format(TransformSettings.getSettings().getRotationAngleFormat(), value);
+            mCurrentValue = String.format(SHARED_PREFERENCES_COORD_FORMAT, value);
             persistString(mCurrentValue);
 
             Log.d(TAG, "onDialogClosed mCurrentValue: " + mCurrentValue);

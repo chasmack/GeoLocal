@@ -154,7 +154,7 @@ public class PointsListFragment extends ListFragment
 
         // Add a units label to the Local Coordinates radio button
         TextView tv = (TextView) getView().findViewById(R.id.radio_local);
-        tv.setText("Local (" + TransformSettings.getSettings().getUnitsName() + ")");
+        tv.setText("Local (" + TransformSettings.getSettings().getLocalUnitsName() + ")");
 
     }
 
@@ -217,7 +217,8 @@ public class PointsListFragment extends ListFragment
     private static class PointsCursorAdapter extends CursorAdapter {
 
         private LayoutInflater mInflater;
-        private int mCoordinateType;
+        private int mCoordType;
+        private String mCoordFormat;
 
         public PointsCursorAdapter(Context context, Cursor c, int flags) {
             super(context, c, flags);
@@ -230,7 +231,13 @@ public class PointsListFragment extends ListFragment
         }
 
         private void setCoordinateType(int type) {
-            mCoordinateType = type;
+            mCoordType = type;
+            TransformSettings s = TransformSettings.getSettings();
+            if (type == COORDINATE_TYPE_GEOGRAPHIC) {
+                mCoordFormat = s.getGeographicUnitsFormat() + ", " + s.getGeographicUnitsFormat();
+            } else {
+                mCoordFormat = s.getLocalUnitsFormat() + ", " + s.getLocalUnitsFormat();
+            }
             notifyDataSetChanged();
         }
 
@@ -242,27 +249,24 @@ public class PointsListFragment extends ListFragment
             tv = (TextView) view.findViewById(R.id.desc);
             tv.setText(cursor.getString(Points.INDEX_DESC));
 
-
-            TransformSettings settings = TransformSettings.getSettings();
-            switch (mCoordinateType) {
+            TransformSettings s = TransformSettings.getSettings();
+            switch (mCoordType) {
 
                 case COORDINATE_TYPE_GEOGRAPHIC:
-                    GeoPoint geo = new LocalPoint(
+                    GeoPt geo = new LocalPt(
                             cursor.getDouble(Points.INDEX_X),
                             cursor.getDouble(Points.INDEX_Y)).toGeo();
-
                     tv = (TextView) view.findViewById(R.id.coord_values);
-                    tv.setText(String.format(settings.getGeographicCoordFormat(),
-                            geo.getLat(), geo.getLon()));
+                    tv.setText(String.format(mCoordFormat, geo.getLat(), geo.getLon()));
                     tv = (TextView) view.findViewById(R.id.coord_prefix);
                     tv.setText("lat/lon:");
                     break;
 
                 case COORDINATE_TYPE_LOCAL:
                     tv = (TextView) view.findViewById(R.id.coord_values);
-                    tv.setText(String.format(settings.getLocalCoordFormat(),
-                            cursor.getDouble(Points.INDEX_Y) * settings.getUnitsFactor(),
-                            cursor.getDouble(Points.INDEX_X) * settings.getUnitsFactor()));
+                    tv.setText(String.format(mCoordFormat,
+                            cursor.getDouble(Points.INDEX_Y) * s.getUnitsFactor(),
+                            cursor.getDouble(Points.INDEX_X) * s.getUnitsFactor()));
                     tv =(TextView) view.findViewById(R.id.coord_prefix);
                     tv.setText("N/E:");
                     break;

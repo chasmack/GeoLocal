@@ -7,35 +7,42 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
 
 /*
 * Coordinate pair preference.
 */
 
-public class GeoPairPreference extends DialogPreference {
+public class LocalRefPreference extends DialogPreference {
 
-    private static final String TAG = "GeoPairPreference";
+    // TODO: Add a "Pick point" button to preference dialog to pick a local point.
 
-    // Reference to the dialog view.
-    private View mDialogView;
+    private static final String TAG = "LocalRefPreference";
 
-    private static final String DEFAULT_VALUE = "0.00000000, 0.00000000";
+    // Local reference coordinates are converted from display units into
+    // meters and saved in shared preferences as a string formatted y, x.
+    private static final String SHARED_PREFERENCES_COORD_FORMAT = "%.4f, %.4f";
+
+    private static final String DEFAULT_VALUE = "0.0000, 0.0000";
 
     // Current value for the coordinate pair.
     private String mCurrentValue;
     public  String getValue() { return mCurrentValue; }
+
+    // Reference to the dialog view.
+    private View mDialogView;
 
     @Override
     public void setSummary(CharSequence summary) {
         super.setSummary(summary);
     }
 
-    public GeoPairPreference(Context context, AttributeSet attrs) {
+    public LocalRefPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
 
         Log.d(TAG, "Constructor");
 
-        setDialogLayoutResource(R.layout.dialog_geo_pair);
+        setDialogLayoutResource(R.layout.dialog_local_ref);
         setPositiveButtonText(android.R.string.ok);
         setNegativeButtonText(android.R.string.cancel);
 
@@ -67,8 +74,19 @@ public class GeoPairPreference extends DialogPreference {
     protected void onBindDialogView(View view) {
         super.onBindDialogView(view);
 
-        // Save a reference to the dialog view.
+        // Save references to the dialog view.
         mDialogView = view;
+
+        // Set the units suffix.
+        TransformSettings s = TransformSettings.getSettings();
+        ((TextView)view.findViewById(R.id.firstSuffix)).setText(s.getLocalUnitsAbbrev());
+        ((TextView)view.findViewById(R.id.secondSuffix)).setText(s.getLocalUnitsAbbrev());
+
+        // Initialize the values.
+        ((EditText) view.findViewById(R.id.firstValue))
+                .setText(String.format(s.getLocalUnitsFormat(), s.getRefY()));
+        ((EditText) view.findViewById(R.id.secondValue))
+                .setText(String.format(s.getLocalUnitsFormat(), s.getRefX()));
     }
 
     @Override
@@ -78,19 +96,19 @@ public class GeoPairPreference extends DialogPreference {
         // When the user selects "OK", persist the new value
         if (positiveResult) {
 
-            // TODO: Validate the user input.
+            // TODO: Validate the user input for the local reference.
 
-            TransformSettings settings = TransformSettings.getSettings();
-            double factor = settings.getUnitsFactor();
+            TransformSettings s = TransformSettings.getSettings();
+            double factor = s.getUnitsFactor();
 
-            // Parse coordinate pair into doubles.
+            // Parse coordinate pair into doubles and convert to meters.
             double first = Double.parseDouble(((EditText) mDialogView
-                    .findViewById(R.id.firstValue)).getText().toString());
+                    .findViewById(R.id.firstValue)).getText().toString()) / factor;
             double second = Double.parseDouble(((EditText) mDialogView
-                    .findViewById(R.id.secondValue)).getText().toString());
+                    .findViewById(R.id.secondValue)).getText().toString()) / factor;
 
             // Format coordinate pair and persist to shared preferences.
-            mCurrentValue = String.format(settings.getGeographicCoordFormat(), first, second);
+            mCurrentValue = String.format(SHARED_PREFERENCES_COORD_FORMAT, first, second);
             persistString(mCurrentValue);
 
             Log.d(TAG, "onDialogClosed mCurrentValue: " + mCurrentValue);

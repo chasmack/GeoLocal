@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/prefLocalRef"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical" >
@@ -18,7 +19,7 @@
             android:layout_height="wrap_content"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:text="@string/pref_local_first_title" />
+            android:text="@string/pref_local_ref_first_title" />
 
         <EditText
             android:id="@+id/firstValue"
@@ -30,6 +31,7 @@
             android:inputType="numberDecimal|numberSigned"
             android:gravity="right"
             android:minWidth="60dp"
+            android:selectAllOnFocus="true"
             android:imeOptions="actionNext" />
 
         <TextView
@@ -52,11 +54,10 @@
 
         <TextView
             android:id="@+id/secondTitle"
-            android:layout_width="20dp"
+            android:layout_width="30dp"
             android:layout_height="wrap_content"
             android:textSize="18sp"
-            android:textStyle="bold"
-            android:text="@string/pref_local_second_title" />
+            android:text="@string/pref_local_ref_second_title" />
 
         <EditText
             android:id="@+id/secondValue"
@@ -68,6 +69,7 @@
             android:inputType="numberDecimal|numberSigned"
             android:gravity="right"
             android:minWidth="60dp"
+            android:selectAllOnFocus="true"
             android:imeOptions="actionDone" />
 
         <TextView
@@ -85,6 +87,6 @@
         android:layout_height="wrap_content"
         android:layout_margin="20dp"
         android:textSize="16sp"
-        android:text="@string/pref_local_message" />
+        android:text="@string/pref_local_ref_message" />
 
 </LinearLayout>

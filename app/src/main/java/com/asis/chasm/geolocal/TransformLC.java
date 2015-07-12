@@ -46,7 +46,7 @@ public class TransformLC {
 
     private TransformLC() { }
 
-    public static GeoPoint toGeo(GridPoint p) {
+    public static GeoPt toGeo(GridPt p) {
 
         // Make sure the zone constants are initialized.
         initTransform();
@@ -73,10 +73,10 @@ public class TransformLC {
         } while (Math.abs (lat - lat1) > 2e-9);
 
         // Return lat/lon in degrees.
-        return new GeoPoint(Math.toDegrees(lat), Math.toDegrees(lon));
+        return new GeoPt(Math.toDegrees(lat), Math.toDegrees(lon));
     }
 
-    public static GridPoint toGrid(GeoPoint p) {
+    public static GridPt toGrid(GeoPt p) {
 
         // Make sure the zone constants are initialized.
         initTransform();
@@ -94,10 +94,10 @@ public class TransformLC {
         double x = rho * Math.sin(theta) + X0;
         double y = rho0 - rho * Math.cos(theta) + Y0;
 
-        return new GridPoint(x, y).setTheta(Math.toDegrees(theta)).setK(k);
+        return new GridPt(x, y).setTheta(Math.toDegrees(theta)).setK(k);
     }
 
-    public static double getTheta(GeoPoint p) {
+    public static double getTheta(GeoPt p) {
 
         // Make sure the zone constants are initialized.
         initTransform();
@@ -106,7 +106,7 @@ public class TransformLC {
         return Math.toDegrees(n * (lon - M0));
     }
 
-    public static double getK(GeoPoint p) {
+    public static double getK(GeoPt p) {
 
         // Make sure the zone constants are initialized.
         initTransform();
@@ -120,21 +120,21 @@ public class TransformLC {
     public static void initTransform() {
 
         // Check if zone constants need to be initialized.
-        TransformSettings settings = TransformSettings.getSettings();
-        if (sCode.equals(settings.getProjectionCode())) { return; }
+        TransformSettings s = TransformSettings.getSettings();
+        if (sCode.equals(s.getProjectionCode())) { return; }
 
         // Check we are using a Lambert projection.
-        if (settings.getProjection() != PointsContract.Projections.PROJECTION_LC) {
+        if (s.getProjection() != PointsContract.Projections.PROJECTION_LC) {
             throw new IllegalArgumentException("Bad LC transform parameters.");
         }
 
         // Get the defining coordinate system constants for the zone
-        P1 = Math.toRadians(settings.getP1());
-        P2 = Math.toRadians(settings.getP2());
-        P0 = Math.toRadians(settings.getP0());
-        M0 = Math.toRadians(settings.getM0());
-        Y0 = settings.getY0();
-        X0 = settings.getX0();
+        P1 = Math.toRadians(s.getP1());
+        P2 = Math.toRadians(s.getP2());
+        P0 = Math.toRadians(s.getP0());
+        M0 = Math.toRadians(s.getM0());
+        Y0 = s.getY0();
+        X0 = s.getX0();
 
         // Calculate the derived coordinate system constants.
         m1 = Math.cos(P1) / Math.sqrt(1.0 - Math.pow(E * Math.sin(P1), 2.0));
@@ -149,8 +149,8 @@ public class TransformLC {
         F = m1 / (n * Math.pow(t1, n));
         rho0 = A * F * Math.pow(t0, n);
 
-        Log.d(TAG, "Transform initialized: " + settings.getProjectionDesc()
-                + " (" + settings.getProjectionCode() + ")");
+        Log.d(TAG, "Transform initialized: " + s.getProjectionDesc()
+                + " (" + s.getProjectionCode() + ")");
 //        Log.d(TAG, "m1=" + m1);
 //        Log.d(TAG, "m2=" + m2);
 //        Log.d(TAG, "t1=" + t1);
@@ -161,6 +161,6 @@ public class TransformLC {
 //        Log.d(TAG, "rho0=" + rho0);
 
         // Projection constants have been initialized.
-        sCode = settings.getProjectionCode();
+        sCode = s.getProjectionCode();
     }
 }

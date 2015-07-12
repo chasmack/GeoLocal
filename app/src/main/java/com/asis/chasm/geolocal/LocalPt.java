@@ -3,7 +3,9 @@ package com.asis.chasm.geolocal;
 /**
  * Local point with x/y coordinates.
  */
-public class LocalPoint {
+public class LocalPt {
+
+    private static final String TAG = "LocalPt";
 
     /*
     * x/y (easting/northing) coordinates in meters
@@ -11,32 +13,35 @@ public class LocalPoint {
     private double x;
     private double y;
 
-    public LocalPoint(double x, double y) {
+    public LocalPt(double x, double y) {
         this.x = x;
         this.y = y;
     }
-
-    public GeoPoint toGeo() {
-        TransformSettings settings = TransformSettings.getSettings();
-        double x = (this.x - settings.getRefX());
-        double y = (this.y - settings.getRefY());
-
-        // Convert the geographic reference point to grid coordinates.
-        GridPoint gridRef = new GeoPoint(settings.getRefLat(), settings.getRefLon()).toGrid();
-
-        // Grid to ground rotation is sum of the theta at the
-        // grid reference point and the ground to true roataion setting.
-        double rot = Math.toRadians(settings.getRotation() + gridRef.getTheta());
-        return new GridPoint(
-                x * Math.cos(rot) - y * Math.sin(rot) + gridRef.getX(),
-                x * Math.sin(rot) + y * Math.cos(rot) + gridRef.getY()).toGeo();
-    }
-
     public double getX() {
         return x;
     }
     public double getY() {
         return y;
+    }
+
+    public GeoPt toGeo() {
+        TransformSettings s = TransformSettings.getSettings();
+
+        // Subtract off the local reference.
+        double x = this.x - s.getRefX();
+        double y = this.y - s.getRefY();
+
+        // Get grid coordinates for the geographic reference point.
+        GridPt gridRef = s.getGridRef();
+
+        // Ground to grid rotation is sum of the theta at the
+        // grid reference point and the ground-to-true rotation setting.
+        double rot = Math.toRadians(gridRef.getTheta() + s.getRotation());
+
+        // Rotate, add in the grid reference and convert to geographic.
+        return new GridPt(
+                x * Math.cos(rot) - y * Math.sin(rot) + gridRef.getX(),
+                x * Math.sin(rot) + y * Math.cos(rot) + gridRef.getY()).toGeo();
     }
 
     @Override
@@ -45,8 +50,8 @@ public class LocalPoint {
         if (o == null || o.getClass() != this.getClass()) {
             return false;
         }
-        // object is a non-null instance of GridPoint
-        LocalPoint p = (LocalPoint) o;
+        // object is a non-null instance of GridPt
+        LocalPt p = (LocalPt) o;
         if (this.x == p.x && this.y == p.y) { return true; }
         return false;
     }
