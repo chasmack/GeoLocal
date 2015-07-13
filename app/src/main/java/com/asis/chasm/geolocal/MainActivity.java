@@ -12,6 +12,7 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -20,10 +21,17 @@ import java.util.ArrayList;
 
 import com.asis.chasm.geolocal.PointsContract.Projections;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity
+        implements LocalRefPreference.PreferenceListener {
 
     // Use for logging and debugging
     private static final String TAG = "MainActivity";
+
+    // Preference listener implementation
+    @Override
+    public void selectLocalPoint() {
+        Toast.makeText(this, "selectPoint", Toast.LENGTH_SHORT).show();
+    }
 
     // Tags to identify the fragments
     public static final String FRAGMENT_POINTS_LIST = "list";

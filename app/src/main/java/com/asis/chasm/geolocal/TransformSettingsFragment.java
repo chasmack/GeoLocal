@@ -8,10 +8,12 @@ import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceGroup;
+import android.preference.PreferenceScreen;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 public class TransformSettingsFragment extends PreferenceFragment
         implements OnSharedPreferenceChangeListener {
@@ -93,7 +95,7 @@ public class TransformSettingsFragment extends PreferenceFragment
         }
     }
 
-    @Override
+   @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
     }

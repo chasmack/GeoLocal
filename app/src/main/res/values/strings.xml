@@ -30,7 +30,8 @@
     <string name="pref_local_ref_default">0.000, 0.000</string>
     <string name="pref_local_ref_first_title">N:</string>
     <string name="pref_local_ref_second_title">E:</string>
-    <string name="pref_local_ref_message">Northing/Easting of the local reference point.</string>
+    <string name="pref_local_ref_button_text">Select a point</string>
+    <string name="pref_local_ref_message">Enter Northing/Easting of the local reference or select a point.</string>
 
     <string name="perf_geo_ref_key">pref_geo_ref</string>
     <string name="perf_geo_ref_title">Geographic reference point</string>

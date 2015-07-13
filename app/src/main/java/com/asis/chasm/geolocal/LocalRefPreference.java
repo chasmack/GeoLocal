@@ -1,13 +1,20 @@
 package com.asis.chasm.geolocal;
 
+import android.app.Activity;
+import android.app.Dialog;
+import android.app.FragmentManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.res.TypedArray;
 import android.preference.DialogPreference;
+import android.support.v4.app.NavUtils;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /*
 * Coordinate pair preference.
@@ -32,6 +39,12 @@ public class LocalRefPreference extends DialogPreference {
     // Reference to the dialog view.
     private View mDialogView;
 
+    // Callback interface for the dialog button.
+    interface PreferenceListener {
+        void selectLocalPoint();
+    }
+    PreferenceListener mListener = null;
+
     @Override
     public void setSummary(CharSequence summary) {
         super.setSummary(summary);
@@ -47,6 +60,8 @@ public class LocalRefPreference extends DialogPreference {
         setNegativeButtonText(android.R.string.cancel);
 
         setDialogIcon(null);
+
+        mListener = (PreferenceListener) context;
     }
 
     @Override
@@ -79,14 +94,25 @@ public class LocalRefPreference extends DialogPreference {
 
         // Set the units suffix.
         TransformSettings s = TransformSettings.getSettings();
-        ((TextView)view.findViewById(R.id.firstSuffix)).setText(s.getLocalUnitsAbbrev());
-        ((TextView)view.findViewById(R.id.secondSuffix)).setText(s.getLocalUnitsAbbrev());
+        ((TextView) view.findViewById(R.id.firstSuffix)).setText(s.getLocalUnitsAbbrev());
+        ((TextView) view.findViewById(R.id.secondSuffix)).setText(s.getLocalUnitsAbbrev());
 
         // Initialize the values.
         ((EditText) view.findViewById(R.id.firstValue))
-                .setText(String.format(s.getLocalUnitsFormat(), s.getRefY()));
+                .setText(String.format(s.getLocalUnitsFormat(), s.getRefY() * s.getUnitsFactor()));
         ((EditText) view.findViewById(R.id.secondValue))
-                .setText(String.format(s.getLocalUnitsFormat(), s.getRefX()));
+                .setText(String.format(s.getLocalUnitsFormat(), s.getRefX() * s.getUnitsFactor()));
+
+        // Select a point button callback
+        view.findViewById(R.id.buttonSelectPoint)
+                .setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (mListener != null ) {
+                            mListener.selectLocalPoint();
+                        }
+                    }
+                });
     }
 
     @Override
