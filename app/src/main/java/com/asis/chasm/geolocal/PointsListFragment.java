@@ -45,7 +45,10 @@ public class PointsListFragment extends ListFragment
     // This is the Adapter being used to display the list's data.
     private PointsCursorAdapter mAdapter;
 
-    // A hook back into main activity.
+    // A callback into main activity for selections from points list.
+    interface OnListFragmentInteractionListener {
+        void onListFragmentInteraction(long position);
+    }
     private OnListFragmentInteractionListener mListener;
 
     /**
@@ -59,17 +62,13 @@ public class PointsListFragment extends ListFragment
     public void onAttach(Activity activity) {
         Log.d(TAG, "onAttach");
         super.onAttach(activity);
+
+        // Hook up the points list interaction listener.
         try {
-            Fragment manager = getFragmentManager()
-                    .findFragmentByTag(MainActivity.FRAGMENT_POINTS_MANAGER);
-            if (manager != null) {
-                mListener = (OnListFragmentInteractionListener) manager;
-            } else {
-                Log.d(TAG, "Can't find FRAGMENT_POINTS_MANAGER.");
-            }
+            mListener = (OnListFragmentInteractionListener) activity;
         } catch (ClassCastException e) {
             throw new ClassCastException(activity.toString()
-                    + " must implement OnFragmentInteractionListener");
+                    + " must implement OnListFragmentInteractionListener");
         }
     }
 
@@ -323,19 +322,5 @@ public class PointsListFragment extends ListFragment
         // above is about to be closed.  We need to make sure we are no
         // longer using it.
         mAdapter.swapCursor(null);
-    }
-
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p/>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
-    public interface OnListFragmentInteractionListener {
-        public void onListFragmentInteraction(long position);
     }
 }

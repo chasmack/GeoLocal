@@ -1,20 +1,15 @@
 package com.asis.chasm.geolocal;
 
-import android.app.Activity;
 import android.app.Dialog;
-import android.app.FragmentManager;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.res.TypedArray;
+import android.os.Bundle;
 import android.preference.DialogPreference;
-import android.support.v4.app.NavUtils;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 /*
 * Coordinate pair preference.
@@ -22,32 +17,35 @@ import android.widget.Toast;
 
 public class LocalRefPreference extends DialogPreference {
 
-    // TODO: Add a "Pick point" button to preference dialog to pick a local point.
-
     private static final String TAG = "LocalRefPreference";
 
     // Local reference coordinates are converted from display units into
     // meters and saved in shared preferences as a string formatted y, x.
-    private static final String SHARED_PREFERENCES_COORD_FORMAT = "%.4f, %.4f";
+    public static final String SHARED_PREFERENCES_COORD_FORMAT = "%.4f, %.4f";
 
     private static final String DEFAULT_VALUE = "0.0000, 0.0000";
 
     // Current value for the coordinate pair.
     private String mCurrentValue;
-    public  String getValue() { return mCurrentValue; }
+    public  String getValue() { return this.getPersistedString(DEFAULT_VALUE); }
 
     // Reference to the dialog view.
     private View mDialogView;
 
     // Callback interface for the dialog button.
-    interface PreferenceListener {
-        void selectLocalPoint();
+    interface OnPreferenceInteractionListener {
+        void onSelectLocalRefPoint(Dialog dialog, View view);
     }
-    PreferenceListener mListener = null;
+    OnPreferenceInteractionListener mListener = null;
 
     @Override
     public void setSummary(CharSequence summary) {
         super.setSummary(summary);
+    }
+
+    @Override
+    public void showDialog(Bundle state) {
+        super.showDialog(state);
     }
 
     public LocalRefPreference(Context context, AttributeSet attrs) {
@@ -61,7 +59,7 @@ public class LocalRefPreference extends DialogPreference {
 
         setDialogIcon(null);
 
-        mListener = (PreferenceListener) context;
+        mListener = (OnPreferenceInteractionListener) context;
     }
 
     @Override
@@ -109,7 +107,7 @@ public class LocalRefPreference extends DialogPreference {
                     @Override
                     public void onClick(View v) {
                         if (mListener != null ) {
-                            mListener.selectLocalPoint();
+                            mListener.onSelectLocalRefPoint(getDialog(), mDialogView);
                         }
                     }
                 });

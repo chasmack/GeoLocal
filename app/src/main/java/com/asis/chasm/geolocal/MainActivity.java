@@ -1,36 +1,144 @@
 package com.asis.chasm.geolocal;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
-import android.app.ListFragment;
+import android.app.FragmentManager.OnBackStackChangedListener;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
+import android.view.View;
+import android.widget.EditText;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 
+import com.asis.chasm.geolocal.PointsContract.Points;
 import com.asis.chasm.geolocal.PointsContract.Projections;
 
-public class MainActivity extends Activity
-        implements LocalRefPreference.PreferenceListener {
+public class MainActivity extends Activity implements
+        PointsListFragment.OnListFragmentInteractionListener,
+        LocalRefPreference.OnPreferenceInteractionListener {
 
     // Use for logging and debugging
     private static final String TAG = "MainActivity";
 
-    // Preference listener implementation
+    // Preference interaction listener implementation.
     @Override
-    public void selectLocalPoint() {
-        Toast.makeText(this, "selectPoint", Toast.LENGTH_SHORT).show();
+    public void onSelectLocalRefPoint(Dialog dialog, View dialogView) {
+        onPointPickedAction = POINT_SELECT_ACTION_LOCAL_REF;
+
+        mPrefDialog = dialog;
+        mPrefDialogView = dialogView;
+
+        dialog.hide();
+
+        // Create the points list fragment.
+        Fragment fragment = new PointsListFragment();
+        getFragmentManager().beginTransaction()
+                .replace(R.id.container, fragment, null)
+                .addToBackStack(null)
+                .commit();
+
+        // Finish replacing the fragment and register a back stack change listener.
+        getFragmentManager().executePendingTransactions();
+        getFragmentManager().addOnBackStackChangedListener(new OnBackStackChangedListener() {
+            @Override
+            public void onBackStackChanged() {
+
+                // The back stack listener takes care of un-hiding the local reference
+                // dialog if either the user picks a point and the list fragment
+                // interaction listener pops the preferences fragment off the back
+                // stack or the user hits back from the points list without picking
+                // a point.
+
+                mPrefDialog.show();
+
+                // Unregister the back stack listener and clean up the references.
+                getFragmentManager().removeOnBackStackChangedListener(this);
+                mPrefDialog = null;
+                mPrefDialogView = null;
+            }
+        });
+    }
+
+    // What to do with the point picked from the points list.
+    private final int POINT_SELECT_ACTION_DEFAULT = 0;
+    private final int POINT_SELECT_ACTION_LOCAL_REF = 1;
+
+    private int onPointPickedAction = POINT_SELECT_ACTION_DEFAULT;
+    private Dialog mPrefDialog = null;
+    private View mPrefDialogView = null;
+
+    // Interaction from points list fragment onListItemClick
+    public void onListFragmentInteraction(long id) {
+        Log.d(TAG, "onListFragmentInteraction id: " + id);
+
+        // Get the point data.
+        Uri uri = Uri.parse(PointsContract.Points.CONTENT_URI)
+                .buildUpon().appendPath(Long.toString(id)).build();
+        Cursor c = getContentResolver().query(uri, null, null, null, null);
+        if (!c.moveToFirst()) {
+            throw new IllegalArgumentException("Invalid point ID: " + id);
+        }
+
+        TransformSettings s = TransformSettings.getSettings();
+        switch (onPointPickedAction) {
+            case POINT_SELECT_ACTION_LOCAL_REF:
+
+                /*
+                * The user picked "Select a point" from the local reference point preference.
+                * MainActivity#onSelectLocalRefPoint hides the preference dialog and swaps in
+                * the points list fragment pushing the preference fragment onto the back stack.
+                *
+                * Now we need to update the preference values and pop the preference fragment
+                * off of the back stack.  The back stack listener takes care of showing the
+                * preference dialog.
+                */
+
+                ((EditText) mPrefDialogView.findViewById(R.id.firstValue))
+                        .setText(String.format(s.getLocalUnitsFormat(),
+                                c.getDouble(Points.INDEX_Y) * s.getUnitsFactor()));
+                ((EditText) mPrefDialogView.findViewById(R.id.secondValue))
+                        .setText(String.format(s.getLocalUnitsFormat(),
+                                c.getDouble(Points.INDEX_X) * s.getUnitsFactor()));
+
+                getFragmentManager().popBackStack();
+
+                onPointPickedAction = POINT_SELECT_ACTION_DEFAULT;
+                break;
+
+            default:
+                LocalPt local = new LocalPt(c.getDouble(Points.INDEX_X), c.getDouble(Points.INDEX_Y));
+                GeoPt geo = local.toGeo();
+                GridPt grid = geo.toGrid();
+
+                Log.d(TAG, "grid ref n/e (" + s.getLocalUnitsAbbrev() + "): "
+                        + String.format(s.getLocalUnitsFormat(), s.getGridRef().getY() * s.getUnitsFactor()) + ", "
+                        + String.format(s.getLocalUnitsFormat(), s.getGridRef().getX() * s.getUnitsFactor()));
+                Log.d(TAG, "grid ref theta (" + s.getRotationUnitsAbbrev() + "): "
+                        + String.format(s.getRotationUnitsFormat(), s.getGridRef().getTheta()));
+                Log.d(TAG, "point #" + c.getString(Points.INDEX_NAME) + ": " + c.getString(Points.INDEX_DESC));
+                Log.d(TAG, "local n/e (" + s.getLocalUnitsAbbrev() + "): "
+                        + String.format(s.getLocalUnitsFormat(), local.getY() * s.getUnitsFactor()) + ", "
+                        + String.format(s.getLocalUnitsFormat(), local.getX() * s.getUnitsFactor()));
+                Log.d(TAG, "grid n/e (" + s.getLocalUnitsAbbrev() + "): "
+                        + String.format(s.getLocalUnitsFormat(), grid.getY() * s.getUnitsFactor()) + ", "
+                        + String.format(s.getLocalUnitsFormat(), grid.getX() * s.getUnitsFactor()));
+                Log.d(TAG, "geographic lat/lon (" + s.getGeographicUnitsAbbrev() + "): "
+                        + String.format(s.getGeographicUnitsFormat(), geo.getLat()) + ", "
+                        + String.format(s.getGeographicUnitsFormat(), geo.getLon()));
+                break;
+        }
     }
 
     // Tags to identify the fragments

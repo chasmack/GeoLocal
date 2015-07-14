@@ -20,6 +20,19 @@ public class TransformSettingsFragment extends PreferenceFragment
 
     private static final String TAG = "SettingsFragment";
 
+    // Preference keys.
+    public static final String PREFERENCE_KEY_UNITS = "pref_units";
+    public static final String PREFERENCE_KEY_PROJECTION = "pref_projection";
+    public static final String PREFERENCE_KEY_LOCAL_REF = "pref_local_ref";
+    public static final String PREFERENCE_KEY_GEO_REF = "pref_geo_ref";
+    public static final String PREFERENCE_KEY_ROTATION = "pref_rotation";
+    public static final String PREFERENCE_KEY_SCALE = "pref_scale";
+
+    // Display units preference values.
+    public static final String PREFERENCE_UNITS_METERS = "meters";
+    public static final String PREFERENCE_UNITS_SURVEY_FEET = "survey_feet";
+    public static final String PREFERENCE_UNITS_INTERNATIONAL_FEET = "int_feet";
+
     // Required empty public constructor
     public TransformSettingsFragment() { }
 
@@ -50,17 +63,17 @@ public class TransformSettingsFragment extends PreferenceFragment
         TransformSettings s = TransformSettings.getSettings();
         switch (pref.getKey()) {
 
-            case TransformSettings.PREFERENCE_KEY_UNITS:
+            case PREFERENCE_KEY_UNITS:
                 ListPreference listPref = (ListPreference) pref;
                 listPref.setSummary(listPref.getEntry());
 
                 // Local reference summary needs update when the units change.
                 updatePreferenceSummary(
-                    findPreference(TransformSettings.PREFERENCE_KEY_LOCAL_REF));
+                    findPreference(PREFERENCE_KEY_LOCAL_REF));
 
                 break;
 
-            case TransformSettings.PREFERENCE_KEY_LOCAL_REF:
+            case PREFERENCE_KEY_LOCAL_REF:
                 LocalRefPreference coordsPref = (LocalRefPreference) pref;
                 String[] localCoords = coordsPref.getValue().split(", ");
                 if (localCoords.length == 2) {
@@ -72,13 +85,13 @@ public class TransformSettingsFragment extends PreferenceFragment
                 }
                 break;
 
-            case TransformSettings.PREFERENCE_KEY_ROTATION:
+            case PREFERENCE_KEY_ROTATION:
                 RotationPreference rotatePref = (RotationPreference) pref;
                 double rotation = Double.parseDouble(rotatePref.getValue());
                 rotatePref.setSummary(String.format(s.getRotationUnitsFormat(), rotation));
                 break;
 
-            case TransformSettings.PREFERENCE_KEY_GEO_REF:
+            case PREFERENCE_KEY_GEO_REF:
                 GeoRefPreference geoPref = (GeoRefPreference) pref;
                 String[] geoCoords = geoPref.getValue().split(", ");
                 if (geoCoords.length == 2) {
@@ -89,7 +102,7 @@ public class TransformSettingsFragment extends PreferenceFragment
                 }
                 break;
 
-            case TransformSettings.PREFERENCE_KEY_PROJECTION:
+            case PREFERENCE_KEY_PROJECTION:
                 pref.setSummary(TransformSettings.getSettings().getProjectionDesc());
                 break;
         }
@@ -103,9 +116,14 @@ public class TransformSettingsFragment extends PreferenceFragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d(TAG, "onCreate");
 
         // Load the preferences from an XML resource.
         addPreferencesFromResource(R.xml.preferences);
+
+        // Register the shared preference change listener.
+        getPreferenceScreen().getSharedPreferences()
+                .registerOnSharedPreferenceChangeListener(this);
     }
 
     @Override
@@ -120,15 +138,20 @@ public class TransformSettingsFragment extends PreferenceFragment
 
         // Initialize preference summaries and register the change listener.
         initPreferenceSummary(getPreferenceScreen());
-
-        getPreferenceScreen().getSharedPreferences()
-                .registerOnSharedPreferenceChangeListener(this);
     }
 
     @Override
     public void onPause () {
         super.onPause();
 
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Log.d(TAG, "onDestroy");
+
+        // Unregister the shared preferences change listener.
         getPreferenceScreen().getSharedPreferences()
                 .unregisterOnSharedPreferenceChangeListener(this);
     }

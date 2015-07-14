@@ -16,19 +16,6 @@ public class TransformSettings {
 
     private static final String TAG = "TransformSettings";
 
-    // Preference keys.
-    public static final String PREFERENCE_KEY_UNITS = "pref_units";
-    public static final String PREFERENCE_KEY_PROJECTION = "pref_projection";
-    public static final String PREFERENCE_KEY_LOCAL_REF = "pref_local_ref";
-    public static final String PREFERENCE_KEY_GEO_REF = "pref_geo_ref";
-    public static final String PREFERENCE_KEY_ROTATION = "pref_rotation";
-    public static final String PREFERENCE_KEY_SCALE = "pref_scale";
-
-    // Display units preference values.
-    public static final String PREFERENCE_UNITS_METERS = "meters";
-    public static final String PREFERENCE_UNITS_SURVEY_FEET = "survey_feet";
-    public static final String PREFERENCE_UNITS_INTERNATIONAL_FEET = "int_feet";
-
     // Units names.
     private static final String UNITS_NAME_METERS = "meters";
     private static final String UNITS_NAME_SURVEY_FEET = "survey ft";
@@ -173,21 +160,21 @@ public class TransformSettings {
         Log.d(TAG, "update key=" + key + " value=" + value);
 
         switch (key) {
-            case PREFERENCE_KEY_UNITS:
+            case TransformSettingsFragment.PREFERENCE_KEY_UNITS:
                 switch(value) {
-                    case PREFERENCE_UNITS_METERS:
+                    case TransformSettingsFragment.PREFERENCE_UNITS_METERS:
                         mLocalUnitsFactor = UNITS_FACTOR_METERS;
                         mLocalUnitsName = UNITS_NAME_METERS;
                         mLocalUnitsAbbrev = UNITS_ABBREV_METERS;
                         mLocalUnitsFormat = UNITS_FORMAT_METERS;
                         break;
-                    case PREFERENCE_UNITS_SURVEY_FEET:
+                    case TransformSettingsFragment.PREFERENCE_UNITS_SURVEY_FEET:
                         mLocalUnitsFactor = UNITS_FACTOR_SURVEY_FEET;
                         mLocalUnitsName = UNITS_NAME_SURVEY_FEET;
                         mLocalUnitsAbbrev = UNITS_ABBREV_SURVEY_FEET;
                         mLocalUnitsFormat = UNITS_FORMAT_SURVEY_FEET;
                         break;
-                    case PREFERENCE_UNITS_INTERNATIONAL_FEET:
+                    case TransformSettingsFragment.PREFERENCE_UNITS_INTERNATIONAL_FEET:
                         mLocalUnitsFactor = UNITS_FACTOR_INTERNATIONAL_FEET;
                         mLocalUnitsName = UNITS_NAME_INTERNATIONAL_FEET;
                         mLocalUnitsAbbrev = UNITS_ABBREV_INTERNATIONAL_FEET;
@@ -198,7 +185,7 @@ public class TransformSettings {
                 }
                 break;
 
-            case PREFERENCE_KEY_LOCAL_REF:
+            case TransformSettingsFragment.PREFERENCE_KEY_LOCAL_REF:
                 // Value is a comma separated coordinate pair formatted as y, x.
                 String[] localCoords = value.split(", ");
                 if (localCoords.length == 2) {
@@ -209,15 +196,15 @@ public class TransformSettings {
                 }
                 break;
 
-            case PREFERENCE_KEY_ROTATION:
+            case TransformSettingsFragment.PREFERENCE_KEY_ROTATION:
                 rotation = Double.parseDouble(value);
                 break;
 
-            case PREFERENCE_KEY_SCALE:
+            case TransformSettingsFragment.PREFERENCE_KEY_SCALE:
                 scale = Double.parseDouble(value);
                 break;
 
-            case PREFERENCE_KEY_GEO_REF:
+            case TransformSettingsFragment.PREFERENCE_KEY_GEO_REF:
                 // Value is a comma separated coordinate pair formatted as lat, lon.
                 String[] geoCoords = value.split(", ");
                 if (geoCoords.length == 2) {
@@ -229,7 +216,7 @@ public class TransformSettings {
                 }
                 break;
 
-            case PREFERENCE_KEY_PROJECTION:
+            case TransformSettingsFragment.PREFERENCE_KEY_PROJECTION:
                 // Initialize projection constants from the Projections content provider.
                 Cursor c = context.getContentResolver().query(
                         Uri.parse(Projections.CONTENT_URI), // The content URI of the projections table

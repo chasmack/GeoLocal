@@ -29,8 +29,7 @@ import com.asis.chasm.geolocal.PointsContract.Points;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class PointsManagerFragment extends Fragment implements
-        PointsListFragment.OnListFragmentInteractionListener {
+public class PointsManagerFragment extends Fragment {
 
     private static final String TAG = "ManagerFragment";
 
@@ -102,41 +101,6 @@ public class PointsManagerFragment extends Fragment implements
 
     private void managerTest() {
         Toast.makeText(getActivity(), "managerTest()", Toast.LENGTH_SHORT).show();
-    }
-
-    // Interaction from points list fragment onListItemClick
-    public void onListFragmentInteraction(long id) {
-        Log.d(TAG, "onListFragmentInteraction id: " + id);
-
-        // Get the point data.
-        Uri uri = Uri.parse(PointsContract.Points.CONTENT_URI)
-                .buildUpon().appendPath(Long.toString(id)).build();
-        Cursor c = getActivity().getContentResolver().query(uri, null, null, null, null);
-
-        if (c.moveToFirst()) {
-
-            LocalPt local = new LocalPt(c.getDouble(Points.INDEX_X), c.getDouble(Points.INDEX_Y));
-            GeoPt geo = local.toGeo();
-            GridPt grid = geo.toGrid();
-
-            TransformSettings s = TransformSettings.getSettings();
-
-            Log.d(TAG, "grid ref n/e (" + s.getLocalUnitsAbbrev() + "): "
-                    + String.format(s.getLocalUnitsFormat(), s.getGridRef().getY() * s.getUnitsFactor()) + ", "
-                    + String.format(s.getLocalUnitsFormat(), s.getGridRef().getX() * s.getUnitsFactor()));
-            Log.d(TAG, "grid ref theta (" + s.getRotationUnitsAbbrev() + "): "
-                    + String.format(s.getRotationUnitsFormat(), s.getGridRef().getTheta()));
-            Log.d(TAG, "point #" + c.getString(Points.INDEX_NAME) + ": " + c.getString(Points.INDEX_DESC));
-            Log.d(TAG, "local n/e (" + s.getLocalUnitsAbbrev() + "): "
-                    + String.format(s.getLocalUnitsFormat(), local.getY() * s.getUnitsFactor()) + ", "
-                    + String.format(s.getLocalUnitsFormat(), local.getX() * s.getUnitsFactor()));
-            Log.d(TAG, "grid n/e (" + s.getLocalUnitsAbbrev() + "): "
-                    + String.format(s.getLocalUnitsFormat(), grid.getY() * s.getUnitsFactor()) + ", "
-                    + String.format(s.getLocalUnitsFormat(), grid.getX() * s.getUnitsFactor()));
-            Log.d(TAG, "geographic lat/lon (" + s.getGeographicUnitsAbbrev() + "): "
-                    + String.format(s.getGeographicUnitsFormat(), geo.getLat()) + ", "
-                    + String.format(s.getGeographicUnitsFormat(), geo.getLon()));
-        }
     }
 
     // Activity result codes
