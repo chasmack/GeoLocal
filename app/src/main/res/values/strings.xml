@@ -7,7 +7,7 @@
     <string name="radio_geographic">Geographic</string>
 
     <!-- Menu items -->
-    <string name="action_read_points">Read points</string>
+    <string name="action_read_points">Load points</string>
     <string name="action_manager_test">Manager test</string>
     <string name="action_settings">Settings</string>
 
@@ -40,7 +40,7 @@
     <string name="pref_geo_ref_suffix">deg</string>
     <string name="pref_geo_ref_first_title">lat:</string>
     <string name="pref_geo_ref_second_title">lon:</string>
-    <string name="pref_geo_ref_message">Lat/lon of the geographic reference point.</string>
+    <string name="pref_geo_ref_message">Enter Latitude/Longitude of the geographic reference point.</string>
 
     <string name="pref_rotation_key">pref_rotation</string>
     <string name="pref_rotation_title">Rotation to true north</string>

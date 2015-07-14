@@ -163,6 +163,8 @@ public class MainActivity extends Activity implements
             return;
         }
 
+        // TODO: Don't reload projections every time the app is started.
+
         // Load the Projections table
         loadProjections(PROJECTION_CONSTANTS_ASSET);
 

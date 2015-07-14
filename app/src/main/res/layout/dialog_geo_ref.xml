@@ -28,7 +28,7 @@
             android:background="#00000000"
             android:inputType="numberDecimal|numberSigned"
             android:gravity="right"
-            android:minWidth="100dp"
+            android:minWidth="120dp"
             android:selectAllOnFocus="true"
             android:imeOptions="actionNext" />
 
@@ -36,7 +36,7 @@
             android:id="@+id/firstSuffix"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="5dp"
+            android:layout_marginStart="10dp"
             android:textSize="18sp"
             android:text="@string/pref_geo_ref_suffix" />
 
@@ -66,15 +66,15 @@
             android:background="#00000000"
             android:inputType="numberDecimal|numberSigned"
             android:gravity="right"
-            android:minWidth="100dp"
+            android:minWidth="120dp"
             android:selectAllOnFocus="true"
-            android:imeOptions="actionDone" />
+            android:imeOptions="actionNext" />
 
         <TextView
             android:id="@+id/secondSuffix"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="5dp"
+            android:layout_marginStart="10dp"
             android:textSize="18sp"
             android:text="@string/pref_geo_ref_suffix" />
 
