@@ -7,8 +7,10 @@ import android.app.FragmentManager;
 import android.app.FragmentManager.OnBackStackChangedListener;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -16,23 +18,122 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 
+import com.asis.chasm.geolocal.Settings.Params;
 import com.asis.chasm.geolocal.PointsContract.Points;
 import com.asis.chasm.geolocal.PointsContract.Projections;
 
 public class MainActivity extends Activity implements
-        PointsListFragment.OnListFragmentInteractionListener,
-        LocalRefPreference.OnPreferenceInteractionListener {
+        PointsList.OnListFragmentInteractionListener,
+        LocalReferencePref.OnPreferenceInteractionListener {
 
-    // Use for logging and debugging
     private static final String TAG = "MainActivity";
 
-    // Preference interaction listener implementation.
+    // Tags to identify the fragments
+    public static final String FRAGMENT_POINTS_LIST = "list";
+    public static final String FRAGMENT_SETTINGS = "settings";
+
+    // XML asset file with projection constants.
+    private static final String PROJECTION_CONSTANTS_ASSET = "projections.txt";
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        getActionBar().setDisplayHomeAsUpEnabled(true);
+
+        // If we're being restored from a previous state, then
+        // we don't need to do anything and should return or else
+        // we could end up with overlapping fragments.
+        if (savedInstanceState != null) {
+            return;
+        }
+
+        // TODO: Don't reload projections every time the app is started.
+
+        // Load the Projections table
+        loadProjections(PROJECTION_CONSTANTS_ASSET);
+
+        // Set defaults for the shared preferences.
+        PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
+
+        // Initialize the transform settings.
+        Params.initialize(this);
+
+        // Create the points list fragment.
+        FragmentManager manager = getFragmentManager();
+        Fragment fragment =fragment = new PointsList();
+        manager.beginTransaction()
+                .add(R.id.container, fragment, FRAGMENT_POINTS_LIST).commit();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        switch (id) {
+            case R.id.action_settings:
+                FragmentManager manager = getFragmentManager();
+                if (manager.findFragmentByTag(FRAGMENT_SETTINGS) == null) {
+
+                    Fragment settings = new Settings();
+
+                    // Replace whatever is in the fragment_container view with this fragment,
+                    // and add the transaction to the back stack.
+                    manager.beginTransaction()
+                            .replace(R.id.container, settings, FRAGMENT_SETTINGS)
+                            .addToBackStack(null)
+                            .commit();
+                }
+                return true;
+
+            case R.id.action_load_points:
+                loadPointsFile();
+                return true;
+            case R.id.action_test:
+                doTest();
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void doTest() {
+        Toast.makeText(this, "MainActivity Test", Toast.LENGTH_SHORT).show();
+    }
+
+    // Respond to the action bar back button.
+    @Override
+    public boolean onNavigateUp() {
+        getFragmentManager().popBackStack();
+        return true;
+    }
+
+    /*
+    * OnPreferenceInteractionListener - respond to events from the preference dialogs.
+    *
+    * onSelectLocalRefPoint - called form the LocalReferencePref to pick a point
+    * from the points list and update the dialog values without actually persisting
+    * the value to shared preferences.
+    */
+
     @Override
     public void onSelectLocalRefPoint(Dialog dialog, View dialogView) {
         onPointPickedAction = POINT_SELECT_ACTION_LOCAL_REF;
@@ -43,7 +144,7 @@ public class MainActivity extends Activity implements
         dialog.hide();
 
         // Create the points list fragment.
-        Fragment fragment = new PointsListFragment();
+        Fragment fragment = new PointsList();
         getFragmentManager().beginTransaction()
                 .replace(R.id.container, fragment, null)
                 .addToBackStack(null)
@@ -91,7 +192,7 @@ public class MainActivity extends Activity implements
             throw new IllegalArgumentException("Invalid point ID: " + id);
         }
 
-        TransformSettings s = TransformSettings.getSettings();
+        Params p = Params.getParams();
         switch (onPointPickedAction) {
             case POINT_SELECT_ACTION_LOCAL_REF:
 
@@ -106,11 +207,11 @@ public class MainActivity extends Activity implements
                 */
 
                 ((EditText) mPrefDialogView.findViewById(R.id.firstValue))
-                        .setText(String.format(s.getLocalUnitsFormat(),
-                                c.getDouble(Points.INDEX_Y) * s.getUnitsFactor()));
+                        .setText(String.format(p.getLocalUnitsFormat(),
+                                c.getDouble(Points.INDEX_Y) * p.getUnitsFactor()));
                 ((EditText) mPrefDialogView.findViewById(R.id.secondValue))
-                        .setText(String.format(s.getLocalUnitsFormat(),
-                                c.getDouble(Points.INDEX_X) * s.getUnitsFactor()));
+                        .setText(String.format(p.getLocalUnitsFormat(),
+                                c.getDouble(Points.INDEX_X) * p.getUnitsFactor()));
 
                 getFragmentManager().popBackStack();
 
@@ -118,116 +219,32 @@ public class MainActivity extends Activity implements
                 break;
 
             default:
-                LocalPt local = new LocalPt(c.getDouble(Points.INDEX_X), c.getDouble(Points.INDEX_Y));
-                GeoPt geo = local.toGeo();
-                GridPt grid = geo.toGrid();
+                LocalPoint local = new LocalPoint(c.getDouble(Points.INDEX_X), c.getDouble(Points.INDEX_Y));
+                GeoPoint geo = local.toGeo();
+                GridPoint grid = geo.toGrid();
 
-                Log.d(TAG, "grid ref n/e (" + s.getLocalUnitsAbbrev() + "): "
-                        + String.format(s.getLocalUnitsFormat(), s.getGridRef().getY() * s.getUnitsFactor()) + ", "
-                        + String.format(s.getLocalUnitsFormat(), s.getGridRef().getX() * s.getUnitsFactor()));
-                Log.d(TAG, "grid ref theta (" + s.getRotationUnitsAbbrev() + "): "
-                        + String.format(s.getRotationUnitsFormat(), s.getGridRef().getTheta()));
+                Log.d(TAG, "grid ref n/e (" + p.getLocalUnitsAbbrev() + "): "
+                        + String.format(p.getLocalUnitsFormat(), p.getGridRef().getY() * p.getUnitsFactor()) + ", "
+                        + String.format(p.getLocalUnitsFormat(), p.getGridRef().getX() * p.getUnitsFactor()));
+                Log.d(TAG, "grid ref theta (" + p.getRotationUnitsAbbrev() + "): "
+                        + String.format(p.getRotationUnitsFormat(), p.getGridRef().getTheta()));
                 Log.d(TAG, "point #" + c.getString(Points.INDEX_NAME) + ": " + c.getString(Points.INDEX_DESC));
-                Log.d(TAG, "local n/e (" + s.getLocalUnitsAbbrev() + "): "
-                        + String.format(s.getLocalUnitsFormat(), local.getY() * s.getUnitsFactor()) + ", "
-                        + String.format(s.getLocalUnitsFormat(), local.getX() * s.getUnitsFactor()));
-                Log.d(TAG, "grid n/e (" + s.getLocalUnitsAbbrev() + "): "
-                        + String.format(s.getLocalUnitsFormat(), grid.getY() * s.getUnitsFactor()) + ", "
-                        + String.format(s.getLocalUnitsFormat(), grid.getX() * s.getUnitsFactor()));
-                Log.d(TAG, "geographic lat/lon (" + s.getGeographicUnitsAbbrev() + "): "
-                        + String.format(s.getGeographicUnitsFormat(), geo.getLat()) + ", "
-                        + String.format(s.getGeographicUnitsFormat(), geo.getLon()));
+                Log.d(TAG, "local n/e (" + p.getLocalUnitsAbbrev() + "): "
+                        + String.format(p.getLocalUnitsFormat(), local.getY() * p.getUnitsFactor()) + ", "
+                        + String.format(p.getLocalUnitsFormat(), local.getX() * p.getUnitsFactor()));
+                Log.d(TAG, "grid n/e (" + p.getLocalUnitsAbbrev() + "): "
+                        + String.format(p.getLocalUnitsFormat(), grid.getY() * p.getUnitsFactor()) + ", "
+                        + String.format(p.getLocalUnitsFormat(), grid.getX() * p.getUnitsFactor()));
+                Log.d(TAG, "geographic lat/lon (" + p.getGeographicUnitsAbbrev() + "): "
+                        + String.format(p.getGeographicUnitsFormat(), geo.getLat()) + ", "
+                        + String.format(p.getGeographicUnitsFormat(), geo.getLon()));
                 break;
         }
     }
 
-    // Tags to identify the fragments
-    public static final String FRAGMENT_POINTS_LIST = "list";
-    public static final String FRAGMENT_POINTS_MANAGER = "manager";
-    public static final String FRAGMENT_SETTINGS = "settings";
-
-    // XML asset file with projection constants.
-    private static final String PROJECTION_CONSTANTS_ASSET = "projections.txt";
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        getActionBar().setDisplayHomeAsUpEnabled(true);
-
-        // If we're being restored from a previous state, then
-        // we don't need to do anything and should return or else
-        // we could end up with overlapping fragments.
-        if (savedInstanceState != null) {
-            return;
-        }
-
-        // TODO: Don't reload projections every time the app is started.
-
-        // Load the Projections table
-        loadProjections(PROJECTION_CONSTANTS_ASSET);
-
-        // Set defaults for the shared preferences.
-        PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
-
-        // Initialize the transform settings.
-        TransformSettings.initialize(this);
-
-        // Create the Non-UI points manager fragment.
-        FragmentManager manager = getFragmentManager();
-        Fragment fragment = new PointsManagerFragment();
-        manager.beginTransaction()
-               .add((Fragment) fragment, FRAGMENT_POINTS_MANAGER).commit();
-
-       // Create the points list fragment.
-        fragment = new PointsListFragment();
-        manager.beginTransaction()
-                .add(R.id.container, fragment, FRAGMENT_POINTS_LIST).commit();
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main, menu);
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        switch (id) {
-            case R.id.action_settings:
-                FragmentManager manager = getFragmentManager();
-                if (manager.findFragmentByTag(FRAGMENT_SETTINGS) == null) {
-
-                    Fragment settings = new TransformSettingsFragment();
-
-                    // Replace whatever is in the fragment_container view with this fragment,
-                    // and add the transaction to the back stack.
-                    manager.beginTransaction()
-                            .replace(R.id.container, settings, FRAGMENT_SETTINGS)
-                            .addToBackStack(null)
-                            .commit();
-                }
-                return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public boolean onNavigateUp() {
-        getFragmentManager().popBackStack();
-        return true;
-    }
-
     /*
-    * Read projection data from a resource data file and
-    * write it to the content provider's Projections table.
+    * loadProjections - read projection data from a resource data file and
+    * load them into the content provider's Projections table.
     */
 
     private void loadProjections(String filename) {
@@ -351,4 +368,128 @@ public class MainActivity extends Activity implements
 
         return neg ? -1.0 * val : val;
     }
+
+    /*
+    * loadPointsFile - choose a file manager to select a local PNEZD points file
+    * and load the points into the content provider's Points table.
+    */
+
+    // Activity result codes
+    private final int RESULT_CODE_FILE_SELECT = 1;
+
+    private void loadPointsFile() {
+
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("text/plain");
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+
+        try {
+            startActivityForResult(
+                    Intent.createChooser(intent, "Select a File"), RESULT_CODE_FILE_SELECT);
+
+        } catch (android.content.ActivityNotFoundException ex) {
+            Toast.makeText(this, "Please install a File Manager.",
+                    Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == RESULT_CODE_FILE_SELECT && resultCode == Activity.RESULT_OK) {
+
+            // Change the empty text message before starting the async task.
+            ((PointsList) getFragmentManager()
+                    .findFragmentByTag(FRAGMENT_POINTS_LIST))
+                    .setEmptyText("Loading points...");
+
+            // Run an AsyncTask to read points into the content provider.
+            new ReadPointsTask().execute(data.getData());
+        }
+    }
+
+    // Async task to read the points, parse the data and load the Points table.
+    private class ReadPointsTask extends AsyncTask<Uri, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Uri... args) {
+
+            Uri uri = args[0];
+            Log.d(TAG, "ReadPointsTask points uri: " + uri);
+
+            ContentResolver resolver = getContentResolver();
+            ArrayList<ContentValues> valuesList = new ArrayList<ContentValues>();
+
+            final Uri POINTS_URI = Uri.parse(Points.CONTENT_URI);
+
+            // Delete any points already in the Points table.
+            int deleted = getContentResolver().delete(POINTS_URI, null, null);
+            Log.d(TAG, "Points deleted: " + deleted);
+
+            BufferedReader reader = null;
+            try {
+
+                reader = new BufferedReader(
+                        new InputStreamReader(resolver.openInputStream(uri)));
+
+                String line;
+                String[] parts;
+
+                Params p = Params.getParams();
+                while ((line = reader.readLine()) != null) {
+                    // Ignore blank lines and comment lines which start with #
+                    if (line.length() == 0 || line.startsWith("#")) {
+                        continue;
+                    }
+                    parts = line.split(",", 5);
+                    if (parts.length != 5) {
+                        Log.d(TAG, "PNEZD (comma delimited) file format error: " + line);
+                        continue;
+                    }
+
+                    Double y = Double.parseDouble(parts[1]) / p.getUnitsFactor();
+                    Double x = Double.parseDouble(parts[2]) / p.getUnitsFactor();
+
+                    ContentValues values = new ContentValues();
+
+                    values.put(Points.COLUMN_NAME, parts[0]);
+                    values.put(Points.COLUMN_Y, y);
+                    values.put(Points.COLUMN_X, x);
+
+                    // Skipping Z (elevation)
+                    values.put(Points.COLUMN_DESC, parts[4]);
+                    values.put(Points.COLUMN_TYPE, Points.TYPE_LOCAL);
+
+                    valuesList.add(values);
+                }
+
+            } catch (IOException e) {
+                Log.d(TAG, e.toString());
+
+            } finally {
+                if (reader != null) {
+                    try {
+                        reader.close();
+                    } catch (IOException e) {
+                        Log.d(TAG, e.toString());
+                    }
+                }
+            }
+
+            // Send the bulk insert to the content provider.
+            int inserted = resolver.bulkInsert(POINTS_URI, valuesList.toArray(new ContentValues[0]));
+            Log.d(TAG, "Points inserted: " + inserted);
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void v) {
+            // Restore the empty text.
+            ((PointsList) getFragmentManager()
+                    .findFragmentByTag(FRAGMENT_POINTS_LIST))
+                    .setEmptyText("No points.");
+        }
+    }
+
 }

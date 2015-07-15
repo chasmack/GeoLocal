@@ -1,7 +1,6 @@
 package com.asis.chasm.geolocal;
 
 import android.app.Activity;
-import android.app.Fragment;
 import android.app.LoaderManager;
 import android.content.Context;
 import android.content.CursorLoader;
@@ -24,6 +23,7 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.view.View.OnClickListener;
 
+import com.asis.chasm.geolocal.Settings.Params;
 import com.asis.chasm.geolocal.PointsContract.Points;
 
 /**
@@ -33,10 +33,10 @@ import com.asis.chasm.geolocal.PointsContract.Points;
  * Activities containing this fragment MUST implement the {@link OnListFragmentInteractionListener}
  * interface.
  */
-public class PointsListFragment extends ListFragment
+public class PointsList extends ListFragment
         implements LoaderManager.LoaderCallbacks<Cursor> {
 
-    private static final String TAG = "ListFragment";
+    private static final String TAG = "PointsList";
 
     // Points type to display in points list.
     private static final int COORDINATE_TYPE_LOCAL = 1;
@@ -55,7 +55,7 @@ public class PointsListFragment extends ListFragment
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
      */
-    public PointsListFragment() {
+    public PointsList() {
     }
 
     @Override
@@ -153,8 +153,7 @@ public class PointsListFragment extends ListFragment
 
         // Add a units label to the Local Coordinates radio button
         TextView tv = (TextView) getView().findViewById(R.id.radio_local);
-        tv.setText("Local (" + TransformSettings.getSettings().getLocalUnitsName() + ")");
-
+        tv.setText("Local (" + Params.getParams().getLocalUnitsName() + ")");
     }
 
     @Override
@@ -231,11 +230,11 @@ public class PointsListFragment extends ListFragment
 
         private void setCoordinateType(int type) {
             mCoordType = type;
-            TransformSettings s = TransformSettings.getSettings();
+            Params p = Params.getParams();
             if (type == COORDINATE_TYPE_GEOGRAPHIC) {
-                mCoordFormat = s.getGeographicUnitsFormat() + ", " + s.getGeographicUnitsFormat();
+                mCoordFormat = p.getGeographicUnitsFormat() + ", " + p.getGeographicUnitsFormat();
             } else {
-                mCoordFormat = s.getLocalUnitsFormat() + ", " + s.getLocalUnitsFormat();
+                mCoordFormat = p.getLocalUnitsFormat() + ", " + p.getLocalUnitsFormat();
             }
             notifyDataSetChanged();
         }
@@ -248,11 +247,11 @@ public class PointsListFragment extends ListFragment
             tv = (TextView) view.findViewById(R.id.desc);
             tv.setText(cursor.getString(Points.INDEX_DESC));
 
-            TransformSettings s = TransformSettings.getSettings();
+            Params p = Params.getParams();
             switch (mCoordType) {
 
                 case COORDINATE_TYPE_GEOGRAPHIC:
-                    GeoPt geo = new LocalPt(
+                    GeoPoint geo = new LocalPoint(
                             cursor.getDouble(Points.INDEX_X),
                             cursor.getDouble(Points.INDEX_Y)).toGeo();
                     tv = (TextView) view.findViewById(R.id.coord_values);
@@ -264,8 +263,8 @@ public class PointsListFragment extends ListFragment
                 case COORDINATE_TYPE_LOCAL:
                     tv = (TextView) view.findViewById(R.id.coord_values);
                     tv.setText(String.format(mCoordFormat,
-                            cursor.getDouble(Points.INDEX_Y) * s.getUnitsFactor(),
-                            cursor.getDouble(Points.INDEX_X) * s.getUnitsFactor()));
+                            cursor.getDouble(Points.INDEX_Y) * p.getUnitsFactor(),
+                            cursor.getDouble(Points.INDEX_X) * p.getUnitsFactor()));
                     tv =(TextView) view.findViewById(R.id.coord_prefix);
                     tv.setText("N/E:");
                     break;

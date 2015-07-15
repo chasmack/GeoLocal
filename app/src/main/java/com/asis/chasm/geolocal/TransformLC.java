@@ -2,6 +2,7 @@ package com.asis.chasm.geolocal;
 
 import android.util.Log;
 import java.lang.Math;
+import com.asis.chasm.geolocal.Settings.Params;
 
 /**
  * Transform between a local basis and geographic coordinates using
@@ -46,7 +47,7 @@ public class TransformLC {
 
     private TransformLC() { }
 
-    public static GeoPt toGeo(GridPt p) {
+    public static GeoPoint toGeo(GridPoint p) {
 
         // Make sure the zone constants are initialized.
         initTransform();
@@ -73,10 +74,10 @@ public class TransformLC {
         } while (Math.abs (lat - lat1) > 2e-9);
 
         // Return lat/lon in degrees.
-        return new GeoPt(Math.toDegrees(lat), Math.toDegrees(lon));
+        return new GeoPoint(Math.toDegrees(lat), Math.toDegrees(lon));
     }
 
-    public static GridPt toGrid(GeoPt p) {
+    public static GridPoint toGrid(GeoPoint p) {
 
         // Make sure the zone constants are initialized.
         initTransform();
@@ -94,10 +95,10 @@ public class TransformLC {
         double x = rho * Math.sin(theta) + X0;
         double y = rho0 - rho * Math.cos(theta) + Y0;
 
-        return new GridPt(x, y).setTheta(Math.toDegrees(theta)).setK(k);
+        return new GridPoint(x, y).setTheta(Math.toDegrees(theta)).setK(k);
     }
 
-    public static double getTheta(GeoPt p) {
+    public static double getTheta(GeoPoint p) {
 
         // Make sure the zone constants are initialized.
         initTransform();
@@ -106,7 +107,7 @@ public class TransformLC {
         return Math.toDegrees(n * (lon - M0));
     }
 
-    public static double getK(GeoPt p) {
+    public static double getK(GeoPoint p) {
 
         // Make sure the zone constants are initialized.
         initTransform();
@@ -120,21 +121,21 @@ public class TransformLC {
     public static void initTransform() {
 
         // Check if zone constants need to be initialized.
-        TransformSettings s = TransformSettings.getSettings();
-        if (sCode.equals(s.getProjectionCode())) { return; }
+        Params p = Params.getParams();
+        if (sCode.equals(p.getProjectionCode())) { return; }
 
         // Check we are using a Lambert projection.
-        if (s.getProjection() != PointsContract.Projections.PROJECTION_LC) {
+        if (p.getProjection() != PointsContract.Projections.PROJECTION_LC) {
             throw new IllegalArgumentException("Bad LC transform parameters.");
         }
 
         // Get the defining coordinate system constants for the zone
-        P1 = Math.toRadians(s.getP1());
-        P2 = Math.toRadians(s.getP2());
-        P0 = Math.toRadians(s.getP0());
-        M0 = Math.toRadians(s.getM0());
-        Y0 = s.getY0();
-        X0 = s.getX0();
+        P1 = Math.toRadians(p.getP1());
+        P2 = Math.toRadians(p.getP2());
+        P0 = Math.toRadians(p.getP0());
+        M0 = Math.toRadians(p.getM0());
+        Y0 = p.getY0();
+        X0 = p.getX0();
 
         // Calculate the derived coordinate system constants.
         m1 = Math.cos(P1) / Math.sqrt(1.0 - Math.pow(E * Math.sin(P1), 2.0));
@@ -149,8 +150,8 @@ public class TransformLC {
         F = m1 / (n * Math.pow(t1, n));
         rho0 = A * F * Math.pow(t0, n);
 
-        Log.d(TAG, "Transform initialized: " + s.getProjectionDesc()
-                + " (" + s.getProjectionCode() + ")");
+        Log.d(TAG, "Transform initialized: " + p.getProjectionDesc()
+                + " (" + p.getProjectionCode() + ")");
 //        Log.d(TAG, "m1=" + m1);
 //        Log.d(TAG, "m2=" + m2);
 //        Log.d(TAG, "t1=" + t1);
@@ -161,6 +162,6 @@ public class TransformLC {
 //        Log.d(TAG, "rho0=" + rho0);
 
         // Projection constants have been initialized.
-        sCode = s.getProjectionCode();
+        sCode = p.getProjectionCode();
     }
 }

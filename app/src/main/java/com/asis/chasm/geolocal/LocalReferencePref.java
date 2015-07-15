@@ -11,13 +11,15 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.asis.chasm.geolocal.Settings.Params;
+
 /*
 * Coordinate pair preference.
 */
 
-public class LocalRefPreference extends DialogPreference {
+public class LocalReferencePref extends DialogPreference {
 
-    private static final String TAG = "LocalRefPreference";
+    private static final String TAG = "LocalReferencePref";
 
     // Local reference coordinates are converted from display units into
     // meters and saved in shared preferences as a string formatted y, x.
@@ -48,7 +50,7 @@ public class LocalRefPreference extends DialogPreference {
         super.showDialog(state);
     }
 
-    public LocalRefPreference(Context context, AttributeSet attrs) {
+    public LocalReferencePref(Context context, AttributeSet attrs) {
         super(context, attrs);
 
         Log.d(TAG, "Constructor");
@@ -91,15 +93,15 @@ public class LocalRefPreference extends DialogPreference {
         mDialogView = view;
 
         // Set the units suffix.
-        TransformSettings s = TransformSettings.getSettings();
-        ((TextView) view.findViewById(R.id.firstSuffix)).setText(s.getLocalUnitsAbbrev());
-        ((TextView) view.findViewById(R.id.secondSuffix)).setText(s.getLocalUnitsAbbrev());
+        Params p = Params.getParams();
+        ((TextView) view.findViewById(R.id.firstSuffix)).setText(p.getLocalUnitsAbbrev());
+        ((TextView) view.findViewById(R.id.secondSuffix)).setText(p.getLocalUnitsAbbrev());
 
         // Initialize the values.
         ((EditText) view.findViewById(R.id.firstValue))
-                .setText(String.format(s.getLocalUnitsFormat(), s.getRefY() * s.getUnitsFactor()));
+                .setText(String.format(p.getLocalUnitsFormat(), p.getRefY() * p.getUnitsFactor()));
         ((EditText) view.findViewById(R.id.secondValue))
-                .setText(String.format(s.getLocalUnitsFormat(), s.getRefX() * s.getUnitsFactor()));
+                .setText(String.format(p.getLocalUnitsFormat(), p.getRefX() * p.getUnitsFactor()));
 
         // Select a point button callback
         view.findViewById(R.id.buttonSelectPoint)
@@ -122,8 +124,8 @@ public class LocalRefPreference extends DialogPreference {
 
             // TODO: Validate the user input for the local reference.
 
-            TransformSettings s = TransformSettings.getSettings();
-            double factor = s.getUnitsFactor();
+            Params p = Params.getParams();
+            double factor = p.getUnitsFactor();
 
             // Parse coordinate pair into doubles and convert to meters.
             double first = Double.parseDouble(((EditText) mDialogView

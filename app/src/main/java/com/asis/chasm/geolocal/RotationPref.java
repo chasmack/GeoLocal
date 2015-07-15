@@ -6,16 +6,17 @@ import android.preference.DialogPreference;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.EditText;
+
+import com.asis.chasm.geolocal.Settings.Params;
 
 /*
 *  Rotation preference.
 */
 
-public class RotationPreference extends DialogPreference {
+public class RotationPref extends DialogPreference {
 
-    private static final String TAG = "RotationPreference";
+    private static final String TAG = "RotationPref";
 
     // Rotation saved in shared preferences as a formatted string in degrees.
     private static final String SHARED_PREFERENCES_COORD_FORMAT = "%.8f";
@@ -34,7 +35,7 @@ public class RotationPreference extends DialogPreference {
         super.setSummary(summary);
     }
 
-    public RotationPreference(Context context, AttributeSet attrs) {
+    public RotationPref(Context context, AttributeSet attrs) {
         super(context, attrs);
 
         Log.d(TAG, "Constructor");
@@ -76,8 +77,8 @@ public class RotationPreference extends DialogPreference {
 
         // Initialize the value with the current value.
         EditText v = (EditText) view.findViewById(R.id.value);
-        TransformSettings s = TransformSettings.getSettings();
-        v.setText(String.format(s.getRotationUnitsFormat(), s.getRotation()));
+        Params p = Params.getParams();
+        v.setText(String.format(p.getRotationUnitsFormat(), p.getRotation()));
 
 //        v.setOnFocusChangeListener(new View.OnFocusChangeListener() {
 //            @Override

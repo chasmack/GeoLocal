@@ -2,6 +2,16 @@
     xmlns:tools="http://schemas.android.com/tools" tools:context=".MainActivity"
     xmlns:app="http://schemas.android.com/apk/res-auto" >
 
+    <item android:id="@+id/action_load_points"
+        android:title="@string/action_load_points"
+        android:orderInCategory="20"
+        app:showAsAction="never" />
+
+    <item android:id="@+id/action_test"
+        android:title="@string/action_test"
+        android:orderInCategory="30"
+        app:showAsAction="never" />
+
     <item android:id="@+id/action_settings"
         android:title="@string/action_settings"
         android:orderInCategory="100"

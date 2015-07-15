@@ -8,13 +8,15 @@ import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 
+import com.asis.chasm.geolocal.Settings.Params;
+
 /*
 * Coordinate pair preference.
 */
 
-public class GeoRefPreference extends DialogPreference {
+public class GeoReferencePref extends DialogPreference {
 
-    private static final String TAG = "GeoRefPreference";
+    private static final String TAG = "GeoReferencePref";
 
     // TODO: Add a "Read from GPX" button to read a waypoint from a GPX file.
     // TODO: Add a "Read from Location Service" option.
@@ -37,7 +39,7 @@ public class GeoRefPreference extends DialogPreference {
         super.setSummary(summary);
     }
 
-    public GeoRefPreference(Context context, AttributeSet attrs) {
+    public GeoReferencePref(Context context, AttributeSet attrs) {
         super(context, attrs);
 
         Log.d(TAG, "Constructor");
@@ -78,11 +80,11 @@ public class GeoRefPreference extends DialogPreference {
         mDialogView = view;
 
         // Initialize the values.
-        TransformSettings s = TransformSettings.getSettings();
+        Params p = Params.getParams();
         ((EditText) view.findViewById(R.id.firstValue))
-                .setText(String.format(s.getGeographicUnitsFormat(), s.getRefLat()));
+                .setText(String.format(p.getGeographicUnitsFormat(), p.getRefLat()));
         ((EditText) view.findViewById(R.id.secondValue))
-                .setText(String.format(s.getGeographicUnitsFormat(), s.getRefLon()));
+                .setText(String.format(p.getGeographicUnitsFormat(), p.getRefLon()));
     }
 
     @Override

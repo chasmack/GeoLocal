@@ -1,6 +1,8 @@
 package com.asis.chasm.geolocal;
 
 import android.util.Log;
+import java.lang.Math;
+import com.asis.chasm.geolocal.Settings.Params;
 
 /**
  * Transform between a local basis and geographic coordinates using
@@ -43,7 +45,7 @@ public class TransformTM {
     private TransformTM() { }
 
     // Inverse calculation from grid coordinates to lat/lon.
-    public static GeoPt toGeo(GridPt p) {
+    public static GeoPoint toGeo(GridPoint p) {
 
         // Make sure the zone constants are initialized.
         initTransform();
@@ -84,7 +86,7 @@ public class TransformTM {
 
         double lon = M0 + Q * (1 + Q2 * (b3 + Q2 * (b5 + b7 * Q2))) / cosf;
 
-        return new GeoPt(Math.toDegrees(lat), Math.toDegrees(lon));
+        return new GeoPoint(Math.toDegrees(lat), Math.toDegrees(lon));
     }
 
     /**
@@ -92,7 +94,7 @@ public class TransformTM {
      * convergence angle (theta) and grid scale factor (k) from geographic
      * coordinates (lat/lon).  Grid coordinates are in meters.
     */
-    public static GridPt toGrid(GeoPt p) {
+    public static GridPoint toGrid(GeoPoint p) {
 
         // Make sure the zone constants are initialized.
         initTransform();
@@ -138,10 +140,10 @@ public class TransformTM {
         double f4 = (5 - 4 * tanp2 + et2 * (9 - 24 * tanp2)) / 12;
         double k = K0 * (1 + f2 * L2 * (1 + f4 * L2));
 
-        return new GridPt(x, y).setK(k).setTheta(Math.toDegrees(theta));
+        return new GridPoint(x, y).setK(k).setTheta(Math.toDegrees(theta));
     }
 
-    public static double getTheta(GeoPt p) {
+    public static double getTheta(GeoPoint p) {
 
         // Make sure the zone constants are initialized.
         initTransform();
@@ -167,7 +169,7 @@ public class TransformTM {
         return Math.toDegrees(theta);
     }
 
-    public static double getK(GeoPt p) {
+    public static double getK(GeoPoint p) {
 
         // Make sure the zone constants are initialized.
         initTransform();
@@ -194,20 +196,20 @@ public class TransformTM {
     public static void initTransform() {
 
         // Check if zone constants need to be initialized.
-        TransformSettings s = TransformSettings.getSettings();
-        if (sCode.equals(s.getProjectionCode())) { return; }
+        Params p = Params.getParams();
+        if (sCode.equals(p.getProjectionCode())) { return; }
 
         // Check we are using a Lambert projection.
-        if (s.getProjection() != PointsContract.Projections.PROJECTION_TM) {
+        if (p.getProjection() != PointsContract.Projections.PROJECTION_TM) {
             throw new IllegalArgumentException("Bad TM transform parameters.");
         }
 
         // Get the defining coordinate system constants for the zone
-        P0 = Math.toRadians(s.getP0());
-        M0 = Math.toRadians(s.getM0());
-        Y0 = s.getY0();
-        X0 = s.getX0();
-        K0 = s.getK0();
+        P0 = Math.toRadians(p.getP0());
+        M0 = Math.toRadians(p.getM0());
+        Y0 = p.getY0();
+        X0 = p.getX0();
+        K0 = p.getK0();
 
         // Initialize the zone constants.
         u2 = -3 * n / 2 + 9 * n3 / 16;
@@ -235,10 +237,10 @@ public class TransformTM {
         double cosp2 = cosp * cosp;
         S0 = K0 * (P0 + sinp * cosp * (u0 + cosp2 * (u2 + cosp2 * (u4 + u6 * cosp2)))) * r;
 
-        Log.d(TAG, "Transform initialized: " + s.getProjectionDesc()
-                + " (" + s.getProjectionCode() + ")");
+        Log.d(TAG, "Transform initialized: " + p.getProjectionDesc()
+                + " (" + p.getProjectionCode() + ")");
 
         // Projection constants have been initialized.
-        sCode = s.getProjectionCode();
+        sCode = p.getProjectionCode();
     }
 }
