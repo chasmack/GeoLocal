@@ -8,6 +8,10 @@ import android.provider.BaseColumns;
 
 public final class PointsContract {
 
+    // Provider specific call methods.
+    public static final String CALL_GET_COUNT_METHOD = "get_count";
+    public static final String CALL_GET_COUNT_RESULT_KEY = "count";
+
     private PointsContract() {}
 
     public static final String AUTHORITY = "com.asis.chasm.provider.Points";

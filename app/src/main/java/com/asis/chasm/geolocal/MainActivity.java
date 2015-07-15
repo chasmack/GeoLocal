@@ -56,10 +56,13 @@ public class MainActivity extends Activity implements
             return;
         }
 
-        // TODO: Don't reload projections every time the app is started.
+        // Check if the projections table has already been loaded.
+        Bundle bundle = getContentResolver().call(Uri.parse(Projections.CONTENT_URI),
+                PointsContract.CALL_GET_COUNT_METHOD, Projections.TABLE, null);
 
-        // Load the Projections table
-        loadProjections(PROJECTION_CONSTANTS_ASSET);
+        if (bundle == null || bundle.getInt(PointsContract.CALL_GET_COUNT_RESULT_KEY) == 0) {
+            loadProjectionsTable(PROJECTION_CONSTANTS_ASSET);
+        }
 
         // Set defaults for the shared preferences.
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
@@ -243,11 +246,11 @@ public class MainActivity extends Activity implements
     }
 
     /*
-    * loadProjections - read projection data from a resource data file and
+    * loadProjectionsTable - read projection data from a resource data file and
     * load them into the content provider's Projections table.
     */
 
-    private void loadProjections(String filename) {
+    private void loadProjectionsTable(String filename) {
 
         ArrayList<ContentValues> valuesList = new ArrayList<ContentValues>();
         ContentResolver resolver = getContentResolver();

@@ -1,17 +1,14 @@
 package com.asis.chasm.geolocal;
 
 import android.content.ContentProvider;
-import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.UriMatcher;
 import android.database.Cursor;
-import android.database.MergeCursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
-import android.os.AsyncTask;
+import android.os.Bundle;
 import android.util.Log;
 import java.util.HashMap;
 
@@ -114,6 +111,37 @@ public class PointsProvider extends ContentProvider {
     public boolean onCreate() {
         mDbHelper = new PointsDbHelper(getContext());
         return true;
+    }
+
+    /*
+    * call - provider specific utility methods.
+    */
+
+    @Override
+    public Bundle call(String method, String arg, Bundle extras) {
+        switch (method) {
+            case PointsContract.CALL_GET_COUNT_METHOD:
+                if (arg != null &&
+                        (arg.equals(Points.TABLE) || arg.equals(Projections.TABLE))) {
+                    return getCount(arg);
+                }
+                break;
+        }
+        return null;
+    }
+
+    private Bundle getCount(String table) {
+        Cursor c = mDbHelper.getReadableDatabase()
+                .rawQuery("select count(*) as count from " + table, null);
+        if (c.moveToFirst()) {
+            Bundle bundle = new Bundle();
+            int index = c.getColumnIndex("count");
+            bundle.putInt(PointsContract.CALL_GET_COUNT_RESULT_KEY, c.getInt(index));
+            Log.d(TAG, "GET_COUNT table=" + table
+                    + " count=" + bundle.getInt(PointsContract.CALL_GET_COUNT_RESULT_KEY));
+            return bundle;
+        }
+        return null;
     }
 
     @Override
