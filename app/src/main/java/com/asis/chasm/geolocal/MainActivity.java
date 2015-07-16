@@ -12,6 +12,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
@@ -21,13 +22,19 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.List;
 
 import com.asis.chasm.geolocal.Settings.Params;
 import com.asis.chasm.geolocal.PointsContract.Points;
 import com.asis.chasm.geolocal.PointsContract.Projections;
+
+import org.xmlpull.v1.XmlPullParserException;
 
 public class MainActivity extends Activity implements
         PointsList.OnListFragmentInteractionListener,
@@ -111,15 +118,44 @@ public class MainActivity extends Activity implements
                 loadPointsFile();
                 return true;
             case R.id.action_test:
-                doTest();
+                try { doTest(); }
+                catch (IOException e) { Log.d(TAG, "IO exception: " + e); }
+                catch (XmlPullParserException e) { Log.d(TAG, "Parser exception: " + e); }
                 return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    private void doTest() {
+    private void doTest() throws IOException, XmlPullParserException {
         Toast.makeText(this, "MainActivity Test", Toast.LENGTH_SHORT).show();
+
+        final String GPX_FILE = "Waypoints.gpx";
+
+        InputStream stream = null;
+        GpxParser gpxParser = new GpxParser();
+        List<GpxParser.Waypoint> wpts = null;
+
+        try {
+            String path = Environment.getExternalStoragePublicDirectory(
+                    Environment.DIRECTORY_DOWNLOADS) + "/SPCS";
+            Log.d(TAG, "path: " + path);
+
+            File file = new File(path, GPX_FILE);
+            stream = new FileInputStream(file);
+            wpts = gpxParser.parse(stream);
+
+            for (GpxParser.Waypoint wpt : wpts) {
+                Log.d(TAG, wpt.toString());
+            }
+
+        } finally {
+            if (stream != null) {
+                stream.close();
+            }
+        }
+
+
     }
 
     // Respond to the action bar back button.

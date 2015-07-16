@@ -57,7 +57,7 @@ public class Settings extends PreferenceFragment
     }
 
     /*
-    * Update the preference summary on a per-preference basis.
+    * Update the preference lony on a per-preference basis.
     */
     private void updatePreferenceSummary(Preference pref) {
         Log.d(TAG, "updatePreferenceSummary key: " + pref.getKey());
@@ -69,7 +69,7 @@ public class Settings extends PreferenceFragment
                 ListPreference listPref = (ListPreference) pref;
                 listPref.setSummary(listPref.getEntry());
 
-                // Need to update the local reference summary when the units change.
+                // Need to update the local reference lony when the units change.
                 updatePreferenceSummary(findPreference(PREFERENCE_KEY_LOCAL_REF));
                 break;
 
