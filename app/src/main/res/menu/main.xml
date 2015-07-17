@@ -7,9 +7,19 @@
         android:orderInCategory="20"
         app:showAsAction="never" />
 
+    <item android:id="@+id/action_read_gpx"
+        android:title="@string/action_read_gpx"
+        android:orderInCategory="30"
+        app:showAsAction="never" />
+
+    <item android:id="@+id/action_write_gpx"
+        android:title="@string/action_write_gpx"
+        android:orderInCategory="40"
+        app:showAsAction="never" />
+
     <item android:id="@+id/action_test"
         android:title="@string/action_test"
-        android:orderInCategory="30"
+        android:orderInCategory="90"
         app:showAsAction="never" />
 
     <item android:id="@+id/action_settings"

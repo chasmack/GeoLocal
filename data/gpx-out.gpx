@@ -1,0 +1,153 @@
+<?xml version='1.0' encoding='utf-8' standalone='no' ?>
+<gpx creator="com.asis.chasm.GeoLocal" version="1.1" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www8.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/WaypointExtension/v1 http://www8.garmin.com/xmlschemas/WaypointExtensionv1.xsd" xmlns="http://www.topografix.com/GPX/1/1" xmlns:gpxx="http://www.garmin.com/xmlschemas/GpxExtensions/v3" xmlns:wptx1="http://www.garmin.com/xmlschemas/WaypointExtension/v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <wpt lat="41.09731600" lon="-123.69617000">
+    <name>4501</name>
+    <cmt>SW212</cmt>
+    <desc>27-APR-15 15:33:44</desc>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:Samples>2</wptx1:Samples>
+      </wptx1:WaypointExtension>
+    </extensions>
+  </wpt>
+  <wpt lat="40.63378097" lon="-123.77784762">
+    <name>1003</name>
+    <cmt>SECCOR_18/19/13/24</cmt>
+    <desc>SECCOR_18/19/13/24</desc>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:Samples>6</wptx1:Samples>
+      </wptx1:WaypointExtension>
+    </extensions>
+  </wpt>
+  <wpt lat="40.64438174" lon="-123.76982496">
+    <name>1043</name>
+    <cmt>N/16_SEC_18</cmt>
+    <desc>N/16_SEC_18</desc>
+  </wpt>
+  <wpt lat="40.64465138" lon="-123.77784661">
+    <name>1044</name>
+    <cmt>N/16_SEC_13/18</cmt>
+    <desc>N/16_SEC_13/18</desc>
+  </wpt>
+  <wpt lat="40.64075447" lon="-123.76982865">
+    <name>1045</name>
+    <cmt>C/4_SEC_18</cmt>
+    <desc>C/4_SEC_18</desc>
+  </wpt>
+  <wpt lat="40.64089126" lon="-123.77383780">
+    <name>1046</name>
+    <cmt>W/16_SEC_18</cmt>
+    <desc>W/16_SEC_18</desc>
+  </wpt>
+  <wpt lat="40.64102797" lon="-123.77784695">
+    <name>1047</name>
+    <cmt>1/4COR_SEC_13/18</cmt>
+    <desc>1/4COR_SEC_13/18</desc>
+  </wpt>
+  <wpt lat="40.63350010" lon="-123.76983594">
+    <name>1048</name>
+    <cmt>1/4COR_SEC_18/19</cmt>
+    <desc>1/4COR_SEC_18/19</desc>
+  </wpt>
+  <wpt lat="40.63364058" lon="-123.77384182">
+    <name>1049</name>
+    <cmt>W/16_SEC_18/19</cmt>
+    <desc>W/16_SEC_18/19</desc>
+  </wpt>
+  <wpt lat="40.62987291" lon="-123.76983963">
+    <name>1050</name>
+    <cmt>N/16_SEC_19</cmt>
+    <desc>N/16_SEC_19</desc>
+  </wpt>
+  <wpt lat="40.63015748" lon="-123.77784795">
+    <name>1051</name>
+    <cmt>N/16_SEC_19/24</cmt>
+    <desc>N/16_SEC_19/24</desc>
+  </wpt>
+  <wpt lat="40.63726592" lon="-123.77383981">
+    <name>1052</name>
+    <cmt>SW/16_SEC_18</cmt>
+    <desc>SW/16_SEC_18</desc>
+  </wpt>
+  <wpt lat="40.64484500" lon="-123.77553999">
+    <name>4101</name>
+    <cmt>CP202</cmt>
+    <desc>CP202</desc>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:Samples>4</wptx1:Samples>
+      </wptx1:WaypointExtension>
+    </extensions>
+  </wpt>
+  <wpt lat="40.64442599" lon="-123.76797097">
+    <name>4102</name>
+    <cmt>CP205</cmt>
+    <desc>CP205</desc>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:Samples>6</wptx1:Samples>
+      </wptx1:WaypointExtension>
+    </extensions>
+  </wpt>
+  <wpt lat="40.64663798" lon="-123.76780802">
+    <name>4103</name>
+    <cmt>CP208</cmt>
+    <desc>CP208</desc>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:Samples>6</wptx1:Samples>
+      </wptx1:WaypointExtension>
+    </extensions>
+  </wpt>
+  <wpt lat="40.64454300" lon="-123.76927201">
+    <name>4104</name>
+    <cmt>CP211</cmt>
+    <desc>CP211</desc>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:Samples>2</wptx1:Samples>
+      </wptx1:WaypointExtension>
+    </extensions>
+  </wpt>
+  <wpt lat="40.64203002" lon="-123.77144099">
+    <name>4105</name>
+    <cmt>TRAIL NE</cmt>
+    <desc>TRAIL NE</desc>
+  </wpt>
+  <wpt lat="40.64078003" lon="-123.77226996">
+    <name>4106</name>
+    <cmt>CP15</cmt>
+    <desc>CP15</desc>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:Samples>5</wptx1:Samples>
+      </wptx1:WaypointExtension>
+    </extensions>
+  </wpt>
+  <wpt lat="40.63245898" lon="-123.77524403">
+    <name>4107</name>
+    <cmt>CP1</cmt>
+    <desc>CP1</desc>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:Samples>10</wptx1:Samples>
+      </wptx1:WaypointExtension>
+    </extensions>
+  </wpt>
+  <wpt lat="40.65550502" lon="-123.77786304">
+    <name>4108</name>
+    <cmt>1/4COR 12/7</cmt>
+    <desc>1/4COR 12/7</desc>
+  </wpt>
+  <wpt lat="40.62962900" lon="-123.77453400">
+    <name>4109</name>
+    <cmt>ELSMORE 1903 1/16</cmt>
+    <desc>ELSMORE 1903 1/16</desc>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:Samples>2</wptx1:Samples>
+      </wptx1:WaypointExtension>
+    </extensions>
+  </wpt>
+</gpx>

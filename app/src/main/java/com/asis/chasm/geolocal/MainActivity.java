@@ -7,11 +7,14 @@ import android.app.FragmentManager;
 import android.app.FragmentManager.OnBackStackChangedListener;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
@@ -21,13 +24,21 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Writer;
 import java.util.ArrayList;
+import java.util.List;
 
 import com.asis.chasm.geolocal.Settings.Params;
 import com.asis.chasm.geolocal.PointsContract.Points;
 import com.asis.chasm.geolocal.PointsContract.Projections;
+
+import org.xmlpull.v1.XmlPullParserException;
 
 public class MainActivity extends Activity implements
         PointsList.OnListFragmentInteractionListener,
@@ -83,6 +94,13 @@ public class MainActivity extends Activity implements
         return super.onCreateOptionsMenu(menu);
     }
 
+    // Respond to the action bar back button.
+    @Override
+    public boolean onNavigateUp() {
+        getFragmentManager().popBackStack();
+        return true;
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -92,41 +110,165 @@ public class MainActivity extends Activity implements
 
         //noinspection SimplifiableIfStatement
         switch (id) {
-            case R.id.action_settings:
-                FragmentManager manager = getFragmentManager();
-                if (manager.findFragmentByTag(FRAGMENT_SETTINGS) == null) {
-
-                    Fragment settings = new Settings();
-
-                    // Replace whatever is in the fragment_container view with this fragment,
-                    // and add the transaction to the back stack.
-                    manager.beginTransaction()
-                            .replace(R.id.container, settings, FRAGMENT_SETTINGS)
-                            .addToBackStack(null)
-                            .commit();
-                }
-                return true;
-
             case R.id.action_load_points:
                 loadPointsFile();
                 return true;
+            case R.id.action_read_gpx:
+                try { readGpxFile(); }
+                catch (IOException e) { Log.d(TAG, "IO exception: " + e); }
+                catch (XmlPullParserException e) { Log.d(TAG, "Parser exception: " + e); }
+                return true;
+            case R.id.action_write_gpx:
+                try { writeGpxFile(); }
+                catch (IOException e) { Log.d(TAG, "IO exception: " + e); }
+                catch (XmlPullParserException e) { Log.d(TAG, "Parser exception: " + e); }
+                return true;
             case R.id.action_test:
-                doTest();
+                try { doTest(); }
+                catch (IOException e) { Log.d(TAG, "IO exception: " + e); }
+                catch (XmlPullParserException e) { Log.d(TAG, "Parser exception: " + e); }
+                return true;
+            case R.id.action_settings:
+                FragmentManager manager = getFragmentManager();
+                if (manager.findFragmentByTag(FRAGMENT_SETTINGS) == null) {
+                    // Replace the fragment in the fragment container view with settings
+                    // and add the transaction to the back stack.
+                    manager.beginTransaction()
+                            .replace(R.id.container, new Settings(), FRAGMENT_SETTINGS)
+                            .addToBackStack(null)
+                            .commit();
+                }
                 return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    private void doTest() {
+    private void doTest() throws IOException, XmlPullParserException {
         Toast.makeText(this, "MainActivity Test", Toast.LENGTH_SHORT).show();
+
+        final String OUTFILE = "test.txt";
+
+        Writer writer = null;
+        File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+        File outfile = new File(path, OUTFILE);
+        try {
+            writer = new FileWriter(outfile);
+            writer.write("Hello world.\n");
+
+        } finally {
+            if (writer != null) writer.close();
+
+            // Workaround to ensure new file is visible in Windows explorer.
+            new SingleMediaScanner(this, outfile);
+        }
     }
 
-    // Respond to the action bar back button.
-    @Override
-    public boolean onNavigateUp() {
-        getFragmentManager().popBackStack();
-        return true;
+    /*
+    * SingleMediaScanner - workaround for issues with new file visability
+    * using USB connection with Windows explorer.
+    */
+
+    private static class SingleMediaScanner implements
+            MediaScannerConnection.MediaScannerConnectionClient
+    {
+        private MediaScannerConnection mScanner;
+        private File mFile;
+
+        SingleMediaScanner(Context context, File file) {
+            mFile = file;
+            mScanner = new MediaScannerConnection(context, this);
+            mScanner.connect();
+        }
+
+        @Override
+        public void onMediaScannerConnected() {
+            mScanner.scanFile(mFile.toString(), null);
+        }
+
+        @Override
+        public void onScanCompleted(String path, Uri uri) {
+            mScanner.disconnect();
+        }
+    }
+
+    /*
+    * readGpxFile - read the waypoints from a GPX file.
+    */
+
+    private void readGpxFile() throws IOException, XmlPullParserException {
+        Toast.makeText(this, "readGpxFile", Toast.LENGTH_SHORT).show();
+
+        final String INFILE = "Waypoints-01.gpx";
+
+        InputStream stream = null;
+        try {
+            String path = Environment.getExternalStoragePublicDirectory(
+                    Environment.DIRECTORY_DOWNLOADS) + "/SPCS";
+            Log.d(TAG, "path: " + path);
+
+            File infile = new File(path, INFILE);
+            stream = new FileInputStream(infile);
+            List<GpxParser.Waypoint> wpts = new GpxParser().parse(stream);
+
+            for (GpxParser.Waypoint wpt : wpts) {
+                Log.d(TAG, wpt.toString());
+            }
+
+        } finally {
+            if (stream != null) stream.close();
+        }
+    }
+
+    /*
+    * writeGpxFile - write local points to a gpx file
+    */
+
+    private void writeGpxFile() throws IOException, XmlPullParserException {
+
+        final String OUTFILE = "points-out.gpx";
+
+        // Get the point data.
+        Uri uri = Uri.parse(PointsContract.Points.CONTENT_URI);
+        Cursor c = getContentResolver().query(uri, null, null, null, null);
+
+        List<GpxParser.Waypoint> wpts = new ArrayList<GpxParser.Waypoint>();
+        Params p = Params.getParams();
+
+        int cnt = 0;
+        c.moveToFirst();
+        do {
+            cnt++;
+            GeoPoint geo = new LocalPoint(
+                    c.getDouble(Points.INDEX_X), c.getDouble(Points.INDEX_Y))
+                    .toGeo();
+
+            wpts.add(new GpxParser.Waypoint(
+                    c.getString(Points.INDEX_NAME),
+                    String.format(p.getGeographicUnitsFormat(), geo.getLat()),
+                    String.format(p.getGeographicUnitsFormat(), geo.getLon()),
+                    null,
+                    c.getString(Points.INDEX_DESC),
+                    c.getString(Points.INDEX_DESC),
+                    0));
+
+        } while (c.moveToNext());
+        Log.d(TAG, "writeGpxFile local points=" + cnt);
+
+        Writer writer = null;
+        File path = Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_DOWNLOADS);
+        File outfile = new File(path, OUTFILE);
+        try {
+            writer = new FileWriter(outfile);
+            new GpxWriter().write(writer, wpts);
+
+        } finally {
+            if (writer != null) writer.close();
+
+            // Workaround to ensure new file is visible in Windows explorer.
+            new SingleMediaScanner(this, outfile);
+        }
     }
 
     /*

@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<gpx creator="GPSMAP 64" version="1.1"
+		xmlns="http://www.topografix.com/GPX/1/1"
+		xmlns:gpxx="http://www.garmin.com/xmlschemas/GpxExtensions/v3"
+		xmlns:wptx1="http://www.garmin.com/xmlschemas/WaypointExtension/v1"
+		xmlns:gpxtpx="http://www.garmin.com/xmlschemas/TrackPointExtension/v1"
+		xmlns:gpxtsx="http://www.garmin.com/xmlschemas/TrackStatsExtension/v1"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd 
+			http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www8.garmin.com/xmlschemas/GpxExtensionsv3.xsd 
+			http://www.garmin.com/xmlschemas/WaypointExtension/v1 http://www8.garmin.com/xmlschemas/WaypointExtensionv1.xsd  
+			http://www.garmin.com/xmlschemas/TrackPointExtension/v1 http://www.garmin.com/xmlschemas/TrackPointExtensionv1.xsd 
+			http://www.garmin.com/xmlschemas/TrackStatsExtension/v1 http://www8.garmin.com/xmlschemas/TrackStatsExtension.xsd" >
+
+  <metadata>
+    <link href="http://www.garmin.com">
+      <text>Garmin International</text>
+    </link>
+    <time>2015-04-27T23:09:11Z</time>
+  </metadata>
+
+  <wpt lat="41.097316" lon="-123.696170">
+    <ele>107.753052</ele>
+    <time>2015-04-27T23:33:44Z</time>
+    <name>4501</name>
+    <cmt>SW212</cmt>
+		<desc>27-APR-15 15:33:44</desc>
+    <sym>Flag, Blue</sym>
+    <extensions>
+      <wptx1:WaypointExtension>
+        <wptx1:Samples>2</wptx1:Samples>
+      </wptx1:WaypointExtension>
+    </extensions>
+  </wpt>
+
+</gpx>

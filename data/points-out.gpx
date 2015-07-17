@@ -1,0 +1,1113 @@
+<?xml version='1.0' encoding='utf-8' standalone='no' ?>
+<gpx creator="com.asis.chasm.GeoLocal" version="1.1" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www8.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/WaypointExtension/v1 http://www8.garmin.com/xmlschemas/WaypointExtensionv1.xsd" xmlns="http://www.topografix.com/GPX/1/1" xmlns:gpxx="http://www.garmin.com/xmlschemas/GpxExtensions/v3" xmlns:wptx1="http://www.garmin.com/xmlschemas/WaypointExtension/v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <wpt lat="40.63245998" lon="-123.77521996">
+    <name>1</name>
+    <cmt>REBARBASECABIN</cmt>
+    <desc>REBARBASECABIN</desc>
+  </wpt>
+  <wpt lat="40.62152005" lon="-123.77976128">
+    <name>2</name>
+    <cmt>SNAPTIE10</cmt>
+    <desc>SNAPTIE10</desc>
+  </wpt>
+  <wpt lat="40.62119007" lon="-123.77649527">
+    <name>3</name>
+    <cmt>SNAPTIE11</cmt>
+    <desc>SNAPTIE11</desc>
+  </wpt>
+  <wpt lat="40.62083768" lon="-123.77710372">
+    <name>4</name>
+    <cmt>TOPRIDGE</cmt>
+    <desc>TOPRIDGE</desc>
+  </wpt>
+  <wpt lat="40.62080903" lon="-123.77721816">
+    <name>5</name>
+    <cmt>TOPRIDGE</cmt>
+    <desc>TOPRIDGE</desc>
+  </wpt>
+  <wpt lat="40.62073008" lon="-123.77742895">
+    <name>6</name>
+    <cmt>TOPRIDGE</cmt>
+    <desc>TOPRIDGE</desc>
+  </wpt>
+  <wpt lat="40.62060969" lon="-123.77758580">
+    <name>7</name>
+    <cmt>TOPRIDGE</cmt>
+    <desc>TOPRIDGE</desc>
+  </wpt>
+  <wpt lat="40.62043418" lon="-123.77781739">
+    <name>8</name>
+    <cmt>TOPRIDGEFENCE</cmt>
+    <desc>TOPRIDGEFENCE</desc>
+  </wpt>
+  <wpt lat="40.62648445" lon="-123.77785324">
+    <name>9</name>
+    <cmt>SETREBAR1/4COR</cmt>
+    <desc>SETREBAR1/4COR</desc>
+  </wpt>
+  <wpt lat="40.62725958" lon="-123.77626860">
+    <name>10</name>
+    <cmt>SETREBARKNOB</cmt>
+    <desc>SETREBARKNOB</desc>
+  </wpt>
+  <wpt lat="40.63360560" lon="-123.77672995">
+    <name>11</name>
+    <cmt>SETREBARSECCOR</cmt>
+    <desc>SETREBARSECCOR</desc>
+  </wpt>
+  <wpt lat="40.63371480" lon="-123.77756272">
+    <name>12</name>
+    <cmt>SETREBARSECCOR</cmt>
+    <desc>SETREBARSECCOR</desc>
+  </wpt>
+  <wpt lat="40.63223485" lon="-123.77350865">
+    <name>13</name>
+    <cmt>SNAPTIEBASE</cmt>
+    <desc>SNAPTIEBASE</desc>
+  </wpt>
+  <wpt lat="40.64003953" lon="-123.77277649">
+    <name>14</name>
+    <cmt>SNAPTIE</cmt>
+    <desc>SNAPTIE</desc>
+  </wpt>
+  <wpt lat="40.64080438" lon="-123.77224689">
+    <name>15</name>
+    <cmt>SNAPTIE</cmt>
+    <desc>SNAPTIE</desc>
+  </wpt>
+  <wpt lat="40.63063778" lon="-123.76793314">
+    <name>16</name>
+    <cmt>SNAPTIE</cmt>
+    <desc>SNAPTIE</desc>
+  </wpt>
+  <wpt lat="40.63028329" lon="-123.76857983">
+    <name>17</name>
+    <cmt>SNAPTIE</cmt>
+    <desc>SNAPTIE</desc>
+  </wpt>
+  <wpt lat="40.63281965" lon="-123.76929409">
+    <name>18</name>
+    <cmt>SNAPTIE</cmt>
+    <desc>SNAPTIE</desc>
+  </wpt>
+  <wpt lat="40.63263765" lon="-123.76995388">
+    <name>19</name>
+    <cmt>SNAPTIE</cmt>
+    <desc>SNAPTIE</desc>
+  </wpt>
+  <wpt lat="40.63139626" lon="-123.77470196">
+    <name>20</name>
+    <cmt>SPK W ER</cmt>
+    <desc>SPK W ER</desc>
+  </wpt>
+  <wpt lat="40.63076692" lon="-123.77518996">
+    <name>21</name>
+    <cmt>SPK E ER</cmt>
+    <desc>SPK E ER</desc>
+  </wpt>
+  <wpt lat="40.63003885" lon="-123.77553408">
+    <name>22</name>
+    <cmt>SPK W ER</cmt>
+    <desc>SPK W ER</desc>
+  </wpt>
+  <wpt lat="40.62902989" lon="-123.77511188">
+    <name>23</name>
+    <cmt>SPK N KNOB</cmt>
+    <desc>SPK N KNOB</desc>
+  </wpt>
+  <wpt lat="40.62932584" lon="-123.77409586">
+    <name>24</name>
+    <cmt>SPK N ER</cmt>
+    <desc>SPK N ER</desc>
+  </wpt>
+  <wpt lat="40.62956611" lon="-123.77370324">
+    <name>25</name>
+    <cmt>SPK APRX COR</cmt>
+    <desc>SPK APRX COR</desc>
+  </wpt>
+  <wpt lat="40.61930516" lon="-123.77785274">
+    <name>27</name>
+    <cmt>BCIP LS2808</cmt>
+    <desc>BCIP LS2808</desc>
+  </wpt>
+  <wpt lat="40.61897113" lon="-123.77788239">
+    <name>28</name>
+    <cmt>Rock Face</cmt>
+    <desc>Rock Face</desc>
+  </wpt>
+  <wpt lat="40.61891621" lon="-123.77789548">
+    <name>29</name>
+    <cmt>Apprx Top Rock</cmt>
+    <desc>Apprx Top Rock</desc>
+  </wpt>
+  <wpt lat="40.63410181" lon="-123.77792739">
+    <name>30</name>
+    <cmt>spk</cmt>
+    <desc>spk</desc>
+  </wpt>
+  <wpt lat="40.63436777" lon="-123.77822147">
+    <name>31</name>
+    <cmt>SPK ON FLAT</cmt>
+    <desc>SPK ON FLAT</desc>
+  </wpt>
+  <wpt lat="40.63422992" lon="-123.77806165">
+    <name>32</name>
+    <cmt>ROCK FACE</cmt>
+    <desc>ROCK FACE</desc>
+  </wpt>
+  <wpt lat="40.63421656" lon="-123.77807390">
+    <name>33</name>
+    <cmt>W ROCK FACE</cmt>
+    <desc>W ROCK FACE</desc>
+  </wpt>
+  <wpt lat="40.63413499" lon="-123.77821457">
+    <name>34</name>
+    <cmt>SMALL ROCK</cmt>
+    <desc>SMALL ROCK</desc>
+  </wpt>
+  <wpt lat="40.63504748" lon="-123.77783332">
+    <name>35</name>
+    <cmt>SPK</cmt>
+    <desc>SPK</desc>
+  </wpt>
+  <wpt lat="40.63509343" lon="-123.77782261">
+    <name>36</name>
+    <cmt>MADRONE CLUMP</cmt>
+    <desc>MADRONE CLUMP</desc>
+  </wpt>
+  <wpt lat="40.62625676" lon="-123.77795838">
+    <name>40</name>
+    <cmt>"30""Maple face"</cmt>
+    <desc>"30""Maple face"</desc>
+  </wpt>
+  <wpt lat="40.62626046" lon="-123.77789455">
+    <name>41</name>
+    <cmt>"24""Maple face"</cmt>
+    <desc>"24""Maple face"</desc>
+  </wpt>
+  <wpt lat="40.62627887" lon="-123.77788072">
+    <name>42</name>
+    <cmt>CL Crk ang+Maple</cmt>
+    <desc>CL Crk ang+Maple</desc>
+  </wpt>
+  <wpt lat="40.62619215" lon="-123.77787110">
+    <name>43</name>
+    <cmt>CL Crk ang</cmt>
+    <desc>CL Crk ang</desc>
+  </wpt>
+  <wpt lat="40.62606581" lon="-123.77786906">
+    <name>44</name>
+    <cmt>PoL fence</cmt>
+    <desc>PoL fence</desc>
+  </wpt>
+  <wpt lat="40.62607403" lon="-123.77778940">
+    <name>45</name>
+    <cmt>"Doub Maple 18"""</cmt>
+    <desc>"Doub Maple 18"""</desc>
+  </wpt>
+  <wpt lat="40.62632595" lon="-123.77795477">
+    <name>46</name>
+    <cmt>CL Crk</cmt>
+    <desc>CL Crk</desc>
+  </wpt>
+  <wpt lat="40.62636230" lon="-123.77797346">
+    <name>47</name>
+    <cmt>"36""Maple w/sucker"</cmt>
+    <desc>"36""Maple w/sucker"</desc>
+  </wpt>
+  <wpt lat="40.62636877" lon="-123.77801758">
+    <name>48</name>
+    <cmt>"24""Maple"</cmt>
+    <desc>"24""Maple"</desc>
+  </wpt>
+  <wpt lat="40.62635855" lon="-123.77808291">
+    <name>49</name>
+    <cmt>Ctr Maple cluster</cmt>
+    <desc>Ctr Maple cluster</desc>
+  </wpt>
+  <wpt lat="40.62642810" lon="-123.77806230">
+    <name>50</name>
+    <cmt>CL Crk</cmt>
+    <desc>CL Crk</desc>
+  </wpt>
+  <wpt lat="40.62671717" lon="-123.77786498">
+    <name>51</name>
+    <cmt>PoL fenc</cmt>
+    <desc>PoL fenc</desc>
+  </wpt>
+  <wpt lat="40.62625398" lon="-123.77795964">
+    <name>52</name>
+    <cmt>"Ctr30""MapleGovtBT"</cmt>
+    <desc>"Ctr30""MapleGovtBT"</desc>
+  </wpt>
+  <wpt lat="40.62654632" lon="-123.77787765">
+    <name>53</name>
+    <cmt>Govt 1/4S24/S19</cmt>
+    <desc>Govt 1/4S24/S19</desc>
+  </wpt>
+  <wpt lat="40.63462986" lon="-123.77854876">
+    <name>60</name>
+    <cmt>SPK BT SEARCH</cmt>
+    <desc>SPK BT SEARCH</desc>
+  </wpt>
+  <wpt lat="40.63509411" lon="-123.77782481">
+    <name>61</name>
+    <cmt>CTR MADRONE BT</cmt>
+    <desc>CTR MADRONE BT</desc>
+  </wpt>
+  <wpt lat="40.63555924" lon="-123.77791765">
+    <name>62</name>
+    <cmt>STIE</cmt>
+    <desc>STIE</desc>
+  </wpt>
+  <wpt lat="40.63673909" lon="-123.77798278">
+    <name>63</name>
+    <cmt>STIE</cmt>
+    <desc>STIE</desc>
+  </wpt>
+  <wpt lat="40.63689674" lon="-123.77797587">
+    <name>64</name>
+    <cmt>STIE</cmt>
+    <desc>STIE</desc>
+  </wpt>
+  <wpt lat="40.63726602" lon="-123.77785555">
+    <name>65</name>
+    <cmt>STIE</cmt>
+    <desc>STIE</desc>
+  </wpt>
+  <wpt lat="40.63767640" lon="-123.77779688">
+    <name>66</name>
+    <cmt>STIE</cmt>
+    <desc>STIE</desc>
+  </wpt>
+  <wpt lat="40.63810965" lon="-123.77725207">
+    <name>67</name>
+    <cmt>STIE</cmt>
+    <desc>STIE</desc>
+  </wpt>
+  <wpt lat="40.63811438" lon="-123.77696760">
+    <name>68</name>
+    <cmt>SPK</cmt>
+    <desc>SPK</desc>
+  </wpt>
+  <wpt lat="40.63824756" lon="-123.77634373">
+    <name>69</name>
+    <cmt>SPK</cmt>
+    <desc>SPK</desc>
+  </wpt>
+  <wpt lat="40.63872964" lon="-123.77625830">
+    <name>70</name>
+    <cmt>STIE RIDGE</cmt>
+    <desc>STIE RIDGE</desc>
+  </wpt>
+  <wpt lat="40.63895354" lon="-123.77663951">
+    <name>71</name>
+    <cmt>SPK</cmt>
+    <desc>SPK</desc>
+  </wpt>
+  <wpt lat="40.63887936" lon="-123.77644602">
+    <name>72</name>
+    <cmt>"CTR42""DFSTUMP"</cmt>
+    <desc>"CTR42""DFSTUMP"</desc>
+  </wpt>
+  <wpt lat="40.63896301" lon="-123.77661034">
+    <name>73</name>
+    <cmt>"CTR48""DFTREE"</cmt>
+    <desc>"CTR48""DFTREE"</desc>
+  </wpt>
+  <wpt lat="40.63882982" lon="-123.77683799">
+    <name>74</name>
+    <cmt>SPK</cmt>
+    <desc>SPK</desc>
+  </wpt>
+  <wpt lat="40.63913566" lon="-123.77687341">
+    <name>75</name>
+    <cmt>TOPBLUFF</cmt>
+    <desc>TOPBLUFF</desc>
+  </wpt>
+  <wpt lat="40.63900766" lon="-123.77691000">
+    <name>76</name>
+    <cmt>TOPBLUFF</cmt>
+    <desc>TOPBLUFF</desc>
+  </wpt>
+  <wpt lat="40.63893060" lon="-123.77692537">
+    <name>77</name>
+    <cmt>TOPBLUFF</cmt>
+    <desc>TOPBLUFF</desc>
+  </wpt>
+  <wpt lat="40.63887686" lon="-123.77695084">
+    <name>78</name>
+    <cmt>TOPBLUFF</cmt>
+    <desc>TOPBLUFF</desc>
+  </wpt>
+  <wpt lat="40.63879624" lon="-123.77697144">
+    <name>79</name>
+    <cmt>TOPBLUFF</cmt>
+    <desc>TOPBLUFF</desc>
+  </wpt>
+  <wpt lat="40.64004420" lon="-123.77279343">
+    <name>85</name>
+    <cmt>PT 'A'</cmt>
+    <desc>PT 'A'</desc>
+  </wpt>
+  <wpt lat="40.64003486" lon="-123.77275954">
+    <name>86</name>
+    <cmt>PT 'B'</cmt>
+    <desc>PT 'B'</desc>
+  </wpt>
+  <wpt lat="40.64436861" lon="-123.76949415">
+    <name>87</name>
+    <cmt>INTS NORTH</cmt>
+    <desc>INTS NORTH</desc>
+  </wpt>
+  <wpt lat="40.64290661" lon="-123.76963449">
+    <name>88</name>
+    <cmt>INTS SOUTH RD</cmt>
+    <desc>INTS SOUTH RD</desc>
+  </wpt>
+  <wpt lat="40.63457581" lon="-123.76036414">
+    <name>90</name>
+    <cmt>spk ER</cmt>
+    <desc>spk ER</desc>
+  </wpt>
+  <wpt lat="40.63396555" lon="-123.76053126">
+    <name>91</name>
+    <cmt>spk ER</cmt>
+    <desc>spk ER</desc>
+  </wpt>
+  <wpt lat="40.63345887" lon="-123.76073073">
+    <name>92</name>
+    <cmt>spk ER</cmt>
+    <desc>spk ER</desc>
+  </wpt>
+  <wpt lat="40.63323318" lon="-123.76119369">
+    <name>93</name>
+    <cmt>ACAP WC</cmt>
+    <desc>ACAP WC</desc>
+  </wpt>
+  <wpt lat="40.63320958" lon="-123.76105205">
+    <name>94</name>
+    <cmt>"22""DFHoFctr"</cmt>
+    <desc>"22""DFHoFctr"</desc>
+  </wpt>
+  <wpt lat="40.63320957" lon="-123.76135296">
+    <name>95</name>
+    <cmt>"22""DFHoFctr"</cmt>
+    <desc>"22""DFHoFctr"</desc>
+  </wpt>
+  <wpt lat="40.63327951" lon="-123.76131790">
+    <name>96</name>
+    <cmt>"22""DFHoFctr"</cmt>
+    <desc>"22""DFHoFctr"</desc>
+  </wpt>
+  <wpt lat="40.63330337" lon="-123.76116091">
+    <name>97</name>
+    <cmt>"16""DFHoFctr"</cmt>
+    <desc>"16""DFHoFctr"</desc>
+  </wpt>
+  <wpt lat="40.63325790" lon="-123.76069390">
+    <name>98</name>
+    <cmt>CL Log Rd</cmt>
+    <desc>CL Log Rd</desc>
+  </wpt>
+  <wpt lat="40.63311625" lon="-123.76077393">
+    <name>99</name>
+    <cmt>CL LogRd</cmt>
+    <desc>CL LogRd</desc>
+  </wpt>
+  <wpt lat="40.63300816" lon="-123.76090363">
+    <name>100</name>
+    <cmt>CL LogRd</cmt>
+    <desc>CL LogRd</desc>
+  </wpt>
+  <wpt lat="40.63297201" lon="-123.76106371">
+    <name>101</name>
+    <cmt>CL LogRd</cmt>
+    <desc>CL LogRd</desc>
+  </wpt>
+  <wpt lat="40.63295263" lon="-123.76117602">
+    <name>102</name>
+    <cmt>CL LogRd</cmt>
+    <desc>CL LogRd</desc>
+  </wpt>
+  <wpt lat="40.63291449" lon="-123.76133395">
+    <name>103</name>
+    <cmt>CL LogRd</cmt>
+    <desc>CL LogRd</desc>
+  </wpt>
+  <wpt lat="40.63046612" lon="-123.76952598">
+    <name>105</name>
+    <cmt>Old Oak fence post</cmt>
+    <desc>Old Oak fence post</desc>
+  </wpt>
+  <wpt lat="40.62936898" lon="-123.77069649">
+    <name>106</name>
+    <cmt>Tpost E/W fence</cmt>
+    <desc>Tpost E/W fence</desc>
+  </wpt>
+  <wpt lat="40.62936377" lon="-123.77011162">
+    <name>107</name>
+    <cmt>Tpost E/W fence</cmt>
+    <desc>Tpost E/W fence</desc>
+  </wpt>
+  <wpt lat="40.62936445" lon="-123.76963247">
+    <name>108</name>
+    <cmt>Tpost E/W fence</cmt>
+    <desc>Tpost E/W fence</desc>
+  </wpt>
+  <wpt lat="40.62941980" lon="-123.76934282">
+    <name>109</name>
+    <cmt>Tpost N fence</cmt>
+    <desc>Tpost N fence</desc>
+  </wpt>
+  <wpt lat="40.62950462" lon="-123.76945501">
+    <name>110</name>
+    <cmt>Set Spk</cmt>
+    <desc>Set Spk</desc>
+  </wpt>
+  <wpt lat="40.62986886" lon="-123.76904563">
+    <name>111</name>
+    <cmt>Spk PoL for BS</cmt>
+    <desc>Spk PoL for BS</desc>
+  </wpt>
+  <wpt lat="40.62986467" lon="-123.76932643">
+    <name>112</name>
+    <cmt>Tpost N/S fence</cmt>
+    <desc>Tpost N/S fence</desc>
+  </wpt>
+  <wpt lat="40.63011285" lon="-123.76931455">
+    <name>113</name>
+    <cmt>Tpost N/S fence</cmt>
+    <desc>Tpost N/S fence</desc>
+  </wpt>
+  <wpt lat="40.63031306" lon="-123.76928625">
+    <name>114</name>
+    <cmt>Slight AngPt fence</cmt>
+    <desc>Slight AngPt fence</desc>
+  </wpt>
+  <wpt lat="40.63049314" lon="-123.76927438">
+    <name>115</name>
+    <cmt>N/S fence</cmt>
+    <desc>N/S fence</desc>
+  </wpt>
+  <wpt lat="40.63079475" lon="-123.76927463">
+    <name>116</name>
+    <cmt>N/S fence</cmt>
+    <desc>N/S fence</desc>
+  </wpt>
+  <wpt lat="40.63141516" lon="-123.76928796">
+    <name>117</name>
+    <cmt>Old post slight ang</cmt>
+    <desc>Old post slight ang</desc>
+  </wpt>
+  <wpt lat="40.63163799" lon="-123.76928270">
+    <name>118</name>
+    <cmt>Tpost N/S fence</cmt>
+    <desc>Tpost N/S fence</desc>
+  </wpt>
+  <wpt lat="40.63274470" lon="-123.76981763">
+    <name>120</name>
+    <cmt>dead/down Oak</cmt>
+    <desc>dead/down Oak</desc>
+  </wpt>
+  <wpt lat="40.63277347" lon="-123.76972980">
+    <name>121</name>
+    <cmt>Ctr BlOak</cmt>
+    <desc>Ctr BlOak</desc>
+  </wpt>
+  <wpt lat="40.63311918" lon="-123.76961248">
+    <name>122</name>
+    <cmt>STie</cmt>
+    <desc>STie</desc>
+  </wpt>
+  <wpt lat="40.63321936" lon="-123.76970053">
+    <name>123</name>
+    <cmt>Ctr Clump Maples</cmt>
+    <desc>Ctr Clump Maples</desc>
+  </wpt>
+  <wpt lat="40.63323756" lon="-123.76971653">
+    <name>124</name>
+    <cmt>Ctr Clump Maples</cmt>
+    <desc>Ctr Clump Maples</desc>
+  </wpt>
+  <wpt lat="40.63298695" lon="-123.76989053">
+    <name>125</name>
+    <cmt>"Old 28"" Maple"</cmt>
+    <desc>"Old 28"" Maple"</desc>
+  </wpt>
+  <wpt lat="40.63287582" lon="-123.76985225">
+    <name>126</name>
+    <cmt>"ctr 30""Maple"</cmt>
+    <desc>"ctr 30""Maple"</desc>
+  </wpt>
+  <wpt lat="40.63288097" lon="-123.76950130">
+    <name>127</name>
+    <cmt>ctr clump 6 Oaks</cmt>
+    <desc>ctr clump 6 Oaks</desc>
+  </wpt>
+  <wpt lat="40.62951961" lon="-123.77372801">
+    <name>130</name>
+    <cmt>ctr clump 4 Alders</cmt>
+    <desc>ctr clump 4 Alders</desc>
+  </wpt>
+  <wpt lat="40.62965182" lon="-123.77375353">
+    <name>131</name>
+    <cmt>"ctr 30""Alder"</cmt>
+    <desc>"ctr 30""Alder"</desc>
+  </wpt>
+  <wpt lat="40.62971429" lon="-123.77377162">
+    <name>132</name>
+    <cmt>"dead/down 26""Alder"</cmt>
+    <desc>"dead/down 26""Alder"</desc>
+  </wpt>
+  <wpt lat="40.62973081" lon="-123.77402101">
+    <name>133</name>
+    <cmt>Spk</cmt>
+    <desc>Spk</desc>
+  </wpt>
+  <wpt lat="40.62981985" lon="-123.77390831">
+    <name>134</name>
+    <cmt>"ctr 44""Alder"</cmt>
+    <desc>"ctr 44""Alder"</desc>
+  </wpt>
+  <wpt lat="40.62982229" lon="-123.77388698">
+    <name>135</name>
+    <cmt>"ctr48""Alder"</cmt>
+    <desc>"ctr48""Alder"</desc>
+  </wpt>
+  <wpt lat="40.62979481" lon="-123.77402640">
+    <name>136</name>
+    <cmt>Poss Fir location</cmt>
+    <desc>Poss Fir location</desc>
+  </wpt>
+  <wpt lat="40.62978723" lon="-123.77446646">
+    <name>137</name>
+    <cmt>Cor 4rs12</cmt>
+    <desc>Cor 4rs12</desc>
+  </wpt>
+  <wpt lat="40.63013841" lon="-123.77673096">
+    <name>140</name>
+    <cmt>Spk Pasture</cmt>
+    <desc>Spk Pasture</desc>
+  </wpt>
+  <wpt lat="40.63033179" lon="-123.77729983">
+    <name>141</name>
+    <cmt>Spk Pasture</cmt>
+    <desc>Spk Pasture</desc>
+  </wpt>
+  <wpt lat="40.62974866" lon="-123.77778893">
+    <name>142</name>
+    <cmt>Fir/fence ang pt</cmt>
+    <desc>Fir/fence ang pt</desc>
+  </wpt>
+  <wpt lat="40.62984051" lon="-123.77785604">
+    <name>143</name>
+    <cmt>Tpost fence</cmt>
+    <desc>Tpost fence</desc>
+  </wpt>
+  <wpt lat="40.62999278" lon="-123.77794879">
+    <name>144</name>
+    <cmt>Tpost fence</cmt>
+    <desc>Tpost fence</desc>
+  </wpt>
+  <wpt lat="40.63023284" lon="-123.77786848">
+    <name>145</name>
+    <cmt>Spk to Set Corner</cmt>
+    <desc>Spk to Set Corner</desc>
+  </wpt>
+  <wpt lat="40.63037353" lon="-123.77792638">
+    <name>146</name>
+    <cmt>Oak/fence cor</cmt>
+    <desc>Oak/fence cor</desc>
+  </wpt>
+  <wpt lat="40.63040192" lon="-123.77780985">
+    <name>147</name>
+    <cmt>AngPt fence</cmt>
+    <desc>AngPt fence</desc>
+  </wpt>
+  <wpt lat="40.63056213" lon="-123.77760202">
+    <name>148</name>
+    <cmt>AngPt fence</cmt>
+    <desc>AngPt fence</desc>
+  </wpt>
+  <wpt lat="40.63068463" lon="-123.77749358">
+    <name>149</name>
+    <cmt>AngPtfence</cmt>
+    <desc>AngPtfence</desc>
+  </wpt>
+  <wpt lat="40.63076503" lon="-123.77721724">
+    <name>150</name>
+    <cmt>Tpost E/W fence</cmt>
+    <desc>Tpost E/W fence</desc>
+  </wpt>
+  <wpt lat="40.63082943" lon="-123.77697918">
+    <name>151</name>
+    <cmt>Tpost E/W fence</cmt>
+    <desc>Tpost E/W fence</desc>
+  </wpt>
+  <wpt lat="40.63099459" lon="-123.77802132">
+    <name>152</name>
+    <cmt>PoL fence north</cmt>
+    <desc>PoL fence north</desc>
+  </wpt>
+  <wpt lat="40.61892957" lon="-123.77788059">
+    <name>160</name>
+    <cmt>Spk N Rock Top</cmt>
+    <desc>Spk N Rock Top</desc>
+  </wpt>
+  <wpt lat="40.61955978" lon="-123.77802378">
+    <name>161</name>
+    <cmt>"Ctr45""BlOak"</cmt>
+    <desc>"Ctr45""BlOak"</desc>
+  </wpt>
+  <wpt lat="40.61869491" lon="-123.76928626">
+    <name>165</name>
+    <cmt>Spk N CoRd</cmt>
+    <desc>Spk N CoRd</desc>
+  </wpt>
+  <wpt lat="40.62015359" lon="-123.77275745">
+    <name>166</name>
+    <cmt>Stie CoRd CGuard</cmt>
+    <desc>Stie CoRd CGuard</desc>
+  </wpt>
+  <wpt lat="40.61866625" lon="-123.77282342">
+    <name>167</name>
+    <cmt>Spk W'ly of fence</cmt>
+    <desc>Spk W'ly of fence</desc>
+  </wpt>
+  <wpt lat="40.61884222" lon="-123.77386734">
+    <name>168</name>
+    <cmt>"ctr 26""oak/clump"</cmt>
+    <desc>"ctr 26""oak/clump"</desc>
+  </wpt>
+  <wpt lat="40.61878766" lon="-123.77362876">
+    <name>169</name>
+    <cmt>"ctr 20""Oak"</cmt>
+    <desc>"ctr 20""Oak"</desc>
+  </wpt>
+  <wpt lat="40.61878421" lon="-123.77354013">
+    <name>170</name>
+    <cmt>"ctr18""Oak"</cmt>
+    <desc>"ctr18""Oak"</desc>
+  </wpt>
+  <wpt lat="40.61873885" lon="-123.77270887">
+    <name>171</name>
+    <cmt>ctr3oaks/fence</cmt>
+    <desc>ctr3oaks/fence</desc>
+  </wpt>
+  <wpt lat="40.61889957" lon="-123.77271626">
+    <name>172</name>
+    <cmt>ctr5oaks</cmt>
+    <desc>ctr5oaks</desc>
+  </wpt>
+  <wpt lat="40.61892332" lon="-123.77270388">
+    <name>173</name>
+    <cmt>Tpost N/S fence</cmt>
+    <desc>Tpost N/S fence</desc>
+  </wpt>
+  <wpt lat="40.61923297" lon="-123.77270332">
+    <name>174</name>
+    <cmt>Tpost N/S in gully</cmt>
+    <desc>Tpost N/S in gully</desc>
+  </wpt>
+  <wpt lat="40.64115279" lon="-123.77309699">
+    <name>175</name>
+    <cmt>spk on ridge</cmt>
+    <desc>spk on ridge</desc>
+  </wpt>
+  <wpt lat="40.64106491" lon="-123.77321946">
+    <name>176</name>
+    <cmt>spk on ridge</cmt>
+    <desc>spk on ridge</desc>
+  </wpt>
+  <wpt lat="40.64094815" lon="-123.77357543">
+    <name>177</name>
+    <cmt>spk near CW/16</cmt>
+    <desc>spk near CW/16</desc>
+  </wpt>
+  <wpt lat="40.64088192" lon="-123.77245351">
+    <name>180</name>
+    <cmt>spk rd</cmt>
+    <desc>spk rd</desc>
+  </wpt>
+  <wpt lat="40.64148266" lon="-123.77243385">
+    <name>181</name>
+    <cmt>spk er</cmt>
+    <desc>spk er</desc>
+  </wpt>
+  <wpt lat="40.64178205" lon="-123.77229256">
+    <name>182</name>
+    <cmt>spk er</cmt>
+    <desc>spk er</desc>
+  </wpt>
+  <wpt lat="40.64204721" lon="-123.77252076">
+    <name>183</name>
+    <cmt>spk turnout</cmt>
+    <desc>spk turnout</desc>
+  </wpt>
+  <wpt lat="40.64193796" lon="-123.77290773">
+    <name>184</name>
+    <cmt>spk er</cmt>
+    <desc>spk er</desc>
+  </wpt>
+  <wpt lat="40.64171830" lon="-123.77329883">
+    <name>185</name>
+    <cmt>spk er</cmt>
+    <desc>spk er</desc>
+  </wpt>
+  <wpt lat="40.64147723" lon="-123.77433999">
+    <name>186</name>
+    <cmt>spk turnout</cmt>
+    <desc>spk turnout</desc>
+  </wpt>
+  <wpt lat="40.64103955" lon="-123.77439025">
+    <name>187</name>
+    <cmt>spk er near CW/16</cmt>
+    <desc>spk er near CW/16</desc>
+  </wpt>
+  <wpt lat="40.64114354" lon="-123.77510461">
+    <name>188</name>
+    <cmt>spk cl</cmt>
+    <desc>spk cl</desc>
+  </wpt>
+  <wpt lat="40.64118208" lon="-123.77585600">
+    <name>189</name>
+    <cmt>spk er</cmt>
+    <desc>spk er</desc>
+  </wpt>
+  <wpt lat="40.64146358" lon="-123.77643137">
+    <name>190</name>
+    <cmt>spk er</cmt>
+    <desc>spk er</desc>
+  </wpt>
+  <wpt lat="40.64200499" lon="-123.77637142">
+    <name>191</name>
+    <cmt>spk er</cmt>
+    <desc>spk er</desc>
+  </wpt>
+  <wpt lat="40.64203309" lon="-123.77563878">
+    <name>192</name>
+    <cmt>spk er</cmt>
+    <desc>spk er</desc>
+  </wpt>
+  <wpt lat="40.64212261" lon="-123.77507695">
+    <name>193</name>
+    <cmt>spk er</cmt>
+    <desc>spk er</desc>
+  </wpt>
+  <wpt lat="40.64267870" lon="-123.77491274">
+    <name>194</name>
+    <cmt>spk er</cmt>
+    <desc>spk er</desc>
+  </wpt>
+  <wpt lat="40.64282739" lon="-123.77474006">
+    <name>195</name>
+    <cmt>spk off rd</cmt>
+    <desc>spk off rd</desc>
+  </wpt>
+  <wpt lat="40.64321390" lon="-123.77432583">
+    <name>196</name>
+    <cmt>snaptie er</cmt>
+    <desc>snaptie er</desc>
+  </wpt>
+  <wpt lat="40.64366799" lon="-123.77473105">
+    <name>197</name>
+    <cmt>spk er</cmt>
+    <desc>spk er</desc>
+  </wpt>
+  <wpt lat="40.64394599" lon="-123.77478135">
+    <name>198</name>
+    <cmt>spk er</cmt>
+    <desc>spk er</desc>
+  </wpt>
+  <wpt lat="40.64411154" lon="-123.77512896">
+    <name>199</name>
+    <cmt>spk off rd</cmt>
+    <desc>spk off rd</desc>
+  </wpt>
+  <wpt lat="40.64448211" lon="-123.77527867">
+    <name>200</name>
+    <cmt>spk er</cmt>
+    <desc>spk er</desc>
+  </wpt>
+  <wpt lat="40.64488342" lon="-123.77527108">
+    <name>201</name>
+    <cmt>spk er</cmt>
+    <desc>spk er</desc>
+  </wpt>
+  <wpt lat="40.64480477" lon="-123.77550188">
+    <name>202</name>
+    <cmt>spk on flat by river</cmt>
+    <desc>spk on flat by river</desc>
+  </wpt>
+  <wpt lat="40.64442143" lon="-123.76796611">
+    <name>205</name>
+    <cmt>SnapTie on ER</cmt>
+    <desc>SnapTie on ER</desc>
+  </wpt>
+  <wpt lat="40.64663830" lon="-123.76777094">
+    <name>208</name>
+    <cmt>SnapTie opening</cmt>
+    <desc>SnapTie opening</desc>
+  </wpt>
+  <wpt lat="40.64428792" lon="-123.76860439">
+    <name>210</name>
+    <cmt>spk n pasture</cmt>
+    <desc>spk n pasture</desc>
+  </wpt>
+  <wpt lat="40.64458840" lon="-123.76927935">
+    <name>211</name>
+    <cmt>spk near CN/16</cmt>
+    <desc>spk near CN/16</desc>
+  </wpt>
+  <wpt lat="40.63284755" lon="-123.77485768">
+    <name>220</name>
+    <cmt>spk on knob</cmt>
+    <desc>spk on knob</desc>
+  </wpt>
+  <wpt lat="40.63357898" lon="-123.77398895">
+    <name>221</name>
+    <cmt>spk near W/16</cmt>
+    <desc>spk near W/16</desc>
+  </wpt>
+  <wpt lat="40.63319760" lon="-123.77353833">
+    <name>222</name>
+    <cmt>SE Cat shed</cmt>
+    <desc>SE Cat shed</desc>
+  </wpt>
+  <wpt lat="40.63319321" lon="-123.77361174">
+    <name>223</name>
+    <cmt>SW Cat shed</cmt>
+    <desc>SW Cat shed</desc>
+  </wpt>
+  <wpt lat="40.65559080" lon="-123.77765442">
+    <name>225</name>
+    <cmt>ACap 1/4S12/S7</cmt>
+    <desc>ACap 1/4S12/S7</desc>
+  </wpt>
+  <wpt lat="40.65591755" lon="-123.77773764">
+    <name>226</name>
+    <cmt>Set Spk</cmt>
+    <desc>Set Spk</desc>
+  </wpt>
+  <wpt lat="40.65549448" lon="-123.77741265">
+    <name>227</name>
+    <cmt>"14""Pine BT"</cmt>
+    <desc>"14""Pine BT"</desc>
+  </wpt>
+  <wpt lat="40.65598017" lon="-123.77776674">
+    <name>228</name>
+    <cmt>"Ctr 31""BlOak"</cmt>
+    <desc>"Ctr 31""BlOak"</desc>
+  </wpt>
+  <wpt lat="40.65618507" lon="-123.77758105">
+    <name>229</name>
+    <cmt>"44""Pepperwd"</cmt>
+    <desc>"44""Pepperwd"</desc>
+  </wpt>
+  <wpt lat="40.65612095" lon="-123.77752450">
+    <name>230</name>
+    <cmt>"Ctr 44""BlOak snag"</cmt>
+    <desc>"Ctr 44""BlOak snag"</desc>
+  </wpt>
+  <wpt lat="40.64882586" lon="-123.77928423">
+    <name>231</name>
+    <cmt>Spk20'SRock</cmt>
+    <desc>Spk20'SRock</desc>
+  </wpt>
+  <wpt lat="40.64835491" lon="-123.77774494">
+    <name>232</name>
+    <cmt>40d Spk</cmt>
+    <desc>40d Spk</desc>
+  </wpt>
+  <wpt lat="40.64838606" lon="-123.77776425">
+    <name>233</name>
+    <cmt>ACap LS4446</cmt>
+    <desc>ACap LS4446</desc>
+  </wpt>
+  <wpt lat="40.64828229" lon="-123.77788565">
+    <name>234</name>
+    <cmt>"17""WhOak HoF"</cmt>
+    <desc>"17""WhOak HoF"</desc>
+  </wpt>
+  <wpt lat="40.64832570" lon="-123.77744984">
+    <name>235</name>
+    <cmt>"Ctr 40""BOak snag"</cmt>
+    <desc>"Ctr 40""BOak snag"</desc>
+  </wpt>
+  <wpt lat="40.64851073" lon="-123.77721971">
+    <name>236</name>
+    <cmt>"Aprx base 24""Oak"</cmt>
+    <desc>"Aprx base 24""Oak"</desc>
+  </wpt>
+  <wpt lat="40.63389008" lon="-123.77788173">
+    <name>500</name>
+    <cmt>SecCor 18/19/13/24</cmt>
+    <desc>SecCor 18/19/13/24</desc>
+  </wpt>
+  <wpt lat="40.63287540" lon="-123.76985208">
+    <name>501</name>
+    <cmt>Old Face Maple126</cmt>
+    <desc>Old Face Maple126</desc>
+  </wpt>
+  <wpt lat="40.63257770" lon="-123.76986391">
+    <name>502</name>
+    <cmt>Elsmore's 1/4S18/19</cmt>
+    <desc>Elsmore's 1/4S18/19</desc>
+  </wpt>
+  <wpt lat="40.63021820" lon="-123.77787969">
+    <name>503</name>
+    <cmt>Calc N/16 S24/S19</cmt>
+    <desc>Calc N/16 S24/S19</desc>
+  </wpt>
+  <wpt lat="40.62900637" lon="-123.76986802">
+    <name>504</name>
+    <cmt>Elsmore's CN/16 S19</cmt>
+    <desc>Elsmore's CN/16 S19</desc>
+  </wpt>
+  <wpt lat="40.62960407" lon="-123.77381904">
+    <name>505</name>
+    <cmt>Elsmore's NW/16 S19</cmt>
+    <desc>Elsmore's NW/16 S19</desc>
+  </wpt>
+  <wpt lat="40.63329442" lon="-123.76180105">
+    <name>506</name>
+    <cmt>SecCor17/18/19/20</cmt>
+    <desc>SecCor17/18/19/20</desc>
+  </wpt>
+  <wpt lat="40.63359098" lon="-123.76979938">
+    <name>507</name>
+    <cmt>1/4S18/S19Proportion</cmt>
+    <desc>1/4S18/S19Proportion</desc>
+  </wpt>
+  <wpt lat="40.63373905" lon="-123.77379857">
+    <name>508</name>
+    <cmt>W/16S18/19Proportion</cmt>
+    <desc>W/16S18/19Proportion</desc>
+  </wpt>
+  <wpt lat="40.63359333" lon="-123.76986274">
+    <name>509</name>
+    <cmt>Elsmore 1/4 Extended N</cmt>
+    <desc>Elsmore 1/4 Extended N</desc>
+  </wpt>
+  <wpt lat="40.64830453" lon="-123.77776523">
+    <name>510</name>
+    <cmt>SecCor 12/13/7/18</cmt>
+    <desc>SecCor 12/13/7/18</desc>
+  </wpt>
+  <wpt lat="40.64838606" lon="-123.77776425">
+    <name>511</name>
+    <cmt>Witness Corner</cmt>
+    <desc>Witness Corner</desc>
+  </wpt>
+  <wpt lat="40.65560739" lon="-123.77767615">
+    <name>512</name>
+    <cmt>ReCal'd 1/4S12/S7</cmt>
+    <desc>ReCal'd 1/4S12/S7</desc>
+  </wpt>
+  <wpt lat="40.64803231" lon="-123.76974067">
+    <name>513</name>
+    <cmt>1/4 S7/S18</cmt>
+    <desc>1/4 S7/S18</desc>
+  </wpt>
+  <wpt lat="40.64776323" lon="-123.76182501">
+    <name>514</name>
+    <cmt>SecCor7</cmt>
+    <desc>SecCor7</desc>
+  </wpt>
+  <wpt lat="40.64052883" lon="-123.76181303">
+    <name>515</name>
+    <cmt>1/4 S18/S17</cmt>
+    <desc>1/4 S18/S17</desc>
+  </wpt>
+  <wpt lat="40.64109731" lon="-123.77782349">
+    <name>516</name>
+    <cmt>1/4S13/S18</cmt>
+    <desc>1/4S13/S18</desc>
+  </wpt>
+  <wpt lat="40.64470092" lon="-123.77779436">
+    <name>517</name>
+    <cmt>N/16 S13/S18</cmt>
+    <desc>N/16 S13/S18</desc>
+  </wpt>
+  <wpt lat="40.64081164" lon="-123.76977003">
+    <name>518</name>
+    <cmt>C 1/4 Sec 18</cmt>
+    <desc>C 1/4 Sec 18</desc>
+  </wpt>
+  <wpt lat="40.64442197" lon="-123.76975535">
+    <name>519</name>
+    <cmt>CN/16 S18</cmt>
+    <desc>CN/16 S18</desc>
+  </wpt>
+  <wpt lat="40.64095283" lon="-123.77374851">
+    <name>520</name>
+    <cmt>CW/16 S18</cmt>
+    <desc>CW/16 S18</desc>
+  </wpt>
+  <wpt lat="40.65559080" lon="-123.77765442">
+    <name>610</name>
+    <cmt>225 1/4 S12/S7</cmt>
+    <desc>225 1/4 S12/S7</desc>
+  </wpt>
+  <wpt lat="40.65617074" lon="-123.77755670">
+    <name>611</name>
+    <cmt>"40""Pepperwd BT"</cmt>
+    <desc>"40""Pepperwd BT"</desc>
+  </wpt>
+  <wpt lat="40.65610523" lon="-123.77750389">
+    <name>612</name>
+    <cmt>"44""LvOak BT"</cmt>
+    <desc>"44""LvOak BT"</desc>
+  </wpt>
+  <wpt lat="40.65597520" lon="-123.77775883">
+    <name>613</name>
+    <cmt>"24""BlOak BT"</cmt>
+    <desc>"24""BlOak BT"</desc>
+  </wpt>
+  <wpt lat="40.64828794" lon="-123.77774350">
+    <name>614</name>
+    <cmt>SecCor12/13/7/18</cmt>
+    <desc>SecCor12/13/7/18</desc>
+  </wpt>
+  <wpt lat="40.64836946" lon="-123.77774251">
+    <name>615</name>
+    <cmt>Witness Corner</cmt>
+    <desc>Witness Corner</desc>
+  </wpt>
+  <wpt lat="40.64830404" lon="-123.77742338">
+    <name>616</name>
+    <cmt>"36""BlOak BT"</cmt>
+    <desc>"36""BlOak BT"</desc>
+  </wpt>
+  <wpt lat="40.64848387" lon="-123.77717943">
+    <name>617</name>
+    <cmt>"D&amp;D 24""Oak"</cmt>
+    <desc>"D&amp;D 24""Oak"</desc>
+  </wpt>
+  <wpt lat="40.64785782" lon="-123.77829256">
+    <name>618</name>
+    <cmt>"D&amp;D 24"" Oak"</cmt>
+    <desc>"D&amp;D 24"" Oak"</desc>
+  </wpt>
+  <wpt lat="40.64826552" lon="-123.77786565">
+    <name>619</name>
+    <cmt>"11""WhOak BT"</cmt>
+    <desc>"11""WhOak BT"</desc>
+  </wpt>
+  <wpt lat="40.64801571" lon="-123.76971894">
+    <name>620</name>
+    <cmt>!/4 S7/S18</cmt>
+    <desc>!/4 S7/S18</desc>
+  </wpt>
+  <wpt lat="40.64774664" lon="-123.76180328">
+    <name>621</name>
+    <cmt>SecCor 7/8/17/18</cmt>
+    <desc>SecCor 7/8/17/18</desc>
+  </wpt>
+  <wpt lat="40.63321926" lon="-123.76174178">
+    <name>622</name>
+    <cmt>SecCor17/18/19/20</cmt>
+    <desc>SecCor17/18/19/20</desc>
+  </wpt>
+</gpx>
