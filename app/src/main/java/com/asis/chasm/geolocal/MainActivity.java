@@ -7,8 +7,10 @@ import android.app.FragmentManager;
 import android.app.FragmentManager.OnBackStackChangedListener;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -148,16 +150,45 @@ public class MainActivity extends Activity implements
         final String OUTFILE = "test.txt";
 
         Writer writer = null;
+        File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+        File outfile = new File(path, OUTFILE);
         try {
-            File path = Environment.getExternalStoragePublicDirectory(
-                    Environment.DIRECTORY_DOWNLOADS);
-
-            File outfile = new File(path, OUTFILE);
             writer = new FileWriter(outfile);
-            writer.write("Hello world\n");
+            writer.write("Hello world.\n");
 
         } finally {
-            if (writer != null){ writer.close(); }
+            if (writer != null) writer.close();
+
+            // Workaround to ensure new file is visible in Windows explorer.
+            new SingleMediaScanner(this, outfile);
+        }
+    }
+
+    /*
+    * SingleMediaScanner - workaround for issues with new file visability
+    * using USB connection with Windows explorer.
+    */
+
+    private static class SingleMediaScanner implements
+            MediaScannerConnection.MediaScannerConnectionClient
+    {
+        private MediaScannerConnection mScanner;
+        private File mFile;
+
+        SingleMediaScanner(Context context, File file) {
+            mFile = file;
+            mScanner = new MediaScannerConnection(context, this);
+            mScanner.connect();
+        }
+
+        @Override
+        public void onMediaScannerConnected() {
+            mScanner.scanFile(mFile.toString(), null);
+        }
+
+        @Override
+        public void onScanCompleted(String path, Uri uri) {
+            mScanner.disconnect();
         }
     }
 
@@ -185,7 +216,7 @@ public class MainActivity extends Activity implements
             }
 
         } finally {
-            if (stream != null) { stream.close(); }
+            if (stream != null) stream.close();
         }
     }
 
@@ -225,15 +256,18 @@ public class MainActivity extends Activity implements
         Log.d(TAG, "writeGpxFile local points=" + cnt);
 
         Writer writer = null;
+        File path = Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_DOWNLOADS);
+        File outfile = new File(path, OUTFILE);
         try {
-            File path = Environment.getExternalStoragePublicDirectory(
-                    Environment.DIRECTORY_DOWNLOADS);
-
-            writer = new FileWriter(new File(path, OUTFILE));
+            writer = new FileWriter(outfile);
             new GpxWriter().write(writer, wpts);
 
         } finally {
-            if (writer != null){ writer.close(); }
+            if (writer != null) writer.close();
+
+            // Workaround to ensure new file is visible in Windows explorer.
+            new SingleMediaScanner(this, outfile);
         }
     }
 
