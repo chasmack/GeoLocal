@@ -24,9 +24,11 @@ import android.widget.Toast;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -130,7 +132,8 @@ public class MainActivity extends Activity implements
     private void doTest() throws IOException, XmlPullParserException {
         Toast.makeText(this, "MainActivity Test", Toast.LENGTH_SHORT).show();
 
-        final String GPX_FILE = "Waypoints.gpx";
+        final String INFILE = "Waypoints.gpx";
+        final String OUTFILE = "gpx-out.gpx";
 
         InputStream stream = null;
         GpxParser gpxParser = new GpxParser();
@@ -141,8 +144,8 @@ public class MainActivity extends Activity implements
                     Environment.DIRECTORY_DOWNLOADS) + "/SPCS";
             Log.d(TAG, "path: " + path);
 
-            File file = new File(path, GPX_FILE);
-            stream = new FileInputStream(file);
+            File infile = new File(path, INFILE);
+            stream = new FileInputStream(infile);
             wpts = gpxParser.parse(stream);
 
             for (GpxParser.Waypoint wpt : wpts) {
@@ -155,7 +158,22 @@ public class MainActivity extends Activity implements
             }
         }
 
+        Writer writer = null;
+        GpxWriter gpxWriter = new GpxWriter();
 
+        try {
+            String path = Environment.getExternalStoragePublicDirectory(
+                    Environment.DIRECTORY_DOWNLOADS) + "/SPCS";
+
+            File outfile = new File(path, OUTFILE);
+            writer = new FileWriter(outfile);
+            gpxWriter.write(writer, wpts);
+
+        } finally {
+            if (writer != null){
+                writer.close();
+            }
+        }
     }
 
     // Respond to the action bar back button.
