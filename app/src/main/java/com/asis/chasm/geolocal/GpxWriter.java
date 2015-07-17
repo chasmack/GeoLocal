@@ -61,7 +61,7 @@ public class GpxWriter {
             serializer.endTag(NAMESPACE_GPX, "gpx");
             serializer.endDocument();
 
-            Log.d(TAG, "GpxWriter.write wpts=" + cnt);
+            Log.d(TAG, "write waypoints=" + cnt);
 
         } finally {
             out.close();
@@ -89,11 +89,11 @@ public class GpxWriter {
             serializer.text(wpt.desc);
             serializer.endTag(null, "desc");
         }
-        if (wpt.samples != null) {
+        if (wpt.samples > 0) {
             serializer.startTag(null, "extensions");
             serializer.startTag(NAMESPACE_WPTX1, "WaypointExtension");
             serializer.startTag(NAMESPACE_WPTX1, "Samples");
-            serializer.text(wpt.samples);
+            serializer.text(Integer.toString(wpt.samples));
             serializer.endTag(NAMESPACE_WPTX1, "Samples");
             serializer.endTag(NAMESPACE_WPTX1, "WaypointExtension");
             serializer.endTag(null, "extensions");

@@ -1,5 +1,6 @@
 package com.asis.chasm.geolocal;
 
+import android.util.Log;
 import android.util.Xml;
 
 import org.xmlpull.v1.XmlPullParser;
@@ -14,6 +15,8 @@ import java.util.List;
  * GpxParser - parse GPX into Waypoints.
  */
 public class GpxParser {
+
+    private final static String TAG = "GpxParser";
 
     //    <gpx creator="GPSMAP 64" version="1.1"
     //        xmlns="http://www.topografix.com/GPX/1/1"
@@ -46,53 +49,71 @@ public class GpxParser {
     //        </wpt>
     //    </gpx>
 
-    private static final String ns = null;
-
-    // We don't use namespaces
+    // Namespaces
+    private final static String NAMESPACE_GPX = "http://www.topografix.com/GPX/1/1";
+    private final static String NAMESPACE_GPXX = "http://www.garmin.com/xmlschemas/GpxExtensions/v3";
+    private final static String NAMESPACE_WPTX1 = "http://www.garmin.com/xmlschemas/WaypointExtension/v1";
 
     public List<Waypoint> parse(InputStream in) throws XmlPullParserException, IOException {
         try {
             XmlPullParser parser = Xml.newPullParser();
-            parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
+            parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, true);
             parser.setInput(in, null);
             parser.nextTag();
             return readGpx(parser);
+
         } finally {
             in.close();
         }
     }
 
     private List<Waypoint> readGpx(XmlPullParser parser) throws XmlPullParserException, IOException {
-        List<Waypoint> entries = new ArrayList<Waypoint>();
 
-        parser.require(XmlPullParser.START_TAG, ns, "gpx");
+        List<Waypoint> waypoints = new ArrayList<Waypoint>();
+
+        parser.require(XmlPullParser.START_TAG, null, "gpx");
         while (parser.next() != XmlPullParser.END_TAG) {
             if (parser.getEventType() != XmlPullParser.START_TAG) {
                 continue;
             }
-            String name = parser.getName();
-            // Starts by looking for the entry tag
-            if (name.equals("wpt")) {
-                entries.add(readWpt(parser));
-            } else {
-                skip(parser);
+            // Find first level elements and call their parsing routines.
+            switch (parser.getName()) {
+                case "metadata":
+                    skip(parser);
+                    break;
+                case "wpt":
+                    waypoints.add(readWpt(parser));
+                    break;
+                case "rte":
+                    skip(parser);
+                    break;
+                case "trk":
+                    skip(parser);
+                    break;
+                case "extensions":
+                    skip(parser);
+                    break;
+                default:
+                    skip(parser);
             }
         }
-        return entries;
+        return waypoints;
     }
 
     public static class Waypoint {
+        public final String time;
         public final String name;
-        public final double lat;
-        public final double lon;
         public final String cmt;
         public final String desc;
-        public final String samples;
+        public final double lat;
+        public final double lon;
+        public final int samples;
 
-        private Waypoint(String name, String lat, String lon, String cmt, String desc, String samples) {
+        public Waypoint(String name, String lat, String lon, String time, String cmt, String desc, int samples) {
             this.name = name;
             this.lat = Double.parseDouble(lat);
             this.lon = Double.parseDouble(lon);
+            this.time = time;
             this.cmt = cmt;
             this.desc = desc;
             this.samples = samples;
@@ -100,25 +121,37 @@ public class GpxParser {
 
         @Override
         public String toString() {
-            return String.format("wpt: %s lat/lon: %.6f, %.6f", name, lat, lon);
+            return String.format("wpt %s: %s, lat/lon: %.6f, %.6f%s",
+                    name,
+                    (cmt != null ? cmt : "<null>"),
+                    lat, lon,
+                    (samples > 0 ? ", samples:" + Integer.toString(samples) : ""));
         }
     }
 
     // Parses the contents of a waypoint. If it encounters a name, etc. tag, hands them off
     // to their respective "read" methods for processing. Otherwise, skips the tag.
     private Waypoint readWpt(XmlPullParser parser) throws XmlPullParserException, IOException {
-        parser.require(XmlPullParser.START_TAG, ns, "wpt");
+        parser.require(XmlPullParser.START_TAG, null, "wpt");
         String lat = parser.getAttributeValue(null, "lat");
         String lon = parser.getAttributeValue(null, "lon");
+        int samples = 0;
+        String time = null;
         String name = null;
         String cmt = null;
         String desc = null;
-        String samples = null;
+
         while (parser.next() != XmlPullParser.END_TAG) {
             if (parser.getEventType() != XmlPullParser.START_TAG) {
                 continue;
             }
             switch (parser.getName()) {
+                case "ele":
+                    skip(parser);
+                    break;
+                case "time":
+                    time = readTime(parser);
+                    break;
                 case "name":
                     name = readName(parser);
                     break;
@@ -128,6 +161,9 @@ public class GpxParser {
                 case "desc":
                     desc = readDesc(parser);
                     break;
+                case "sym":
+                    skip(parser);
+                    break;
                 case "extensions":
                     samples = readExtensions(parser);
                     break;
@@ -136,54 +172,91 @@ public class GpxParser {
                     break;
             }
         }
-        Waypoint wpt =  new Waypoint(name, lat, lon, cmt, desc, samples);
+        Waypoint wpt =  new Waypoint(name, lat, lon, time, cmt, desc, samples);
         return wpt;
     }
 
     // Processes name tags in the waypoint.
+    private String readTime(XmlPullParser parser) throws IOException, XmlPullParserException {
+        parser.require(XmlPullParser.START_TAG, null, "time");
+        String time = readText(parser);
+        parser.require(XmlPullParser.END_TAG, null, "time");
+        return time;
+    }
+
+    // Processes name tags in the waypoint.
     private String readName(XmlPullParser parser) throws IOException, XmlPullParserException {
-        parser.require(XmlPullParser.START_TAG, ns, "name");
+        parser.require(XmlPullParser.START_TAG, null, "name");
         String name = readText(parser);
-        parser.require(XmlPullParser.END_TAG, ns, "name");
+        parser.require(XmlPullParser.END_TAG, null, "name");
         return name;
     }
 
     // Processes cmt tags in the waypoint.
     private String readCmt(XmlPullParser parser) throws IOException, XmlPullParserException {
-        parser.require(XmlPullParser.START_TAG, ns, "cmt");
+        parser.require(XmlPullParser.START_TAG, null, "cmt");
         String cmt = readText(parser);
-        parser.require(XmlPullParser.END_TAG, ns, "cmt");
+        parser.require(XmlPullParser.END_TAG, null, "cmt");
         return cmt;
     }
 
     // Processes desc tags in the waypoint.
     private String readDesc(XmlPullParser parser) throws IOException, XmlPullParserException {
-        parser.require(XmlPullParser.START_TAG, ns, "desc");
+        parser.require(XmlPullParser.START_TAG, null, "desc");
         String desc = readText(parser);
-        parser.require(XmlPullParser.END_TAG, ns, "desc");
+        parser.require(XmlPullParser.END_TAG, null, "desc");
         return desc;
     }
 
     //    <extensions>
+    //        <gpxx:WaypointExtension>
+    //            <gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
+    //        </gpxx:WaypointExtension>
     //        <wptx1:WaypointExtension>
-    //            <wptx1:Samples>2</wptx1:Samples>
+    //            <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+    //            <wptx1:Samples>6</wptx1:Samples>
     //        </wptx1:WaypointExtension>
+    //        <ctx:CreationTimeExtension>
+    //            <ctx:CreationTime>2015-04-01T22:15:03Z</ctx:CreationTime>
+    //        </ctx:CreationTimeExtension>
     //    </extensions>
+
     // Processes extensions tags in the waypoint.
-    private String readExtensions(XmlPullParser parser) throws IOException, XmlPullParserException {
+    private int readExtensions(XmlPullParser parser) throws IOException, XmlPullParserException {
 
-        String samples = "8";
-        skip(parser);
+        int samples = 0;
+        Log.d(TAG, "readExtensions...");
+        parser.require(XmlPullParser.START_TAG, null, "extensions");
+        while (parser.next() != XmlPullParser.END_TAG) {
+            if (parser.getEventType() != XmlPullParser.START_TAG) {
+                continue;
+            }
 
-        //    parser.require(XmlPullParser.START_TAG, ns, "extensions");
-        //    while (parser.next() != XmlPullParser.END_TAG) {
-        //        if (parser.getEventType() != XmlPullParser.START_TAG) {
-        //            continue;
-        //        }
-        //    }
-        //    String samples = readText(parser);
-        //    parser.require(XmlPullParser.END_TAG, ns, "extensions");
+            Log.d(TAG, "parse START_TAG " + parser.getPrefix() + ":" + parser.getName());
+            if (parser.getNamespace().equals(NAMESPACE_WPTX1)) {
+                parser.require(XmlPullParser.START_TAG, NAMESPACE_WPTX1, "WaypointExtension");
+                while (parser.next() != XmlPullParser.END_TAG) {
+                    if (parser.getEventType() != XmlPullParser.START_TAG) {
+                        continue;
+                    }
 
+                    Log.d(TAG, "parse START_TAG " + parser.getPrefix() + ":" + parser.getName());
+                    if (parser.getName().equals("Samples")) {
+                        samples = Integer.parseInt(readText(parser));
+
+                    } else {
+                        skip(parser);
+                        Log.d(TAG, "skip END_TAG " + parser.getPrefix() + ":" + parser.getName());
+                    }
+                }
+
+            } else {
+                skip(parser);
+                Log.d(TAG, "skip END_TAG " + parser.getPrefix() + ":" + parser.getName());
+            }
+        }
+
+        parser.require(XmlPullParser.END_TAG, null, "extensions");
         return samples;
     }
 
@@ -200,6 +273,7 @@ public class GpxParser {
     // Skips tags the parser isn't interested in. Uses depth to handle nested tags. i.e.,
     // if the next tag after a START_TAG isn't a matching END_TAG, it keeps going until it
     // finds the matching END_TAG (as indicated by the value of "depth" being 0).
+
     private void skip(XmlPullParser parser) throws XmlPullParserException, IOException {
         if (parser.getEventType() != XmlPullParser.START_TAG) {
             throw new IllegalStateException();

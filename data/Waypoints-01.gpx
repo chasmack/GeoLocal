@@ -66,6 +66,7 @@
       </gpxx:WaypointExtension>
       <wptx1:WaypointExtension>
         <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
+				<wptx1:Samples>6</wptx1:Samples>
       </wptx1:WaypointExtension>
       <ctx:CreationTimeExtension>
         <ctx:CreationTime>2015-04-01T22:15:03Z</ctx:CreationTime>
@@ -85,9 +86,7 @@
       <gpxx:WaypointExtension>
         <gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
       </gpxx:WaypointExtension>
-      <wptx1:WaypointExtension>
-        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
-      </wptx1:WaypointExtension>
+      <wptx1:WaypointExtension></wptx1:WaypointExtension>
       <ctx:CreationTimeExtension>
         <ctx:CreationTime>2015-04-01T22:15:03Z</ctx:CreationTime>
       </ctx:CreationTimeExtension>
@@ -106,9 +105,7 @@
       <gpxx:WaypointExtension>
         <gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
       </gpxx:WaypointExtension>
-      <wptx1:WaypointExtension>
-        <wptx1:DisplayMode>SymbolAndName</wptx1:DisplayMode>
-      </wptx1:WaypointExtension>
+      <wptx1:WaypointExtension/>
       <ctx:CreationTimeExtension>
         <ctx:CreationTime>2015-04-01T22:15:03Z</ctx:CreationTime>
       </ctx:CreationTimeExtension>

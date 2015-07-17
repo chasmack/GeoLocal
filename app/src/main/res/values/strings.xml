@@ -7,8 +7,10 @@
     <string name="radio_geographic">Geographic</string>
 
     <!-- Menu items -->
-    <string name="action_load_points">Load points</string>
-    <string name="action_test">Test</string>
+    <string name="action_load_points">Load local points</string>
+    <string name="action_read_gpx">Read GPX file</string>
+    <string name="action_write_gpx">Write GPX file</string>
+    <string name="action_test">Run test</string>
     <string name="action_settings">Settings</string>
 
     <!-- Preference string resources -->

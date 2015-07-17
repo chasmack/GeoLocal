@@ -92,6 +92,13 @@ public class MainActivity extends Activity implements
         return super.onCreateOptionsMenu(menu);
     }
 
+    // Respond to the action bar back button.
+    @Override
+    public boolean onNavigateUp() {
+        getFragmentManager().popBackStack();
+        return true;
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -101,28 +108,34 @@ public class MainActivity extends Activity implements
 
         //noinspection SimplifiableIfStatement
         switch (id) {
-            case R.id.action_settings:
-                FragmentManager manager = getFragmentManager();
-                if (manager.findFragmentByTag(FRAGMENT_SETTINGS) == null) {
-
-                    Fragment settings = new Settings();
-
-                    // Replace whatever is in the fragment_container view with this fragment,
-                    // and add the transaction to the back stack.
-                    manager.beginTransaction()
-                            .replace(R.id.container, settings, FRAGMENT_SETTINGS)
-                            .addToBackStack(null)
-                            .commit();
-                }
-                return true;
-
             case R.id.action_load_points:
                 loadPointsFile();
+                return true;
+            case R.id.action_read_gpx:
+                try { readGpxFile(); }
+                catch (IOException e) { Log.d(TAG, "IO exception: " + e); }
+                catch (XmlPullParserException e) { Log.d(TAG, "Parser exception: " + e); }
+                return true;
+            case R.id.action_write_gpx:
+                try { writeGpxFile(); }
+                catch (IOException e) { Log.d(TAG, "IO exception: " + e); }
+                catch (XmlPullParserException e) { Log.d(TAG, "Parser exception: " + e); }
                 return true;
             case R.id.action_test:
                 try { doTest(); }
                 catch (IOException e) { Log.d(TAG, "IO exception: " + e); }
                 catch (XmlPullParserException e) { Log.d(TAG, "Parser exception: " + e); }
+                return true;
+            case R.id.action_settings:
+                FragmentManager manager = getFragmentManager();
+                if (manager.findFragmentByTag(FRAGMENT_SETTINGS) == null) {
+                    // Replace the fragment in the fragment container view with settings
+                    // and add the transaction to the back stack.
+                    manager.beginTransaction()
+                            .replace(R.id.container, new Settings(), FRAGMENT_SETTINGS)
+                            .addToBackStack(null)
+                            .commit();
+                }
                 return true;
         }
 
@@ -132,13 +145,32 @@ public class MainActivity extends Activity implements
     private void doTest() throws IOException, XmlPullParserException {
         Toast.makeText(this, "MainActivity Test", Toast.LENGTH_SHORT).show();
 
-        final String INFILE = "Waypoints.gpx";
-        final String OUTFILE = "gpx-out.gpx";
+        final String OUTFILE = "test.txt";
+
+        Writer writer = null;
+        try {
+            File path = Environment.getExternalStoragePublicDirectory(
+                    Environment.DIRECTORY_DOWNLOADS);
+
+            File outfile = new File(path, OUTFILE);
+            writer = new FileWriter(outfile);
+            writer.write("Hello world\n");
+
+        } finally {
+            if (writer != null){ writer.close(); }
+        }
+    }
+
+    /*
+    * readGpxFile - read the waypoints from a GPX file.
+    */
+
+    private void readGpxFile() throws IOException, XmlPullParserException {
+        Toast.makeText(this, "readGpxFile", Toast.LENGTH_SHORT).show();
+
+        final String INFILE = "Waypoints-01.gpx";
 
         InputStream stream = null;
-        GpxParser gpxParser = new GpxParser();
-        List<GpxParser.Waypoint> wpts = null;
-
         try {
             String path = Environment.getExternalStoragePublicDirectory(
                     Environment.DIRECTORY_DOWNLOADS) + "/SPCS";
@@ -146,41 +178,63 @@ public class MainActivity extends Activity implements
 
             File infile = new File(path, INFILE);
             stream = new FileInputStream(infile);
-            wpts = gpxParser.parse(stream);
+            List<GpxParser.Waypoint> wpts = new GpxParser().parse(stream);
 
             for (GpxParser.Waypoint wpt : wpts) {
                 Log.d(TAG, wpt.toString());
             }
 
         } finally {
-            if (stream != null) {
-                stream.close();
-            }
-        }
-
-        Writer writer = null;
-        GpxWriter gpxWriter = new GpxWriter();
-
-        try {
-            String path = Environment.getExternalStoragePublicDirectory(
-                    Environment.DIRECTORY_DOWNLOADS) + "/SPCS";
-
-            File outfile = new File(path, OUTFILE);
-            writer = new FileWriter(outfile);
-            gpxWriter.write(writer, wpts);
-
-        } finally {
-            if (writer != null){
-                writer.close();
-            }
+            if (stream != null) { stream.close(); }
         }
     }
 
-    // Respond to the action bar back button.
-    @Override
-    public boolean onNavigateUp() {
-        getFragmentManager().popBackStack();
-        return true;
+    /*
+    * writeGpxFile - write local points to a gpx file
+    */
+
+    private void writeGpxFile() throws IOException, XmlPullParserException {
+
+        final String OUTFILE = "points-out.gpx";
+
+        // Get the point data.
+        Uri uri = Uri.parse(PointsContract.Points.CONTENT_URI);
+        Cursor c = getContentResolver().query(uri, null, null, null, null);
+
+        List<GpxParser.Waypoint> wpts = new ArrayList<GpxParser.Waypoint>();
+        Params p = Params.getParams();
+
+        int cnt = 0;
+        c.moveToFirst();
+        do {
+            cnt++;
+            GeoPoint geo = new LocalPoint(
+                    c.getDouble(Points.INDEX_X), c.getDouble(Points.INDEX_Y))
+                    .toGeo();
+
+            wpts.add(new GpxParser.Waypoint(
+                    c.getString(Points.INDEX_NAME),
+                    String.format(p.getGeographicUnitsFormat(), geo.getLat()),
+                    String.format(p.getGeographicUnitsFormat(), geo.getLon()),
+                    null,
+                    c.getString(Points.INDEX_DESC),
+                    c.getString(Points.INDEX_DESC),
+                    0));
+
+        } while (c.moveToNext());
+        Log.d(TAG, "writeGpxFile local points=" + cnt);
+
+        Writer writer = null;
+        try {
+            File path = Environment.getExternalStoragePublicDirectory(
+                    Environment.DIRECTORY_DOWNLOADS);
+
+            writer = new FileWriter(new File(path, OUTFILE));
+            new GpxWriter().write(writer, wpts);
+
+        } finally {
+            if (writer != null){ writer.close(); }
+        }
     }
 
     /*
