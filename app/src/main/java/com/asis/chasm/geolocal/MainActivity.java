@@ -1,13 +1,16 @@
 package com.asis.chasm.geolocal;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentManager.OnBackStackChangedListener;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.media.MediaScannerConnection;
@@ -17,6 +20,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -110,18 +114,21 @@ public class MainActivity extends Activity implements
 
         //noinspection SimplifiableIfStatement
         switch (id) {
-            case R.id.action_load_points:
-                loadPointsFile();
+            case R.id.action_points_read:
+                pointsRead();
                 return true;
-            case R.id.action_read_gpx:
-                try { readGpxFile(); }
+            case R.id.action_points_write:
+                pointsWrite();
+                return true;
+            case R.id.action_gpx_read:
+                try { gpxRead(); }
                 catch (IOException e) { Log.d(TAG, "IO exception: " + e); }
                 catch (XmlPullParserException e) { Log.d(TAG, "Parser exception: " + e); }
                 return true;
-            case R.id.action_write_gpx:
-                try { writeGpxFile(); }
-                catch (IOException e) { Log.d(TAG, "IO exception: " + e); }
-                catch (XmlPullParserException e) { Log.d(TAG, "Parser exception: " + e); }
+            case R.id.action_gpx_write:
+                // Show the GPX write dialog.
+                DialogFragment dialog = new gpxWriteDialogFragment();
+                dialog.show(getFragmentManager(), "GpxWriteDialog");
                 return true;
             case R.id.action_test:
                 try { doTest(); }
@@ -165,39 +172,11 @@ public class MainActivity extends Activity implements
     }
 
     /*
-    * SingleMediaScanner - workaround for issues with new file visability
-    * using USB connection with Windows explorer.
+    * gpxRead - read the waypoints from a GPX file.
     */
 
-    private static class SingleMediaScanner implements
-            MediaScannerConnection.MediaScannerConnectionClient
-    {
-        private MediaScannerConnection mScanner;
-        private File mFile;
-
-        SingleMediaScanner(Context context, File file) {
-            mFile = file;
-            mScanner = new MediaScannerConnection(context, this);
-            mScanner.connect();
-        }
-
-        @Override
-        public void onMediaScannerConnected() {
-            mScanner.scanFile(mFile.toString(), null);
-        }
-
-        @Override
-        public void onScanCompleted(String path, Uri uri) {
-            mScanner.disconnect();
-        }
-    }
-
-    /*
-    * readGpxFile - read the waypoints from a GPX file.
-    */
-
-    private void readGpxFile() throws IOException, XmlPullParserException {
-        Toast.makeText(this, "readGpxFile", Toast.LENGTH_SHORT).show();
+    private void gpxRead() throws IOException, XmlPullParserException {
+        Toast.makeText(this, "gpxRead", Toast.LENGTH_SHORT).show();
 
         final String INFILE = "Waypoints-01.gpx";
 
@@ -221,16 +200,89 @@ public class MainActivity extends Activity implements
     }
 
     /*
-    * writeGpxFile - write local points to a gpx file
+    * gpxWrite - write local points to a gpx file
     */
 
-    private void writeGpxFile() throws IOException, XmlPullParserException {
+    // A dialog to select a filename and call gpxWrite
+    public static class gpxWriteDialogFragment extends DialogFragment {
 
-        final String OUTFILE = "points-out.gpx";
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            LayoutInflater inflater = getActivity().getLayoutInflater();
+
+            // Inflate and set the layout for the dialog
+            builder.setView(inflater.inflate(R.layout.dialog_gpx_write, null))
+                    .setMessage(getString(R.string.gpx_write_message))
+
+                    // Add action buttons
+                    .setPositiveButton(R.string.gpx_write_ok, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int id) {
+                            // Get the filename from the edit text.
+                            String filename = ((EditText) getDialog().findViewById(R.id.gpx_write_filename))
+                                    .getText().toString().trim();
+
+                            // Replace any terminal dots.
+                            while (filename.endsWith(".")) {
+                                filename = filename.substring(0, filename.length() - 1);
+                            }
+                            if (!filename.isEmpty()) {
+                                if (!filename.matches("(?i).+\\.gpx")) {
+                                    // Add the .gpx extension.
+                                    filename += ".gpx";
+                                }
+                                String path = Environment.getExternalStoragePublicDirectory(
+                                        Environment.DIRECTORY_DOWNLOADS).toString();
+                                File file = new File(path, filename);
+
+                                // Make sure the path exists and is writable.
+                                File parent = file.getParentFile();
+                                if (parent.exists()) {
+
+                                    Log.d(TAG, "gpxWrite file: " + file.toString());
+                                    try {
+                                        gpxWrite(getActivity(), file);
+                                    } catch (IOException e) {
+                                        Log.d(TAG, "IO exception: " + e);
+                                        Toast.makeText(getActivity(), "An error occurred:\n" + e,
+                                                Toast.LENGTH_SHORT).show();
+                                    } catch (XmlPullParserException e) {
+                                        Log.d(TAG, "Parser exception: " + e);
+                                        Toast.makeText(getActivity(), "An error occurred:\n" + e,
+                                                Toast.LENGTH_SHORT).show();
+                                    }
+
+                                } else {
+                                    Log.d(TAG, "gpxWrite can't create dir: " + file.getParent());
+                                    Toast.makeText(getActivity(), "Cannot create directory " + file.getParent(),
+                                            Toast.LENGTH_LONG).show();
+                                    getDialog().cancel();
+                                }
+
+                            } else {
+                                Log.d(TAG, "gpxWrite filename is empty");
+                                Toast.makeText(getActivity(), "File name is empty.",
+                                        Toast.LENGTH_LONG).show();
+                                getDialog().cancel();
+                            }
+                        }
+                    })
+                    .setNegativeButton(R.string.gpx_write_cancel, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            gpxWriteDialogFragment.this.getDialog().cancel();
+                        }
+                    });
+            return builder.create();
+        }
+    }
+
+    private static void gpxWrite(Context context, File file)
+            throws IOException, XmlPullParserException {
 
         // Get the point data.
         Uri uri = Uri.parse(PointsContract.Points.CONTENT_URI);
-        Cursor c = getContentResolver().query(uri, null, null, null, null);
+        Cursor c = context.getContentResolver().query(uri, null, null, null, null);
 
         List<GpxParser.Waypoint> wpts = new ArrayList<GpxParser.Waypoint>();
         Params p = Params.getParams();
@@ -253,22 +305,150 @@ public class MainActivity extends Activity implements
                     0));
 
         } while (c.moveToNext());
-        Log.d(TAG, "writeGpxFile local points=" + cnt);
+        c.close();
 
         Writer writer = null;
-        File path = Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_DOWNLOADS);
-        File outfile = new File(path, OUTFILE);
         try {
-            writer = new FileWriter(outfile);
+            writer = new FileWriter(file);
             new GpxWriter().write(writer, wpts);
 
         } finally {
             if (writer != null) writer.close();
 
             // Workaround to ensure new file is visible in Windows explorer.
-            new SingleMediaScanner(this, outfile);
+            new SingleMediaScanner(context, file);
         }
+    }
+
+    /*
+    * pointsRead - choose a file manager to select a local PNEZD points file
+    * and load the points into the content provider's Points table.
+    */
+
+    // Activity result codes
+    private final int RESULT_CODE_FILE_SELECT = 1;
+
+    private void pointsRead() {
+
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("text/plain");
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+
+        try {
+            startActivityForResult(
+                    Intent.createChooser(intent, "Select a File"), RESULT_CODE_FILE_SELECT);
+
+        } catch (android.content.ActivityNotFoundException ex) {
+            Toast.makeText(this, "Please install a File Manager.",
+                    Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == RESULT_CODE_FILE_SELECT && resultCode == Activity.RESULT_OK) {
+
+            // Change the empty text message before starting the async task.
+            ((PointsList) getFragmentManager()
+                    .findFragmentByTag(FRAGMENT_POINTS_LIST))
+                    .setEmptyText("Loading points...");
+
+            // Run an AsyncTask to read points into the content provider.
+            new ReadPointsTask().execute(data.getData());
+        }
+    }
+
+    // Async task to read the points, parse the data and load the Points table.
+    private class ReadPointsTask extends AsyncTask<Uri, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Uri... args) {
+
+            Uri uri = args[0];
+            Log.d(TAG, "ReadPointsTask points uri: " + uri);
+
+            ContentResolver resolver = getContentResolver();
+            ArrayList<ContentValues> valuesList = new ArrayList<ContentValues>();
+
+            final Uri POINTS_URI = Uri.parse(Points.CONTENT_URI);
+
+            // Delete any points already in the Points table.
+            int deleted = getContentResolver().delete(POINTS_URI, null, null);
+            Log.d(TAG, "Points deleted: " + deleted);
+
+            BufferedReader reader = null;
+            try {
+
+                reader = new BufferedReader(
+                        new InputStreamReader(resolver.openInputStream(uri)));
+
+                String line;
+                String[] parts;
+
+                Params p = Params.getParams();
+                while ((line = reader.readLine()) != null) {
+                    // Ignore blank lines and comment lines which start with #
+                    if (line.length() == 0 || line.startsWith("#")) {
+                        continue;
+                    }
+                    parts = line.split(",", 5);
+                    if (parts.length != 5) {
+                        Log.d(TAG, "PNEZD (comma delimited) file format error: " + line);
+                        continue;
+                    }
+
+                    Double y = Double.parseDouble(parts[1]) / p.getUnitsFactor();
+                    Double x = Double.parseDouble(parts[2]) / p.getUnitsFactor();
+
+                    ContentValues values = new ContentValues();
+
+                    values.put(Points.COLUMN_NAME, parts[0]);
+                    values.put(Points.COLUMN_Y, y);
+                    values.put(Points.COLUMN_X, x);
+
+                    // Skipping Z (elevation)
+                    values.put(Points.COLUMN_DESC, parts[4]);
+                    values.put(Points.COLUMN_TYPE, Points.TYPE_LOCAL);
+
+                    valuesList.add(values);
+                }
+
+            } catch (IOException e) {
+                Log.d(TAG, e.toString());
+
+            } finally {
+                if (reader != null) {
+                    try {
+                        reader.close();
+                    } catch (IOException e) {
+                        Log.d(TAG, e.toString());
+                    }
+                }
+            }
+
+            // Send the bulk insert to the content provider.
+            int inserted = resolver.bulkInsert(POINTS_URI, valuesList.toArray(new ContentValues[0]));
+            Log.d(TAG, "Points inserted: " + inserted);
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void v) {
+            // Restore the empty text.
+            ((PointsList) getFragmentManager()
+                    .findFragmentByTag(FRAGMENT_POINTS_LIST))
+                    .setEmptyText("No points.");
+        }
+    }
+
+    /*
+    * pointsWrite - write the local points to a PNEZD file.
+    */
+
+    private void pointsWrite() {
+        Toast.makeText(this, "Write points.", Toast.LENGTH_SHORT).show();
     }
 
     /*
@@ -385,6 +565,7 @@ public class MainActivity extends Activity implements
                         + String.format(p.getGeographicUnitsFormat(), geo.getLon()));
                 break;
         }
+        c.close();
     }
 
     /*
@@ -515,126 +696,30 @@ public class MainActivity extends Activity implements
     }
 
     /*
-    * loadPointsFile - choose a file manager to select a local PNEZD points file
-    * and load the points into the content provider's Points table.
+    * SingleMediaScanner - workaround for issues with new file visability
+    * using USB connection with Windows explorer.
     */
 
-    // Activity result codes
-    private final int RESULT_CODE_FILE_SELECT = 1;
+    private static class SingleMediaScanner implements
+            MediaScannerConnection.MediaScannerConnectionClient
+    {
+        private MediaScannerConnection mScanner;
+        private File mFile;
 
-    private void loadPointsFile() {
-
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.setType("text/plain");
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-
-        try {
-            startActivityForResult(
-                    Intent.createChooser(intent, "Select a File"), RESULT_CODE_FILE_SELECT);
-
-        } catch (android.content.ActivityNotFoundException ex) {
-            Toast.makeText(this, "Please install a File Manager.",
-                    Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == RESULT_CODE_FILE_SELECT && resultCode == Activity.RESULT_OK) {
-
-            // Change the empty text message before starting the async task.
-            ((PointsList) getFragmentManager()
-                    .findFragmentByTag(FRAGMENT_POINTS_LIST))
-                    .setEmptyText("Loading points...");
-
-            // Run an AsyncTask to read points into the content provider.
-            new ReadPointsTask().execute(data.getData());
-        }
-    }
-
-    // Async task to read the points, parse the data and load the Points table.
-    private class ReadPointsTask extends AsyncTask<Uri, Void, Void> {
-
-        @Override
-        protected Void doInBackground(Uri... args) {
-
-            Uri uri = args[0];
-            Log.d(TAG, "ReadPointsTask points uri: " + uri);
-
-            ContentResolver resolver = getContentResolver();
-            ArrayList<ContentValues> valuesList = new ArrayList<ContentValues>();
-
-            final Uri POINTS_URI = Uri.parse(Points.CONTENT_URI);
-
-            // Delete any points already in the Points table.
-            int deleted = getContentResolver().delete(POINTS_URI, null, null);
-            Log.d(TAG, "Points deleted: " + deleted);
-
-            BufferedReader reader = null;
-            try {
-
-                reader = new BufferedReader(
-                        new InputStreamReader(resolver.openInputStream(uri)));
-
-                String line;
-                String[] parts;
-
-                Params p = Params.getParams();
-                while ((line = reader.readLine()) != null) {
-                    // Ignore blank lines and comment lines which start with #
-                    if (line.length() == 0 || line.startsWith("#")) {
-                        continue;
-                    }
-                    parts = line.split(",", 5);
-                    if (parts.length != 5) {
-                        Log.d(TAG, "PNEZD (comma delimited) file format error: " + line);
-                        continue;
-                    }
-
-                    Double y = Double.parseDouble(parts[1]) / p.getUnitsFactor();
-                    Double x = Double.parseDouble(parts[2]) / p.getUnitsFactor();
-
-                    ContentValues values = new ContentValues();
-
-                    values.put(Points.COLUMN_NAME, parts[0]);
-                    values.put(Points.COLUMN_Y, y);
-                    values.put(Points.COLUMN_X, x);
-
-                    // Skipping Z (elevation)
-                    values.put(Points.COLUMN_DESC, parts[4]);
-                    values.put(Points.COLUMN_TYPE, Points.TYPE_LOCAL);
-
-                    valuesList.add(values);
-                }
-
-            } catch (IOException e) {
-                Log.d(TAG, e.toString());
-
-            } finally {
-                if (reader != null) {
-                    try {
-                        reader.close();
-                    } catch (IOException e) {
-                        Log.d(TAG, e.toString());
-                    }
-                }
-            }
-
-            // Send the bulk insert to the content provider.
-            int inserted = resolver.bulkInsert(POINTS_URI, valuesList.toArray(new ContentValues[0]));
-            Log.d(TAG, "Points inserted: " + inserted);
-
-            return null;
+        SingleMediaScanner(Context context, File file) {
+            mFile = file;
+            mScanner = new MediaScannerConnection(context, this);
+            mScanner.connect();
         }
 
         @Override
-        protected void onPostExecute(Void v) {
-            // Restore the empty text.
-            ((PointsList) getFragmentManager()
-                    .findFragmentByTag(FRAGMENT_POINTS_LIST))
-                    .setEmptyText("No points.");
+        public void onMediaScannerConnected() {
+            mScanner.scanFile(mFile.toString(), null);
+        }
+
+        @Override
+        public void onScanCompleted(String path, Uri uri) {
+            mScanner.disconnect();
         }
     }
-
 }

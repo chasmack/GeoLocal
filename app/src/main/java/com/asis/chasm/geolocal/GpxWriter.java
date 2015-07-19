@@ -61,7 +61,7 @@ public class GpxWriter {
             serializer.endTag(NAMESPACE_GPX, "gpx");
             serializer.endDocument();
 
-            Log.d(TAG, "write waypoints=" + cnt);
+            Log.d(TAG, "write waypoints cnt=" + cnt);
 
         } finally {
             out.close();
