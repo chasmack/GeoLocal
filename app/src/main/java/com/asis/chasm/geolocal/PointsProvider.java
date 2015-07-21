@@ -68,8 +68,8 @@ public class PointsProvider extends ContentProvider {
                         + Projections._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                         + Projections.COLUMN_CODE + " TEXT" + COMMA_SEP
                         + Projections.COLUMN_DESC + " TEXT" + COMMA_SEP
-                        + Projections.COLUMN_COORD_SYSTEM + " INTEGER" + COMMA_SEP
-                        + Projections.COLUMN_PROJECTION + " INTEGER" + COMMA_SEP
+                        + Projections.COLUMN_SYSTEM + " INTEGER" + COMMA_SEP
+                        + Projections.COLUMN_TYPE + " INTEGER" + COMMA_SEP
                         + Projections.COLUMN_P0 + " REAL" + COMMA_SEP
                         + Projections.COLUMN_M0 + " REAL" + COMMA_SEP
                         + Projections.COLUMN_X0 + " REAL" + COMMA_SEP

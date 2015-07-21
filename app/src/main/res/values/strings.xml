@@ -61,43 +61,13 @@
     <string name="pref_projection_key">pref_projection</string>
     <string name="pref_projection_title">Coordinate system</string>
     <string name="pref_projection_default">0401</string>
-    <string-array name="pref_projection_entries">
-        <item>CA Zone 1</item>
-        <item>CA Zone 2</item>
-        <item>CA Zone 3</item>
-        <item>CA Zone 4</item>
-        <item>CA Zone 5</item>
-        <item>UTM Zone 1</item>
-        <item>UTM Zone 2</item>
-        <item>UTM Zone 3</item>
-        <item>UTM Zone 4</item>
-        <item>UTM Zone 5</item>
-        <item>UTM Zone 6</item>
-        <item>UTM Zone 7</item>
-        <item>UTM Zone 8</item>
-        <item>UTM Zone 9</item>
-        <item>UTM Zone 10</item>
-        <item>UTM Zone 11</item>
-        <item>UTM Zone 12</item>
-    </string-array>
-    <string-array name="pref_projection_values">
-        <item>0401</item>
-        <item>0402</item>
-        <item>0403</item>
-        <item>0404</item>
-        <item>0405</item>
-        <item>UTM01</item>
-        <item>UTM02</item>
-        <item>UTM03</item>
-        <item>UTM04</item>
-        <item>UTM05</item>
-        <item>UTM06</item>
-        <item>UTM07</item>
-        <item>UTM08</item>
-        <item>UTM09</item>
-        <item>UTM10</item>
-        <item>UTM11</item>
-        <item>UTM12</item>
+    <string name="pref_projection_systems_title">Coordinate system</string>
+    <string name="pref_projection_message">Coordinate system and projection used to transform coordinates to latitude/longitude.</string>
+    <string name="pref_projection_projections_title">Projection</string>
+    <string-array name="pref_projection_systems">
+        <item>State Plane Coordinate System</item>
+        <item>Universal Transverse Mercator</item>
+        <item>User Defined Projection</item>
     </string-array>
 
 </resources>

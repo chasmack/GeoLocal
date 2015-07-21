@@ -611,13 +611,13 @@ public class MainActivity extends Activity implements
                 values.put(Projections.COLUMN_DESC, parts[1]);
                 switch (parts[2]) {
                     case "SPCS":
-                        values.put(Projections.COLUMN_COORD_SYSTEM, Projections.COORD_SYSTEM_SPCS);
+                        values.put(Projections.COLUMN_SYSTEM, Projections.SYSTEM_SPCS);
                         break;
                     case "UTM":
-                        values.put(Projections.COLUMN_COORD_SYSTEM, Projections.COORD_SYSTEM_UTM);
+                        values.put(Projections.COLUMN_SYSTEM, Projections.SYSTEM_UTM);
                         break;
                     case "USER":
-                        values.put(Projections.COLUMN_COORD_SYSTEM, Projections.COORD_SYSTEM_USER);
+                        values.put(Projections.COLUMN_SYSTEM, Projections.SYSTEM_USER);
                         break;
                     default:
                         Log.d(TAG, "Invalid projection TYPE: " + line);
@@ -625,13 +625,13 @@ public class MainActivity extends Activity implements
                 }
                 switch (parts[3]) {
                     case "L":
-                        values.put(Projections.COLUMN_PROJECTION, Projections.PROJECTION_LC);
+                        values.put(Projections.COLUMN_TYPE, Projections.TYPE_LC);
                         break;
                     case "T":
-                        values.put(Projections.COLUMN_PROJECTION, Projections.PROJECTION_TM);
+                        values.put(Projections.COLUMN_TYPE, Projections.TYPE_TM);
                         break;
                     case "O":
-                        values.put(Projections.COLUMN_PROJECTION, Projections.PROJECTION_OM);
+                        values.put(Projections.COLUMN_TYPE, Projections.TYPE_OM);
                         break;
                     default:
                         Log.d(TAG, "Invalid projection PROJ: " + line);

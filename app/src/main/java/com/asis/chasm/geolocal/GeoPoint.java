@@ -49,40 +49,40 @@ public class GeoPoint {
 
     public GridPoint toGrid() {
         Params p = Params.getParams();
-        switch (p.getProjection()) {
+        switch (p.getProjectionType()) {
 
-            case Projections.PROJECTION_LC:
+            case Projections.TYPE_LC:
                 return TransformLC.toGrid(this);
-            case Projections.PROJECTION_TM:
+            case Projections.TYPE_TM:
                 return TransformTM.toGrid(this);
             default:
-                throw new IllegalArgumentException("Bad projection: " + p.getProjection());
+                throw new IllegalArgumentException("Bad projection: " + p.getProjectionType());
         }
     }
 
     public double getTheta() {
         Params p = Params.getParams();
-        switch (p.getProjection()) {
+        switch (p.getProjectionType()) {
 
-            case Projections.PROJECTION_LC:
+            case Projections.TYPE_LC:
                 return TransformLC.getTheta(this);
-            case Projections.PROJECTION_TM:
+            case Projections.TYPE_TM:
                 return TransformTM.getTheta(this);
             default:
-                throw new IllegalArgumentException("Bad projection: " + p.getProjection());
+                throw new IllegalArgumentException("Bad projection: " + p.getProjectionType());
         }
     }
 
     public double getK() {
         Params p = Params.getParams();
-        switch (p.getProjection()) {
+        switch (p.getProjectionType()) {
 
-            case Projections.PROJECTION_LC:
+            case Projections.TYPE_LC:
                 return TransformLC.getK(this);
-            case Projections.PROJECTION_TM:
+            case Projections.TYPE_TM:
                 return TransformTM.getK(this);
             default:
-                throw new IllegalArgumentException("Bad projection: " + p.getProjection());
+                throw new IllegalArgumentException("Bad projection: " + p.getProjectionType());
         }
     }
 

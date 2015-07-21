@@ -8,11 +8,10 @@
         android:entryValues="@array/pref_units_values"
         android:defaultValue="@string/pref_units_default" />
 
-    <ListPreference
+    <com.asis.chasm.geolocal.ProjectionPref
         android:key="@string/pref_projection_key"
         android:title="@string/pref_projection_title"
-        android:entries="@array/pref_projection_entries"
-        android:entryValues="@array/pref_projection_values"
+        android:dialogTitle="@string/pref_projection_title"
         android:defaultValue="@string/pref_projection_default" />
 
     <com.asis.chasm.geolocal.LocalReferencePref
