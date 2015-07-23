@@ -8,9 +8,13 @@ import android.provider.BaseColumns;
 
 public final class PointsContract {
 
-    // Provider specific call methods.
+    // GET_COUNT - get the count of items table passed as an arguement
     public static final String CALL_GET_COUNT_METHOD = "get_count";
     public static final String CALL_GET_COUNT_RESULT_KEY = "count";
+
+    // GET_DISTINCT - get the count of items table passed as an arguement
+    public static final String CALL_GET_SYSTEM_IDS_METHOD = "get_system_ids";
+    public static final String CALL_GET_SYSTEM_IDS_RESULT_KEY = "result";
 
     private PointsContract() {}
 
@@ -72,6 +76,7 @@ public final class PointsContract {
         public static final String COLUMN_P2 = "p2";
         public static final String COLUMN_K0 = "k0";
 
+        public static final int INDEX_ID = 0;
         public static final int INDEX_CODE = 1;
         public static final int INDEX_DESC = 2;
         public static final int INDEX_SYSTEM = 3;
@@ -95,8 +100,8 @@ public final class PointsContract {
                 "User Coordinate System"
         };
 
-        public static final int TYPE_TM = 0;    // Transverse Mercator
-        public static final int TYPE_LC = 1;    // Lambert Conic
+        public static final int TYPE_LC = 0;    // Lambert Conic
+        public static final int TYPE_TM = 1;    // Transverse Mercator
         public static final int TYPE_OM = 2;    // Oblique Mercator
 
         public static final String[] TYPE_NAMES = {
@@ -104,6 +109,14 @@ public final class PointsContract {
                 "Lambert Conic",
                 "Oblique Mercator"
         };
+
+        // Abbreviated projection excluding numerical projection constants.
+        public static final String[] PROJECTION_SHORT = {
+                _ID, COLUMN_CODE, COLUMN_DESC, COLUMN_SYSTEM, COLUMN_TYPE
+        };
+
+        // Full proojection returning all of the fields.
+        public static final String[] PROJECTION_FULL = null;
 
         // Default sorts by order projections were inserted into the database.
         public static final String DEFAULT_ORDER_BY = _ID;

@@ -54,6 +54,10 @@ public class MainActivity extends Activity implements
     public static final String FRAGMENT_POINTS_LIST = "list";
     public static final String FRAGMENT_SETTINGS = "settings";
 
+    // Loader ids.
+    public static final int LOADER_ID_POINTS_LIST = 0;
+    public static final int LOADER_ID_PREF_PROJECTIONS = 1;
+
     // XML asset file with projection constants.
     private static final String PROJECTION_CONSTANTS_ASSET = "projections.txt";
 

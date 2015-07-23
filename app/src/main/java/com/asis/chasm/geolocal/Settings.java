@@ -251,6 +251,12 @@ public class Settings extends PreferenceFragment
         private int projectionSystem;
         public  int getProjectionSystem() { return projectionSystem; }
 
+        // TODO: Make sure projection ID id updated on projections table reload.
+
+        // Projection ID.
+        private long projectionId;
+        public  long getProjectionId() { return projectionId; }
+
         // Projection code and description.
         private String projectionCode, projectionDesc;
         public  String getProjectionCode() { return projectionCode; }
@@ -388,6 +394,7 @@ public class Settings extends PreferenceFragment
                         Log.d(TAG, "projectionType: " + c.getString(Projections.INDEX_DESC)
                                 + " (" + c.getString(Projections.INDEX_CODE) + ")");
 
+                        projectionId = c.getLong(Projections.INDEX_ID);
                         projectionSystem = c.getInt(Projections.INDEX_SYSTEM);
                         projectionType = c.getInt(Projections.INDEX_TYPE);
                         projectionCode = c.getString(Projections.INDEX_CODE);
