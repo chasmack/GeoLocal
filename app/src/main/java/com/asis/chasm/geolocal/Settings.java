@@ -17,6 +17,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.asis.chasm.geolocal.PointsContract.Projections;
+
 public class Settings extends PreferenceFragment
         implements OnSharedPreferenceChangeListener {
 
@@ -136,14 +138,13 @@ public class Settings extends PreferenceFragment
     public void onResume() {
         super.onResume();
 
-        // Initialize preference summaries and register the change listener.
+        // Initialize preference summaries.
         initPreferenceSummary(getPreferenceScreen());
     }
 
     @Override
     public void onPause () {
         super.onPause();
-
     }
 
     @Override
@@ -246,14 +247,24 @@ public class Settings extends PreferenceFragment
         private double scale;
         public  double getScale() { return scale; }
 
-        // Type of grid projection, e.g. Projections.PROJECTION_TM, _LC, _OM.
-        private int projection;
-        public  int getProjection() { return projection; }
+        // System of projections, e.g. SYSTEM_SPCS, UTM, USER.
+        private int projectionSystem;
+        public  int getProjectionSystem() { return projectionSystem; }
+
+        // TODO: Make sure projection ID id updated on projections table reload.
+
+        // Projection ID.
+        private long projectionId;
+        public  long getProjectionId() { return projectionId; }
 
         // Projection code and description.
         private String projectionCode, projectionDesc;
         public  String getProjectionCode() { return projectionCode; }
         public  String getProjectionDesc() { return projectionDesc; }
+
+        // Type of projection, e.g. TYPE_TM, _LC, _OM.
+        private int projectionType;
+        public  int getProjectionType() { return projectionType; }
 
         // Latitude of origin, central meridian in degrees.
         private double p0, m0;
@@ -370,33 +381,39 @@ public class Settings extends PreferenceFragment
                     break;
 
                 case PREFERENCE_KEY_PROJECTION:
-                    // Initialize projection constants from the Projections content provider.
+                    // Initialize projectionType constants from the Projections content provider.
                     Cursor c = context.getContentResolver().query(
-                            Uri.parse(PointsContract.Projections.CONTENT_URI), // The content URI of the projections table
+                            Uri.parse(Projections.CONTENT_URI), // The content URI of the projections table
                             null,                               // Return all rows
-                            PointsContract.Projections.COLUMN_CODE + " = ?",   // Select using the projection code
+                            Projections.COLUMN_CODE + " = ?",   // Select using the projectionType code
                             new String[]{value},                // Selection arguements
                             null);                              // No sort order
 
                     if (c != null && c.moveToFirst()) {
 
-                        Log.d(TAG, "projection: " + c.getString(PointsContract.Projections.INDEX_DESC)
-                                + " (" + c.getString(PointsContract.Projections.INDEX_CODE) + ")");
+                        Log.d(TAG, "projectionType: " + c.getString(Projections.INDEX_DESC)
+                                + " (" + c.getString(Projections.INDEX_CODE) + ")");
 
-                        projection = c.getInt(PointsContract.Projections.INDEX_PROJECTION);
-                        projectionCode = c.getString(PointsContract.Projections.INDEX_CODE);
-                        projectionDesc = c.getString(PointsContract.Projections.INDEX_DESC);
-                        p0 = c.getDouble(PointsContract.Projections.INDEX_P0);
-                        m0 = c.getDouble(PointsContract.Projections.INDEX_M0);
-                        x0 = c.getDouble(PointsContract.Projections.INDEX_X0);
-                        y0 = c.getDouble(PointsContract.Projections.INDEX_Y0);
-                        p1 = c.getDouble(PointsContract.Projections.INDEX_P1);
-                        p2 = c.getDouble(PointsContract.Projections.INDEX_P2);
-                        k0 = c.getDouble(PointsContract.Projections.INDEX_K0);
+                        projectionId = c.getLong(Projections.INDEX_ID);
+                        projectionSystem = c.getInt(Projections.INDEX_SYSTEM);
+                        projectionType = c.getInt(Projections.INDEX_TYPE);
+                        projectionCode = c.getString(Projections.INDEX_CODE);
+                        projectionDesc = c.getString(Projections.INDEX_DESC);
+                        p0 = c.getDouble(Projections.INDEX_P0);
+                        m0 = c.getDouble(Projections.INDEX_M0);
+                        x0 = c.getDouble(Projections.INDEX_X0);
+                        y0 = c.getDouble(Projections.INDEX_Y0);
+                        p1 = c.getDouble(Projections.INDEX_P1);
+                        p2 = c.getDouble(Projections.INDEX_P2);
+                        k0 = c.getDouble(Projections.INDEX_K0);
+                        c.close();
+
                         invalidateGridRef();
+
                     } else {
-                        throw new IllegalArgumentException("Bad projection code: " + value);
+                        throw new IllegalArgumentException("Bad projectionType code: " + value);
                     }
+
                     break;
 
                 default:

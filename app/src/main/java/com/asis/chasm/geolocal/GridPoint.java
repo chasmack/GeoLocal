@@ -50,16 +50,16 @@ public class GridPoint {
 
     public GeoPoint toGeo() {
         Params p = Params.getParams();
-        switch (p.getProjection()) {
+        switch (p.getProjectionType()) {
 
-            case Projections.PROJECTION_LC:
+            case Projections.TYPE_LC:
                 return TransformLC.toGeo(this);
 
-            case Projections.PROJECTION_TM:
+            case Projections.TYPE_TM:
                 return TransformTM.toGeo(this);
 
             default:
-                throw new IllegalArgumentException("Bad projection: " + p.getProjection());
+                throw new IllegalArgumentException("Bad projection: " + p.getProjectionType());
         }
     }
 

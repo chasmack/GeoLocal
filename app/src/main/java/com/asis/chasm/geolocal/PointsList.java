@@ -127,7 +127,7 @@ public class PointsList extends ListFragment
         setListAdapter(mAdapter);
 
         // Prepare the loader.  Either re-connect with an existing one, or start a new one.
-        getLoaderManager().initLoader(0, null, this);
+        getLoaderManager().initLoader(MainActivity.LOADER_ID_POINTS_LIST, null, this);
     }
 
     @Override
@@ -291,7 +291,7 @@ public class PointsList extends ListFragment
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 
-        Log.d(TAG, "LoaderManager.LoaderCallbacks<?>.onCreateLoader");
+        Log.d(TAG, "LoaderManager.LoaderCallbacks<?>.onCreateLoader id=" + id);
         CursorLoader loader =  new CursorLoader(
                 getActivity(),          // Parent activity context
                 Uri.parse(Points.CONTENT_URI),

@@ -10,7 +10,10 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import com.asis.chasm.geolocal.PointsContract.Points;
 import com.asis.chasm.geolocal.PointsContract.Projections;
@@ -68,8 +71,8 @@ public class PointsProvider extends ContentProvider {
                         + Projections._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                         + Projections.COLUMN_CODE + " TEXT" + COMMA_SEP
                         + Projections.COLUMN_DESC + " TEXT" + COMMA_SEP
-                        + Projections.COLUMN_COORD_SYSTEM + " INTEGER" + COMMA_SEP
-                        + Projections.COLUMN_PROJECTION + " INTEGER" + COMMA_SEP
+                        + Projections.COLUMN_SYSTEM + " INTEGER" + COMMA_SEP
+                        + Projections.COLUMN_TYPE + " INTEGER" + COMMA_SEP
                         + Projections.COLUMN_P0 + " REAL" + COMMA_SEP
                         + Projections.COLUMN_M0 + " REAL" + COMMA_SEP
                         + Projections.COLUMN_X0 + " REAL" + COMMA_SEP
@@ -121,27 +124,44 @@ public class PointsProvider extends ContentProvider {
     public Bundle call(String method, String arg, Bundle extras) {
         switch (method) {
             case PointsContract.CALL_GET_COUNT_METHOD:
-                if (arg != null &&
-                        (arg.equals(Points.TABLE) || arg.equals(Projections.TABLE))) {
-                    return getCount(arg);
-                }
-                break;
+                return getCount(arg);
+            case PointsContract.CALL_GET_SYSTEM_IDS_METHOD:
+                return getSystemIds();
         }
         return null;
     }
 
-    private Bundle getCount(String table) {
+    private Bundle getCount(String arg) {
+        if (arg == null) return null;
+        Bundle result = new Bundle();
+        int count = 0;
+
         Cursor c = mDbHelper.getReadableDatabase()
-                .rawQuery("select count(*) as count from " + table, null);
-        if (c.moveToFirst()) {
-            Bundle bundle = new Bundle();
-            int index = c.getColumnIndex("count");
-            bundle.putInt(PointsContract.CALL_GET_COUNT_RESULT_KEY, c.getInt(index));
-            Log.d(TAG, "GET_COUNT table=" + table
-                    + " count=" + bundle.getInt(PointsContract.CALL_GET_COUNT_RESULT_KEY));
-            return bundle;
-        }
-        return null;
+                .rawQuery("select count(*) as count from " + arg, null);
+        if (c.moveToFirst())
+            count = c.getInt(c.getColumnIndex("count"));
+        c.close();
+
+        Log.d(TAG, "GET_COUNT table=" + arg + " count=" + count);
+        result.putInt(PointsContract.CALL_GET_COUNT_RESULT_KEY, count);
+
+        return result;
+    }
+
+    private Bundle getSystemIds() {
+        Bundle result = new Bundle();
+        ArrayList<Integer> list = new ArrayList<Integer>();
+        String q = "select DISTINCT " + Projections.COLUMN_SYSTEM + " from " + Projections.TABLE;
+        Cursor c = mDbHelper.getReadableDatabase().rawQuery(q, null);
+
+        if (c.moveToFirst()) do {
+            list.add(c.getInt(0));
+        } while (c.moveToNext());
+        c.close();
+
+        Log.d(TAG, "GET_SYSTEM_IDS count=" + list.size());
+        result.putIntegerArrayList(PointsContract.CALL_GET_SYSTEM_IDS_RESULT_KEY, list);
+        return result;
     }
 
     @Override

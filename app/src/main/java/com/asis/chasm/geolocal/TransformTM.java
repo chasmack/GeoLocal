@@ -200,7 +200,7 @@ public class TransformTM {
         if (sCode.equals(p.getProjectionCode())) { return; }
 
         // Check we are using a Lambert projection.
-        if (p.getProjection() != PointsContract.Projections.PROJECTION_TM) {
+        if (p.getProjectionType() != PointsContract.Projections.TYPE_TM) {
             throw new IllegalArgumentException("Bad TM transform parameters.");
         }
 

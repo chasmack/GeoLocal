@@ -125,7 +125,7 @@ public class TransformLC {
         if (sCode.equals(p.getProjectionCode())) { return; }
 
         // Check we are using a Lambert projection.
-        if (p.getProjection() != PointsContract.Projections.PROJECTION_LC) {
+        if (p.getProjectionType() != PointsContract.Projections.TYPE_LC) {
             throw new IllegalArgumentException("Bad LC transform parameters.");
         }
 

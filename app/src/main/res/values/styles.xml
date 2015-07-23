@@ -1,8 +1,18 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
-        <!-- Customize your theme here. -->
+    <style name="AppTheme" parent="@android:style/Theme.Holo">
+        <!-- Customize your styles here -->
+    </style>
+
+    <style name="spinnerItemStyle" parent="@android:style/Widget.Holo.Spinner">
+        <item name="android:textColor">#FF333333</item>
+    </style>
+
+    <style name="spinnerDropDownItemStyle" parent="@android:style/Widget.Holo.Spinner">
+        <item name="android:textColor">#FF333333</item>
+        <item name="android:divider">#FFEEEEEE</item>
+        <item name="android:dividerHeight">1dp</item>
     </style>
 
 </resources>
