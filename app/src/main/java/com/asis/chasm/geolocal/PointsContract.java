@@ -2,6 +2,9 @@ package com.asis.chasm.geolocal;
 
 import android.provider.BaseColumns;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  *  Sqlite contract class for the points database.
  */
@@ -10,11 +13,9 @@ public final class PointsContract {
 
     // GET_COUNT - get the count of items table passed as an arguement
     public static final String CALL_GET_COUNT_METHOD = "get_count";
+    public static final String CALL_GET_COUNT_EXTRAS_COLUMN = "column";
+    public static final String CALL_GET_COUNT_EXTRAS_ARGS = "args";
     public static final String CALL_GET_COUNT_RESULT_KEY = "count";
-
-    // GET_DISTINCT - get the count of items table passed as an arguement
-    public static final String CALL_GET_SYSTEM_IDS_METHOD = "get_system_ids";
-    public static final String CALL_GET_SYSTEM_IDS_RESULT_KEY = "result";
 
     private PointsContract() {}
 
@@ -89,22 +90,15 @@ public final class PointsContract {
         public static final int INDEX_P2 = 10;
         public static final int INDEX_K0 = 11;
 
-        public static final int SYSTEM_SPCS = 0;
-        public static final int SYSTEM_UTM = 1;
-        public static final int SYSTEM_USER = 2;
+        public static final String SYSTEM_SPCS = "spcs";
+        public static final String SYSTEM_UTM = "utm";
+        public static final String SYSTEM_USER = "user";
 
         // This list if system ids is used to build the projection systems
         // spinner list in the projections preference dialog. To display an
         // option for USER systems add SYSTEM_USER to the list.
-        public static final int[] SYSTEM_IDS = new int[] {
-                // SYSTEM_SPCS, SYSTEM_UTM, SYSTEM_USER
-                SYSTEM_SPCS, SYSTEM_UTM
-        };
-
-        public static final String[] SYSTEM_NAMES = {
-                "State Plane Coordinate System",
-                "Universal Transverse Mercator",
-                "User Coordinate System"
+        public static final String[] SYSTEM_IDS = new String[] {
+                SYSTEM_SPCS, SYSTEM_UTM, SYSTEM_USER
         };
 
         public static final int TYPE_LC = 0;    // Lambert Conic

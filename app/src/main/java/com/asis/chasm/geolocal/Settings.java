@@ -19,6 +19,9 @@ import android.view.ViewGroup;
 
 import com.asis.chasm.geolocal.PointsContract.Projections;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class Settings extends PreferenceFragment
         implements OnSharedPreferenceChangeListener {
 
@@ -247,15 +250,18 @@ public class Settings extends PreferenceFragment
         private double scale;
         public  double getScale() { return scale; }
 
-        // System of projections, e.g. SYSTEM_SPCS, UTM, USER.
-        private int projectionSystem;
-        public  int getProjectionSystem() { return projectionSystem; }
+        // Projection system id, e.g. SYSTEM_SPCS, SYSTEM_UTM, SYSTEM_USER.
+        private String projectionSystem;
+        public  String getProjectionSystem() { return projectionSystem; }
 
-        // TODO: Make sure projection ID id updated on projections table reload.
-
-        // Projection ID.
-        private long projectionId;
-        public  long getProjectionId() { return projectionId; }
+        // A map of projection system ids to system names.
+        private static final Map<String, String> SYSTEM_NAMES = new HashMap<String, String>();
+        static {
+            SYSTEM_NAMES.put(Projections.SYSTEM_SPCS, "State Plane Coordinate System");
+            SYSTEM_NAMES.put(Projections.SYSTEM_UTM, "Universal Transverse Mercator");
+            SYSTEM_NAMES.put(Projections.SYSTEM_USER, "User Coordinate System");
+        }
+        public String getProjectionSystemName(String id) { return SYSTEM_NAMES.get(id); }
 
         // Projection code and description.
         private String projectionCode, projectionDesc;
@@ -394,8 +400,7 @@ public class Settings extends PreferenceFragment
                         Log.d(TAG, "projectionType: " + c.getString(Projections.INDEX_DESC)
                                 + " (" + c.getString(Projections.INDEX_CODE) + ")");
 
-                        projectionId = c.getLong(Projections.INDEX_ID);
-                        projectionSystem = c.getInt(Projections.INDEX_SYSTEM);
+                        projectionSystem = c.getString(Projections.INDEX_SYSTEM);
                         projectionType = c.getInt(Projections.INDEX_TYPE);
                         projectionCode = c.getString(Projections.INDEX_CODE);
                         projectionDesc = c.getString(Projections.INDEX_DESC);

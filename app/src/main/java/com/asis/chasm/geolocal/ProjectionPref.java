@@ -2,6 +2,7 @@ package com.asis.chasm.geolocal;
 
 import android.app.Activity;
 import android.app.LoaderManager;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Loader;
@@ -25,9 +26,7 @@ import android.widget.TextView;
 import com.asis.chasm.geolocal.Settings.Params;
 import com.asis.chasm.geolocal.PointsContract.Projections;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,7 +48,7 @@ public class ProjectionPref extends DialogPreference implements
     // and are updated as the user selects new values with the spinners.
     // ProjectionCode is persisted to shared preferences when the dialog
     // is closed with a positive result, i.e. OK is selected.
-    private int mCurrentProjectionSystem;
+    private String mCurrentProjectionSystem;
     private String mCurrentProjectionCode;
 
     public  String getValue() { return mCurrentProjectionCode; }
@@ -71,7 +70,7 @@ public class ProjectionPref extends DialogPreference implements
     private ProjectionsAdapter mProjectionsAdapter;
 
     // Recents hash mapping coordinate system id to last projection code selected.
-    private Map<Integer, String> mRecents;
+    private Map<String, String> mRecents;
 
     /*
     * Constructor.
@@ -97,7 +96,7 @@ public class ProjectionPref extends DialogPreference implements
         mLoaderManager = ((Activity) context).getLoaderManager();
 
         // A map of the last projection id for each system id.
-        mRecents = new HashMap<Integer, String>();
+        mRecents = new HashMap<String, String>();
     }
 
     @Override
@@ -117,8 +116,25 @@ public class ProjectionPref extends DialogPreference implements
 
         // Create an array adapter for the systems spinner.
         if (mSystemsAdapter == null) {
-            List<Integer> systems = new ArrayList<Integer>();
-            for (int i : Projections.SYSTEM_IDS) { systems.add(i); }
+
+            // Create a list of system ids.
+            List<String> systems = new ArrayList<String>();
+            ContentResolver resolver = mContext.getContentResolver();
+            Bundle extras = new Bundle();
+            extras.putString(PointsContract.CALL_GET_COUNT_EXTRAS_COLUMN, Projections.COLUMN_SYSTEM);
+            Bundle result;
+            for (String id : Projections.SYSTEM_IDS) {
+
+                // Include only projection systems with projections
+                extras.putStringArray(PointsContract.CALL_GET_COUNT_EXTRAS_ARGS, new String[]{id});
+                result = resolver.call(Uri.parse(Projections.CONTENT_URI),
+                        PointsContract.CALL_GET_COUNT_METHOD,
+                        Projections.TABLE, extras);
+                int count = result.getInt(PointsContract.CALL_GET_COUNT_RESULT_KEY);
+                if (result != null && count > 0) {
+                    systems.add(id);
+                }
+            }
             mSystemsAdapter = new SystemsAdapter(mContext, R.layout.spinner_item, systems);
         }
 
@@ -171,10 +187,10 @@ public class ProjectionPref extends DialogPreference implements
     * Array adapter for systems spinner.
     */
 
-    private class SystemsAdapter extends ArrayAdapter<Integer> {
+    private class SystemsAdapter extends ArrayAdapter<String> {
 
-        public SystemsAdapter(Context context, int layoutId, List<Integer> items) {
-            super(context, layoutId, items);
+        public SystemsAdapter(Context context, int layoutId, List<String> systems) {
+            super(context, layoutId, systems);
         }
 
         @Override
@@ -188,7 +204,7 @@ public class ProjectionPref extends DialogPreference implements
             }
 
             TextView text = (TextView) view.findViewById(R.id.text);
-            text.setText(Projections.SYSTEM_NAMES[getItem(position)]);
+            text.setText(Params.getParams().getProjectionSystemName(getItem(position)));
 
             return view;
         }
@@ -204,7 +220,7 @@ public class ProjectionPref extends DialogPreference implements
             }
 
             TextView text = (TextView) view.findViewById(R.id.text);
-            text.setText(Projections.SYSTEM_NAMES[getItem(position)]);
+            text.setText(Params.getParams().getProjectionSystemName(getItem(position)));
 
             return view;
         }
@@ -244,10 +260,11 @@ public class ProjectionPref extends DialogPreference implements
 
         switch (parent.getId()) {
             case R.id.systems_spinner:
-                Log.d(TAG, "onItemSelected systems pos=" + position + " id=" + id);
+                Log.d(TAG, "onItemSelected systems pos=" + position
+                        + " item=" + mSystemsAdapter.getItem(position));
 
                 // Update the current projection system.
-                mCurrentProjectionSystem = position;
+                mCurrentProjectionSystem = mSystemsAdapter.getItem(position);
 
                 // Flag the current projection code as invalid and restart the loader.
                 // When the loader is finished it will update the current projection.
@@ -292,7 +309,7 @@ public class ProjectionPref extends DialogPreference implements
                 Uri.parse(Projections.CONTENT_URI),
                 Projections.PROJECTION_SHORT,
                 Projections.COLUMN_SYSTEM + "=?",
-                new String[] {Integer.toString(mCurrentProjectionSystem)},
+                new String[] {mCurrentProjectionSystem},
                 Projections.DEFAULT_ORDER_BY
         );
         return loader;
@@ -310,7 +327,7 @@ public class ProjectionPref extends DialogPreference implements
         String code = mCurrentProjectionCode != null ?
                 mCurrentProjectionCode : mRecents.get(mCurrentProjectionSystem);
 
-        if (code != null) {
+        if (code != null && data.getCount() > 0) {
 
             // Find the code in the adapter data.
             data.moveToFirst();
@@ -320,14 +337,14 @@ public class ProjectionPref extends DialogPreference implements
                     break;
                 }
             } while (data.moveToNext());
+
+            // Update the projections spinner selection.
+            mProjectionsSpinner.setSelection(position);
+
+            // Update the current projection code.
+            data.moveToPosition(position);
+            mCurrentProjectionCode = data.getString(Projections.INDEX_CODE);
         }
-
-        // Update the projections spinner selection.
-        mProjectionsSpinner.setSelection(position);
-
-        // Update the current projection code.
-        data.moveToPosition(position);
-        mCurrentProjectionCode = data.getString(Projections.INDEX_CODE);
     }
 
     @Override
