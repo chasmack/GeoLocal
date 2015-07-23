@@ -13,9 +13,9 @@
     <string name="gpx_write_cancel">Cancel</string>
 
     <!-- Menu items -->
-    <string name="action_points_read">Read points</string>
+    <string name="action_points_read">Load points</string>
     <string name="action_points_write">Write points</string>
-    <string name="action_gpx_read">Read GPX</string>
+    <string name="action_gpx_read">Load GPX</string>
     <string name="action_gpx_write">Write GPX</string>
     <string name="action_test">Run test</string>
     <string name="action_settings">Settings</string>
@@ -64,10 +64,5 @@
     <string name="pref_projection_systems_title">Coordinate system</string>
     <string name="pref_projection_message">Coordinate system and projection used to transform coordinates to latitude/longitude.</string>
     <string name="pref_projection_projections_title">Projection</string>
-    <string-array name="pref_projection_systems">
-        <item>State Plane Coordinate System</item>
-        <item>Universal Transverse Mercator</item>
-        <item>User Defined Projection</item>
-    </string-array>
 
 </resources>

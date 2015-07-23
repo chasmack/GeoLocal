@@ -72,7 +72,7 @@ public class PointsProvider extends ContentProvider {
                         + Projections.COLUMN_CODE + " TEXT" + COMMA_SEP
                         + Projections.COLUMN_DESC + " TEXT" + COMMA_SEP
                         + Projections.COLUMN_SYSTEM + " TEXT" + COMMA_SEP
-                        + Projections.COLUMN_TYPE + " INTEGER" + COMMA_SEP
+                        + Projections.COLUMN_TYPE + " TEXT" + COMMA_SEP
                         + Projections.COLUMN_P0 + " REAL" + COMMA_SEP
                         + Projections.COLUMN_M0 + " REAL" + COMMA_SEP
                         + Projections.COLUMN_X0 + " REAL" + COMMA_SEP

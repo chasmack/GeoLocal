@@ -268,9 +268,18 @@ public class Settings extends PreferenceFragment
         public  String getProjectionCode() { return projectionCode; }
         public  String getProjectionDesc() { return projectionDesc; }
 
-        // Type of projection, e.g. TYPE_TM, _LC, _OM.
-        private int projectionType;
-        public  int getProjectionType() { return projectionType; }
+        // Projection type id, i.e. TYPE_TM, TYPE_LC, TYPE_OM.
+        private String projectionType;
+        public  String getProjectionType() { return projectionType; }
+
+        // A map of projection type ids to system names.
+        private static final Map<String, String> TYPE_NAMES = new HashMap<String, String>();
+        static {
+            TYPE_NAMES.put(Projections.TYPE_TM, "Transverse Mercator");
+            TYPE_NAMES.put(Projections.TYPE_LC, "Lambert Conic");
+            TYPE_NAMES.put(Projections.TYPE_OM, "Oblique Mercator");
+        }
+        public String getProjectionTypeName(String id) { return TYPE_NAMES.get(id); }
 
         // Latitude of origin, central meridian in degrees.
         private double p0, m0;
@@ -401,7 +410,7 @@ public class Settings extends PreferenceFragment
                                 + " (" + c.getString(Projections.INDEX_CODE) + ")");
 
                         projectionSystem = c.getString(Projections.INDEX_SYSTEM);
-                        projectionType = c.getInt(Projections.INDEX_TYPE);
+                        projectionType = c.getString(Projections.INDEX_TYPE);
                         projectionCode = c.getString(Projections.INDEX_CODE);
                         projectionDesc = c.getString(Projections.INDEX_DESC);
                         p0 = c.getDouble(Projections.INDEX_P0);

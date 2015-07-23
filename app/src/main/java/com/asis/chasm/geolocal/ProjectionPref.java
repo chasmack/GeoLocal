@@ -119,15 +119,15 @@ public class ProjectionPref extends DialogPreference implements
 
             // Create a list of system ids.
             List<String> systems = new ArrayList<String>();
-            ContentResolver resolver = mContext.getContentResolver();
+
             Bundle extras = new Bundle();
             extras.putString(PointsContract.CALL_GET_COUNT_EXTRAS_COLUMN, Projections.COLUMN_SYSTEM);
-            Bundle result;
+            ContentResolver resolver = mContext.getContentResolver();
             for (String id : Projections.SYSTEM_IDS) {
 
-                // Include only projection systems with projections
+                // Include only projection systems with projections in the database.
                 extras.putStringArray(PointsContract.CALL_GET_COUNT_EXTRAS_ARGS, new String[]{id});
-                result = resolver.call(Uri.parse(Projections.CONTENT_URI),
+                Bundle result = resolver.call(Uri.parse(Projections.CONTENT_URI),
                         PointsContract.CALL_GET_COUNT_METHOD,
                         Projections.TABLE, extras);
                 int count = result.getInt(PointsContract.CALL_GET_COUNT_RESULT_KEY);
@@ -338,13 +338,13 @@ public class ProjectionPref extends DialogPreference implements
                 }
             } while (data.moveToNext());
 
-            // Update the projections spinner selection.
-            mProjectionsSpinner.setSelection(position);
-
             // Update the current projection code.
             data.moveToPosition(position);
             mCurrentProjectionCode = data.getString(Projections.INDEX_CODE);
         }
+
+        // Update the projections spinner selection.
+        mProjectionsSpinner.setSelection(position);
     }
 
     @Override

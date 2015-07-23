@@ -2,7 +2,9 @@ package com.asis.chasm.geolocal;
 
 import android.util.Log;
 import java.lang.Math;
+
 import com.asis.chasm.geolocal.Settings.Params;
+import com.asis.chasm.geolocal.PointsContract.Projections;
 
 /**
  * Transform between a local basis and geographic coordinates using
@@ -125,7 +127,7 @@ public class TransformLC {
         if (sCode.equals(p.getProjectionCode())) { return; }
 
         // Check we are using a Lambert projection.
-        if (p.getProjectionType() != PointsContract.Projections.TYPE_LC) {
+        if (!Projections.TYPE_LC.equals(p.getProjectionType())) {
             throw new IllegalArgumentException("Bad LC transform parameters.");
         }
 

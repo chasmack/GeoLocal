@@ -101,22 +101,16 @@ public final class PointsContract {
                 SYSTEM_SPCS, SYSTEM_UTM, SYSTEM_USER
         };
 
-        public static final int TYPE_LC = 0;    // Lambert Conic
-        public static final int TYPE_TM = 1;    // Transverse Mercator
-        public static final int TYPE_OM = 2;    // Oblique Mercator
-
-        public static final String[] TYPE_NAMES = {
-                "Transverse Mercator",
-                "Lambert Conic",
-                "Oblique Mercator"
-        };
+        public static final String TYPE_LC = "lc";    // Lambert Conic
+        public static final String TYPE_TM = "tm";    // Transverse Mercator
+        public static final String TYPE_OM = "om";    // Oblique Mercator
 
         // Abbreviated projection excluding numerical projection constants.
         public static final String[] PROJECTION_SHORT = {
                 _ID, COLUMN_CODE, COLUMN_DESC, COLUMN_SYSTEM, COLUMN_TYPE
         };
 
-        // Full proojection returning all of the fields.
+        // Full projection returning all of the fields.
         public static final String[] PROJECTION_FULL = null;
 
         // Default sorts by order projections were inserted into the database.
