@@ -89,10 +89,17 @@ public final class PointsContract {
         public static final int INDEX_P2 = 10;
         public static final int INDEX_K0 = 11;
 
-
         public static final int SYSTEM_SPCS = 0;
         public static final int SYSTEM_UTM = 1;
         public static final int SYSTEM_USER = 2;
+
+        // This list if system ids is used to build the projection systems
+        // spinner list in the projections preference dialog. To display an
+        // option for USER systems add SYSTEM_USER to the list.
+        public static final int[] SYSTEM_IDS = new int[] {
+                // SYSTEM_SPCS, SYSTEM_UTM, SYSTEM_USER
+                SYSTEM_SPCS, SYSTEM_UTM
+        };
 
         public static final String[] SYSTEM_NAMES = {
                 "State Plane Coordinate System",

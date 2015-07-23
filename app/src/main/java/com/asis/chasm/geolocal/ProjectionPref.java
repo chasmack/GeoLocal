@@ -25,7 +25,9 @@ import android.widget.TextView;
 import com.asis.chasm.geolocal.Settings.Params;
 import com.asis.chasm.geolocal.PointsContract.Projections;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,10 +42,6 @@ public class ProjectionPref extends DialogPreference implements
 
     private static final String TAG = "ProjectionPref";
 
-    // Rotation saved in shared preferences as a formatted string in degrees.
-    private static final String SHARED_PREFERENCES_COORD_FORMAT = "%.8f";
-
-    private static final int DEFAULT_SYSTEM = Projections.SYSTEM_SPCS;
     private static final String DEFAULT_PROJECTION = "0401";
 
     // Current values for projection system and code.
@@ -52,7 +50,6 @@ public class ProjectionPref extends DialogPreference implements
     // ProjectionCode is persisted to shared preferences when the dialog
     // is closed with a positive result, i.e. OK is selected.
     private int mCurrentProjectionSystem;
-    private long mCurrentProjectionId;
     private String mCurrentProjectionCode;
 
     public  String getValue() { return mCurrentProjectionCode; }
@@ -61,20 +58,24 @@ public class ProjectionPref extends DialogPreference implements
     private Spinner mSystemsSpinner;
     private Spinner mProjectionsSpinner;
 
-    // Reference to the fragment's loader manager.
-    private LoaderManager mLoaderManager;
-
     // Reference to the application context.
     private Context mContext;
 
-    // Array adapter for the systems spinner.
+    // Reference to the main activity's loader manager.
+    private LoaderManager mLoaderManager;
+
+    // Custom array adapter for the systems spinner.
     private SystemsAdapter mSystemsAdapter;
 
-    // Cursor adapter for the projections spinner.
+    // Custom cursor adapter for the projections spinner.
     private ProjectionsAdapter mProjectionsAdapter;
 
-    // Recents hash mapping coordinate system id to last projection _ID.
-    private Map<Integer, Long> mRecents;
+    // Recents hash mapping coordinate system id to last projection code selected.
+    private Map<Integer, String> mRecents;
+
+    /*
+    * Constructor.
+    */
 
     public ProjectionPref(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -96,7 +97,7 @@ public class ProjectionPref extends DialogPreference implements
         mLoaderManager = ((Activity) context).getLoaderManager();
 
         // A map of the last projection id for each system id.
-        mRecents = new HashMap<Integer, Long>();
+        mRecents = new HashMap<Integer, String>();
     }
 
     @Override
@@ -108,8 +109,7 @@ public class ProjectionPref extends DialogPreference implements
         Params p = Params.getParams();
         mCurrentProjectionSystem = p.getProjectionSystem();
         mCurrentProjectionCode = p.getProjectionCode();
-        mCurrentProjectionId = p.getProjectionId();
-        mRecents.put(mCurrentProjectionSystem, mCurrentProjectionId);
+        mRecents.put(mCurrentProjectionSystem, mCurrentProjectionCode);
 
         // Get new references to the two spinners.
         mSystemsSpinner = (Spinner) view.findViewById(R.id.systems_spinner);
@@ -117,12 +117,8 @@ public class ProjectionPref extends DialogPreference implements
 
         // Create an array adapter for the systems spinner.
         if (mSystemsAdapter == null) {
-
-            List<Integer> systems = mContext.getContentResolver()
-                    .call(Uri.parse(Projections.CONTENT_URI),
-                            PointsContract.CALL_GET_SYSTEM_IDS_METHOD, null, null)
-                    .getIntegerArrayList(PointsContract.CALL_GET_SYSTEM_IDS_RESULT_KEY);
-
+            List<Integer> systems = new ArrayList<Integer>();
+            for (int i : Projections.SYSTEM_IDS) { systems.add(i); }
             mSystemsAdapter = new SystemsAdapter(mContext, R.layout.spinner_item, systems);
         }
 
@@ -135,9 +131,18 @@ public class ProjectionPref extends DialogPreference implements
             mProjectionsAdapter = new ProjectionsAdapter(mContext, null, 0);
         }
 
-        // Connect the projections adapter to the spinner and start the loader.
+        // Connect the projections adapter to the spinner.
         mProjectionsSpinner.setAdapter(mProjectionsAdapter);
-        mLoaderManager.initLoader(MainActivity.LOADER_ID_PREF_PROJECTIONS, null, this);
+
+        // Check the state of the loader.
+        if (mLoaderManager.getLoader(MainActivity.LOADER_ID_PREF_PROJECTIONS) == null) {
+
+            // First time through we need to create a new loader.
+            mLoaderManager.initLoader(MainActivity.LOADER_ID_PREF_PROJECTIONS, null, this);
+        } else {
+            // Otherwise restart the existing loader.
+            mLoaderManager.restartLoader(MainActivity.LOADER_ID_PREF_PROJECTIONS, null, this);
+        }
 
         return view;
     }
@@ -159,195 +164,6 @@ public class ProjectionPref extends DialogPreference implements
 
         if (positiveResult) {
             persistString(mCurrentProjectionCode);
-        }
-    }
-
-    @Override
-    protected void onSetInitialValue(boolean restorePersistedValue, Object defaultValue) {
-        Log.d(TAG, "onSetInitialValue persisted=" + restorePersistedValue);
-
-        if (restorePersistedValue) {
-            // Restore existing state
-            mCurrentProjectionCode = this.getPersistedString(DEFAULT_PROJECTION);
-        } else {
-            // Set default state from the XML attribute
-            mCurrentProjectionCode = (String) defaultValue;
-            persistString(mCurrentProjectionCode);
-        }
-    }
-
-    @Override
-    protected Object onGetDefaultValue(TypedArray a, int index) {
-        String value = a.getString(index);
-        return value != null ? value : DEFAULT_PROJECTION;
-    }
-
-    @Override
-    public void setSummary(CharSequence summary) {
-        super.setSummary(summary);
-    }
-
-    /*
-    * AdapterView.OnItemSelectedListener implementation.
-    */
-
-    @Override
-    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-
-        switch (parent.getId()) {
-            case R.id.systems_spinner:
-                Log.d(TAG, "onItemSelected systems pos=" + position + " id=" + id);
-                mCurrentProjectionSystem = (int) id;
-                if (mRecents.containsKey(mCurrentProjectionSystem)) {
-                    mCurrentProjectionId = mRecents.get(mCurrentProjectionSystem);
-                }
-                mLoaderManager.restartLoader(MainActivity.LOADER_ID_PREF_PROJECTIONS, null, this);
-                break;
-
-            case R.id.projections_spinner:
-                Log.d(TAG, "onItemSelected projections pos=" + position + " id=" + id);
-
-                mCurrentProjectionCode = ((TextView)mProjectionsSpinner.getSelectedView().findViewById(R.id.code))
-                        .getText().toString();
-                mRecents.put(mCurrentProjectionSystem, mCurrentProjectionId);
-                break;
-
-            default:
-                Log.d(TAG, "onItemSelected DEFAULT pos=" + position + " id=" + id);
-                break;
-        }
-    }
-
-    @Override
-    public void onNothingSelected(AdapterView<?> parent) {
-        Log.d(TAG, "AdapterView.OnItemSelectedListener.onNothingSelected");
-    }
-
-    /*
-    * LoaderManager.LoaderCallbacks<Cursor> implementation
-    */
-
-    private static final String SELECTION = Projections.COLUMN_SYSTEM + "=?";
-
-    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        Log.d(TAG, "onCreateLoader id=" + id);
-
-        CursorLoader loader =  new CursorLoader(
-                mContext,
-                Uri.parse(Projections.CONTENT_URI),
-                Projections.PROJECTION_SHORT,
-                Projections.COLUMN_SYSTEM + "+?",
-                new String[] {Integer.toString(mCurrentProjectionSystem)},
-                Projections.DEFAULT_ORDER_BY
-        );
-        return loader;
-    }
-
-    @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        Log.d(TAG, "onLoadFinished");
-        // Swap the new cursor in.  The framework will take
-        // care of closing the old cursor once we return.
-        mProjectionsAdapter.swapCursor(data);
-    }
-
-    @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
-        Log.d(TAG, "onLoaderReset");
-        // This is called when the last Cursor provided to onLoadFinished()
-        // above is about to be closed.  We need to make sure we are no
-        // longer using it.
-        mProjectionsAdapter.swapCursor(null);
-    }
-
-    /*
-    * Cursor adapter for projections spinner.
-    */
-
-    private class ProjectionsAdapter extends CursorAdapter {
-
-        private LayoutInflater mInflater;
-
-        public ProjectionsAdapter(Context context, Cursor c, int flags) {
-            super(context, c, flags);
-            mInflater = LayoutInflater.from(context);
-        }
-
-        public void notifyLoadComplete() {
-
-        }
-
-        // Find the position of an item in the adapter's cursor.
-        public int findPositionById(long id, int defaultPosition) {
-
-            Cursor c = getCursor();
-            if (c == null)
-                throw new IllegalStateException("cursor not available");
-
-            int savePosition = c.getPosition();
-            int index = c.getColumnIndex(BaseColumns._ID);
-            int position = defaultPosition;
-            c.moveToFirst();
-
-            do {
-                if (c.getLong(index) == id) {
-                    position = c.getPosition();
-                    break;
-                }
-            } while (c.moveToNext());
-
-            c.move(savePosition);
-
-            return position;
-        }
-
-        @Override
-        public void notifyDataSetChanged() {
-            super.notifyDataSetChanged();
-        }
-
-        @Override
-        public void bindView(View view, Context context, Cursor cursor) {
-            ((TextView) view.findViewById(R.id.code))
-                    .setText(cursor.getString(Projections.INDEX_CODE));
-            ((TextView) view.findViewById(R.id.desc))
-                    .setText(cursor.getString(Projections.INDEX_DESC));
-        }
-
-        @Override
-        public View newView(Context context, Cursor cursor, ViewGroup parent) {
-            View v = mInflater.inflate(R.layout.spinner_item_projection, parent, false);
-            return v;
-        }
-
-        @Override
-        public Cursor swapCursor(Cursor newCursor) {
-            Cursor c =  super.swapCursor(newCursor);
-
-            // Update the projections spinner selection.
-            if (c != null) {
-                int savePosition = c.getPosition();
-                int index = c.getColumnIndex(BaseColumns._ID);
-                int position = 0;
-
-                c.moveToFirst();
-                do {
-                    if (c.getLong(index) == mCurrentProjectionId) {
-                        position = c.getPosition();
-                        break;
-                    }
-                } while (c.moveToNext());
-                c.move(savePosition);
-                mProjectionsSpinner.setSelection(position);
-            }
-
-            return c;
-        }
-
-        @Override
-        protected void onContentChanged() {
-            super.onContentChanged();
-            Log.d(TAG, "ProjectionsAdapter.onContentChanged");
         }
     }
 
@@ -388,40 +204,183 @@ public class ProjectionPref extends DialogPreference implements
             }
 
             TextView text = (TextView) view.findViewById(R.id.text);
-
             text.setText(Projections.SYSTEM_NAMES[getItem(position)]);
 
             return view;
         }
     }
 
-    private void setProjectionSpinner() {
+    @Override
+    protected void onSetInitialValue(boolean restorePersistedValue, Object defaultValue) {
+        Log.d(TAG, "onSetInitialValue persisted=" + restorePersistedValue);
 
-        // Find the item for the current projection.
-        Cursor c = mContext.getContentResolver().query(
-                Uri.parse(Projections.CONTENT_URI),
-                new String[]{Projections._ID},
-                Projections.COLUMN_CODE + "=?",
-                new String[]{mCurrentProjectionCode},
-                null);
-        if (c == null || !c.moveToFirst()) {
-            throw new IllegalStateException("bad projection: " + mCurrentProjectionCode);
-        }
-        int id = c.getInt(0);
-        c.close();
-
-        int pos = 0;
-        int count = mProjectionsSpinner.getCount();
-        while (pos < count && mProjectionsSpinner.getItemIdAtPosition(pos) != id) {
-            pos++;
-        }
-        if (pos < count) {
-            Log.d(TAG, "set projection spinner (id=" + id + " count=" + count + " pos=" + pos + ")");
+        if (restorePersistedValue) {
+            // Restore existing state
+            mCurrentProjectionCode = this.getPersistedString(DEFAULT_PROJECTION);
         } else {
-            Log.d(TAG, "set projection spinner (id=" + id + " count=" + count + " pos=NOT_FOUND)");
+            // Set default state from the XML attribute
+            mCurrentProjectionCode = (String) defaultValue;
+            persistString(mCurrentProjectionCode);
         }
-
-        mProjectionsSpinner.setSelection(pos < count ? pos : 0);
     }
 
+    @Override
+    protected Object onGetDefaultValue(TypedArray a, int index) {
+        String value = a.getString(index);
+        return value != null ? value : DEFAULT_PROJECTION;
+    }
+
+    @Override
+    public void setSummary(CharSequence summary) {
+        super.setSummary(summary);
+    }
+
+    /*
+    * AdapterView.OnItemSelectedListener implementation.
+    */
+
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+
+        switch (parent.getId()) {
+            case R.id.systems_spinner:
+                Log.d(TAG, "onItemSelected systems pos=" + position + " id=" + id);
+
+                // Update the current projection system.
+                mCurrentProjectionSystem = position;
+
+                // Flag the current projection code as invalid and restart the loader.
+                // When the loader is finished it will update the current projection.
+                // If there is a code in recents for the selected system that will be used.
+                // Otherwise the code will be set to the code at position 0.
+                mCurrentProjectionCode = null;
+                mLoaderManager.restartLoader(MainActivity.LOADER_ID_PREF_PROJECTIONS, null, this);
+                break;
+
+            case R.id.projections_spinner:
+                Log.d(TAG, "onItemSelected projections pos=" + position + " id=" + id);
+
+                // Update the current projection code and the recents.
+                mCurrentProjectionCode = ((TextView)mProjectionsSpinner
+                        .getSelectedView().findViewById(R.id.code)).getText().toString();
+
+                mRecents.put(mCurrentProjectionSystem, mCurrentProjectionCode);
+                break;
+
+            default:
+                Log.d(TAG, "onItemSelected DEFAULT pos=" + position + " id=" + id);
+                break;
+        }
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {
+        Log.d(TAG, "AdapterView.OnItemSelectedListener.onNothingSelected");
+    }
+
+    /*
+    * LoaderManager.LoaderCallbacks<Cursor> implementation
+    */
+
+    private static final String SELECTION = Projections.COLUMN_SYSTEM + "=?";
+
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        Log.d(TAG, "onCreateLoader id=" + id);
+
+        CursorLoader loader =  new CursorLoader(
+                mContext,
+                Uri.parse(Projections.CONTENT_URI),
+                Projections.PROJECTION_SHORT,
+                Projections.COLUMN_SYSTEM + "=?",
+                new String[] {Integer.toString(mCurrentProjectionSystem)},
+                Projections.DEFAULT_ORDER_BY
+        );
+        return loader;
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        Log.d(TAG, "onLoadFinished");
+        // Swap the new cursor in.  The framework will take
+        // care of closing the old cursor once we return.
+        mProjectionsAdapter.swapCursor(data);
+
+        // Update the projections spinner selection.
+        int position = 0;
+        String code = mCurrentProjectionCode != null ?
+                mCurrentProjectionCode : mRecents.get(mCurrentProjectionSystem);
+
+        if (code != null) {
+
+            // Find the code in the adapter data.
+            data.moveToFirst();
+            do {
+                if (code.equals(data.getString(Projections.INDEX_CODE))) {
+                    position = data.getPosition();
+                    break;
+                }
+            } while (data.moveToNext());
+        }
+
+        // Update the projections spinner selection.
+        mProjectionsSpinner.setSelection(position);
+
+        // Update the current projection code.
+        data.moveToPosition(position);
+        mCurrentProjectionCode = data.getString(Projections.INDEX_CODE);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        Log.d(TAG, "onLoaderReset");
+        // This is called when the last Cursor provided to onLoadFinished()
+        // above is about to be closed.  We need to make sure we are no
+        // longer using it.
+        mProjectionsAdapter.swapCursor(null);
+    }
+
+    /*
+    * Cursor adapter for projections spinner.
+    */
+
+    private class ProjectionsAdapter extends CursorAdapter {
+
+        private LayoutInflater mInflater;
+
+        public ProjectionsAdapter(Context context, Cursor c, int flags) {
+            super(context, c, flags);
+            mInflater = LayoutInflater.from(context);
+        }
+
+        @Override
+        public void notifyDataSetChanged() {
+            super.notifyDataSetChanged();
+        }
+
+        @Override
+        public void bindView(View view, Context context, Cursor cursor) {
+            ((TextView) view.findViewById(R.id.code))
+                    .setText(cursor.getString(Projections.INDEX_CODE));
+            ((TextView) view.findViewById(R.id.desc))
+                    .setText(cursor.getString(Projections.INDEX_DESC));
+        }
+
+        @Override
+        public View newView(Context context, Cursor cursor, ViewGroup parent) {
+            View v = mInflater.inflate(R.layout.spinner_item_projection, parent, false);
+            return v;
+        }
+
+        @Override
+        public Cursor swapCursor(Cursor newCursor) {
+            Log.d(TAG, "ProjectionsAdapter.swapCursor");
+            return super.swapCursor(newCursor);
+        }
+
+        @Override
+        protected void onContentChanged() {
+            Log.d(TAG, "ProjectionsAdapter.onContentChanged");
+            super.onContentChanged();
+        }
+    }
 }
