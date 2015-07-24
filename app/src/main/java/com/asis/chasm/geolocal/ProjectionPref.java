@@ -99,6 +99,14 @@ public class ProjectionPref extends DialogPreference implements
         mRecents = new HashMap<String, String>();
     }
 
+    class ProjectionSystem {
+        public final String ID;
+        public ProjectionSystem(String id) {this.ID = id;}
+        public String toString() {
+            return Params.getParams().getProjectionSystemName(ID);
+        }
+    }
+
     @Override
     protected View onCreateDialogView() {
         View view =  super.onCreateDialogView();
@@ -117,12 +125,13 @@ public class ProjectionPref extends DialogPreference implements
         // Create an array adapter for the systems spinner.
         if (mSystemsAdapter == null) {
 
-            // Create a list of system ids.
-            List<String> systems = new ArrayList<String>();
+            // Create a list of projection systems.
+            List<ProjectionSystem> systems = new ArrayList<ProjectionSystem>();
 
             Bundle extras = new Bundle();
             extras.putString(PointsContract.CALL_GET_COUNT_EXTRAS_COLUMN, Projections.COLUMN_SYSTEM);
             ContentResolver resolver = mContext.getContentResolver();
+
             for (String id : Projections.SYSTEM_IDS) {
 
                 // Include only projection systems with projections in the database.
@@ -132,7 +141,7 @@ public class ProjectionPref extends DialogPreference implements
                         Projections.TABLE, extras);
                 int count = result.getInt(PointsContract.CALL_GET_COUNT_RESULT_KEY);
                 if (result != null && count > 0) {
-                    systems.add(id);
+                    systems.add(new ProjectionSystem(id));
                 }
             }
             mSystemsAdapter = new SystemsAdapter(mContext, R.layout.spinner_item, systems);
@@ -187,42 +196,22 @@ public class ProjectionPref extends DialogPreference implements
     * Array adapter for systems spinner.
     */
 
-    private class SystemsAdapter extends ArrayAdapter<String> {
+    private class SystemsAdapter extends ArrayAdapter<ProjectionSystem> {
 
-        public SystemsAdapter(Context context, int layoutId, List<String> systems) {
-            super(context, layoutId, systems);
+        private List<ProjectionSystem> mSystems;
+
+        public SystemsAdapter(Context context, int layout, List<ProjectionSystem> systems) {
+            super(context, layout, systems);
+            mSystems = systems;
         }
 
-        @Override
-        public View getView(int position, View view, ViewGroup parent) {
-            Log.d(TAG, "SyatemsAdapter getView");
-
-            // Check if an existing view is being reused, otherwise inflate the view
-            if (view == null) {
-                view = ((LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE))
-                        .inflate(R.layout.spinner_item, parent, false);
+        public int getPosition(String id) {
+            for (ProjectionSystem s : mSystems) {
+                if (s.ID.equals(id)) {
+                    return getPosition(s);
+                }
             }
-
-            TextView text = (TextView) view.findViewById(R.id.text);
-            text.setText(Params.getParams().getProjectionSystemName(getItem(position)));
-
-            return view;
-        }
-
-        @Override
-        public View getDropDownView(int position, View view, ViewGroup parent) {
-            Log.d(TAG, "SystemsAdapter getDropDownView");
-
-            // Check if an existing view is being reused, otherwise inflate the view
-            if (view == null) {
-                view = ((LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE))
-                        .inflate(R.layout.spinner_dropdown_item, parent, false);
-            }
-
-            TextView text = (TextView) view.findViewById(R.id.text);
-            text.setText(Params.getParams().getProjectionSystemName(getItem(position)));
-
-            return view;
+            return 0;
         }
     }
 
@@ -264,7 +253,7 @@ public class ProjectionPref extends DialogPreference implements
                         + " item=" + mSystemsAdapter.getItem(position));
 
                 // Update the current projection system.
-                mCurrentProjectionSystem = mSystemsAdapter.getItem(position);
+                mCurrentProjectionSystem = mSystemsAdapter.getItem(position).ID;
 
                 // Flag the current projection code as invalid and restart the loader.
                 // When the loader is finished it will update the current projection.
