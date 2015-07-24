@@ -10,13 +10,14 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:layout_marginTop="20dp"
-        android:layout_marginStart="30dp"
-        android:layout_marginEnd="30dp" >
+        android:layout_marginStart="15dp"
+        android:layout_marginEnd="15dp" >
 
         <TextView
             android:id="@+id/systems_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
             android:textSize="16sp"
             android:text="@string/pref_projection_systems_title" />
 
@@ -30,6 +31,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
+            android:layout_marginStart="5dp"
             android:textSize="16sp"
             android:text="@string/pref_projection_projections_title" />
 

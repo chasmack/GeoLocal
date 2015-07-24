@@ -11,7 +11,6 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.DialogPreference;
-import android.provider.BaseColumns;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -144,7 +143,8 @@ public class ProjectionPref extends DialogPreference implements
                     systems.add(new ProjectionSystem(id));
                 }
             }
-            mSystemsAdapter = new SystemsAdapter(mContext, R.layout.spinner_item, systems);
+            mSystemsAdapter = new SystemsAdapter(mContext, R.layout.spinner_item_system, systems);
+            mSystemsAdapter.setDropDownViewResource(R.layout.spinner_dropdown_item_system);
         }
 
         // Bind the systems adapter to the spinner and set the selection.
@@ -189,29 +189,6 @@ public class ProjectionPref extends DialogPreference implements
 
         if (positiveResult) {
             persistString(mCurrentProjectionCode);
-        }
-    }
-
-    /*
-    * Array adapter for systems spinner.
-    */
-
-    private class SystemsAdapter extends ArrayAdapter<ProjectionSystem> {
-
-        private List<ProjectionSystem> mSystems;
-
-        public SystemsAdapter(Context context, int layout, List<ProjectionSystem> systems) {
-            super(context, layout, systems);
-            mSystems = systems;
-        }
-
-        public int getPosition(String id) {
-            for (ProjectionSystem s : mSystems) {
-                if (s.ID.equals(id)) {
-                    return getPosition(s);
-                }
-            }
-            return 0;
         }
     }
 
@@ -387,6 +364,30 @@ public class ProjectionPref extends DialogPreference implements
         protected void onContentChanged() {
             Log.d(TAG, "ProjectionsAdapter.onContentChanged");
             super.onContentChanged();
+        }
+    }
+
+    /*
+    * Array adapter for systems spinner.
+    */
+
+    private class SystemsAdapter extends ArrayAdapter<ProjectionSystem> {
+
+        private List<ProjectionSystem> mSystems;
+
+        public SystemsAdapter(Context context, int layout, List<ProjectionSystem> systems) {
+            super(context, layout, systems);
+            mSystems = systems;
+        }
+
+        // We need to get the position of an item using its id string.
+        public int getPosition(String id) {
+            for (ProjectionSystem s : mSystems) {
+                if (s.ID.equals(id)) {
+                    return getPosition(s);
+                }
+            }
+            return 0;
         }
     }
 }
