@@ -79,7 +79,7 @@ public class ProjectionPref extends DialogPreference implements
         super(context, attrs);
         Log.d(TAG, "Constructor");
 
-        mContext = context.getApplicationContext();
+        mContext = context;
 
         setDialogLayoutResource(R.layout.dialog_projection);
         setPositiveButtonText(android.R.string.ok);
@@ -143,8 +143,8 @@ public class ProjectionPref extends DialogPreference implements
                     systems.add(new ProjectionSystem(id));
                 }
             }
-            mSystemsAdapter = new SystemsAdapter(mContext, R.layout.spinner_item_system, systems);
-            mSystemsAdapter.setDropDownViewResource(R.layout.spinner_dropdown_item_system);
+            mSystemsAdapter = new SystemsAdapter(mContext, R.layout.spinner_system_item, systems);
+            mSystemsAdapter.setDropDownViewResource(R.layout.spinner_system_dropdown_item);
         }
 
         // Bind the systems adapter to the spinner and set the selection.
@@ -244,9 +244,8 @@ public class ProjectionPref extends DialogPreference implements
                 Log.d(TAG, "onItemSelected projections pos=" + position + " id=" + id);
 
                 // Update the current projection code and the recents.
-                mCurrentProjectionCode = ((TextView)mProjectionsSpinner
-                        .getSelectedView().findViewById(R.id.code)).getText().toString();
-
+                mCurrentProjectionCode = ((Cursor) mProjectionsAdapter.getItem(position))
+                        .getString(Projections.INDEX_CODE);
                 mRecents.put(mCurrentProjectionSystem, mCurrentProjectionCode);
                 break;
 
@@ -336,21 +335,22 @@ public class ProjectionPref extends DialogPreference implements
         }
 
         @Override
-        public void notifyDataSetChanged() {
-            super.notifyDataSetChanged();
-        }
-
-        @Override
         public void bindView(View view, Context context, Cursor cursor) {
             ((TextView) view.findViewById(R.id.code))
                     .setText(cursor.getString(Projections.INDEX_CODE));
             ((TextView) view.findViewById(R.id.desc))
-                    .setText(cursor.getString(Projections.INDEX_DESC));
+                    .setText("- " + cursor.getString(Projections.INDEX_DESC));
         }
 
         @Override
         public View newView(Context context, Cursor cursor, ViewGroup parent) {
-            View v = mInflater.inflate(R.layout.spinner_item_projection, parent, false);
+            View v = mInflater.inflate(R.layout.spinner_projection_item, parent, false);
+            return v;
+        }
+
+        @Override
+        public View newDropDownView(Context context, Cursor cursor, ViewGroup parent) {
+            View v = mInflater.inflate(R.layout.spinner_projection_dropdown_item, parent, false);
             return v;
         }
 

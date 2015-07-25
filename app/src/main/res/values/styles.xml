@@ -1,18 +1,23 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="@android:style/Theme.Holo">
-        <!-- Customize your styles here -->
+    <style name="Theme.App" parent="@android:style/Theme.Holo.Light">
+        <item name="android:spinnerItemStyle">
+            @style/customSpinnerItemStyle
+        </item>
+        <item name="android:spinnerDropDownItemStyle">
+            @style/customSpinnerDropDownItemStyle
+        </item>
     </style>
 
-    <style name="spinnerItemStyle" parent="@android:style/Widget.Holo.Spinner">
-        <item name="android:textColor">#FF333333</item>
+    <style name="customSpinnerItemStyle" parent="@android:style/Widget.TextView.SpinnerItem">
     </style>
 
-    <style name="spinnerDropDownItemStyle" parent="@android:style/Widget.Holo.Spinner">
-        <item name="android:textColor">#FF333333</item>
-        <item name="android:divider">#FFEEEEEE</item>
-        <item name="android:dividerHeight">1dp</item>
+    <style name="customSpinnerDropDownItemStyle" parent="@android:style/Widget.DropDownItem.Spinner">
+        <item name="android:paddingStart">8dp</item>
+        <item name="android:paddingTop">6dp</item>
+        <item name="android:paddingBottom">6dp</item>
+        <item name="android:background">@drawable/spinner_dropdown_item_border</item>
     </style>
 
 </resources>
