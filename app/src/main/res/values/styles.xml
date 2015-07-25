@@ -15,8 +15,9 @@
 
     <style name="customSpinnerDropDownItemStyle" parent="@android:style/Widget.DropDownItem.Spinner">
         <item name="android:paddingStart">8dp</item>
-        <item name="android:paddingTop">6dp</item>
-        <item name="android:paddingBottom">6dp</item>
+        <item name="android:paddingEnd">8dp</item>
+        <item name="android:paddingTop">8dp</item>
+        <item name="android:paddingBottom">8dp</item>
         <item name="android:background">@drawable/spinner_dropdown_item_border</item>
     </style>
 

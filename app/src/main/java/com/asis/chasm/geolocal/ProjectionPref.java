@@ -98,14 +98,6 @@ public class ProjectionPref extends DialogPreference implements
         mRecents = new HashMap<String, String>();
     }
 
-    class ProjectionSystem {
-        public final String ID;
-        public ProjectionSystem(String id) {this.ID = id;}
-        public String toString() {
-            return Params.getParams().getProjectionSystemName(ID);
-        }
-    }
-
     @Override
     protected View onCreateDialogView() {
         View view =  super.onCreateDialogView();
@@ -143,8 +135,8 @@ public class ProjectionPref extends DialogPreference implements
                     systems.add(new ProjectionSystem(id));
                 }
             }
-            mSystemsAdapter = new SystemsAdapter(mContext, R.layout.spinner_system_item, systems);
-            mSystemsAdapter.setDropDownViewResource(R.layout.spinner_system_dropdown_item);
+            mSystemsAdapter = new SystemsAdapter(mContext, R.layout.spinner_item, systems);
+            mSystemsAdapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
         }
 
         // Bind the systems adapter to the spinner and set the selection.
@@ -264,8 +256,6 @@ public class ProjectionPref extends DialogPreference implements
     * LoaderManager.LoaderCallbacks<Cursor> implementation
     */
 
-    private static final String SELECTION = Projections.COLUMN_SYSTEM + "=?";
-
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         Log.d(TAG, "onCreateLoader id=" + id);
 
@@ -286,30 +276,6 @@ public class ProjectionPref extends DialogPreference implements
         // Swap the new cursor in.  The framework will take
         // care of closing the old cursor once we return.
         mProjectionsAdapter.swapCursor(data);
-
-        // Update the projections spinner selection.
-        int position = 0;
-        String code = mCurrentProjectionCode != null ?
-                mCurrentProjectionCode : mRecents.get(mCurrentProjectionSystem);
-
-        if (code != null && data.getCount() > 0) {
-
-            // Find the code in the adapter data.
-            data.moveToFirst();
-            do {
-                if (code.equals(data.getString(Projections.INDEX_CODE))) {
-                    position = data.getPosition();
-                    break;
-                }
-            } while (data.moveToNext());
-
-            // Update the current projection code.
-            data.moveToPosition(position);
-            mCurrentProjectionCode = data.getString(Projections.INDEX_CODE);
-        }
-
-        // Update the projections spinner selection.
-        mProjectionsSpinner.setSelection(position);
     }
 
     @Override
@@ -333,36 +299,72 @@ public class ProjectionPref extends DialogPreference implements
             super(context, c, flags);
             mInflater = LayoutInflater.from(context);
         }
-
-        @Override
-        public void bindView(View view, Context context, Cursor cursor) {
-            ((TextView) view.findViewById(R.id.code))
-                    .setText(cursor.getString(Projections.INDEX_CODE));
-            ((TextView) view.findViewById(R.id.desc))
-                    .setText("- " + cursor.getString(Projections.INDEX_DESC));
-        }
-
         @Override
         public View newView(Context context, Cursor cursor, ViewGroup parent) {
-            View v = mInflater.inflate(R.layout.spinner_projection_item, parent, false);
-            return v;
+            return mInflater.inflate(R.layout.spinner_item, parent, false);
         }
 
         @Override
         public View newDropDownView(Context context, Cursor cursor, ViewGroup parent) {
-            View v = mInflater.inflate(R.layout.spinner_projection_dropdown_item, parent, false);
-            return v;
+            return mInflater.inflate(R.layout.spinner_dropdown_item, parent, false);
         }
 
         @Override
-        public Cursor swapCursor(Cursor newCursor) {
-            Log.d(TAG, "ProjectionsAdapter.swapCursor");
-            return super.swapCursor(newCursor);
+        public void bindView(View view, Context context, Cursor cursor) {
+            TextView v = (TextView) view.findViewById(android.R.id.text1);
+            v.setText(cursor.getString(Projections.INDEX_CODE)
+                    + " - " + cursor.getString(Projections.INDEX_DESC));
+        }
+
+        @Override
+        public Cursor swapCursor(Cursor cursor) {
+            Log.d(TAG, "ProjectionsAdapter swapCursor");
+
+            Cursor oldCursor = super.swapCursor(cursor);
+
+            // Update the projections spinner selection.
+            if (cursor != null && cursor.getCount() > 0) {
+
+                if (mCurrentProjectionCode == null) {
+
+                    // The current projection code is set to null when the coordinate
+                    // system is changed. Try to get a projection code from recents.
+                    mCurrentProjectionCode = mRecents.get(mCurrentProjectionSystem);
+                }
+
+                if (mCurrentProjectionCode == null) {
+
+                    // There is no code in recents. Set the spinner to position 0, initialize
+                    // the current projection code for this system and update recents.
+                    mProjectionsSpinner.setSelection(0);
+                    cursor.moveToFirst();
+                    mCurrentProjectionCode = cursor.getString(Projections.INDEX_CODE);
+                    mRecents.put(mCurrentProjectionSystem, mCurrentProjectionCode);
+
+                } else {
+
+                    // Find the position of the projection code in the adapter data
+                    // and set the projections spinner to the current projection.
+                    cursor.moveToFirst();
+                    do {
+                        if (mCurrentProjectionCode.equals(cursor.getString(Projections.INDEX_CODE))) {
+                            mProjectionsSpinner.setSelection(cursor.getPosition());
+                            break;
+                        }
+                    } while (cursor.moveToNext());
+
+                    if (cursor.isAfterLast()) {
+                        throw new IllegalStateException("projection code not found: " + mCurrentProjectionCode);
+                    }
+                }
+            }
+
+            return oldCursor;
         }
 
         @Override
         protected void onContentChanged() {
-            Log.d(TAG, "ProjectionsAdapter.onContentChanged");
+            Log.d(TAG, "ProjectionsAdapter onContentChanged");
             super.onContentChanged();
         }
     }
@@ -370,6 +372,16 @@ public class ProjectionPref extends DialogPreference implements
     /*
     * Array adapter for systems spinner.
     */
+
+    private class ProjectionSystem {
+        public final String ID;
+        public ProjectionSystem(String id) {
+            this.ID = id;
+        }
+        public String toString() {
+            return Params.getParams().getProjectionSystemName(ID);
+        }
+    }
 
     private class SystemsAdapter extends ArrayAdapter<ProjectionSystem> {
 
@@ -380,11 +392,11 @@ public class ProjectionPref extends DialogPreference implements
             mSystems = systems;
         }
 
-        // We need to get the position of an item using its id string.
+        // Get the position of an item using its id string.
         public int getPosition(String id) {
-            for (ProjectionSystem s : mSystems) {
-                if (s.ID.equals(id)) {
-                    return getPosition(s);
+            for (ProjectionSystem system : mSystems) {
+                if (system.ID.equals(id)) {
+                    return getPosition(system);
                 }
             }
             return 0;

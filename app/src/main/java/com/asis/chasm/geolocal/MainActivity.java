@@ -121,9 +121,6 @@ public class MainActivity extends Activity implements
             case R.id.action_points_read:
                 pointsRead();
                 return true;
-            case R.id.action_points_write:
-                pointsWrite();
-                return true;
             case R.id.action_gpx_read:
                 try { gpxRead(); }
                 catch (IOException e) { Log.d(TAG, "IO exception: " + e); }
@@ -445,14 +442,6 @@ public class MainActivity extends Activity implements
                     .findFragmentByTag(FRAGMENT_POINTS_LIST))
                     .setEmptyText("No points.");
         }
-    }
-
-    /*
-    * pointsWrite - write the local points to a PNEZD file.
-    */
-
-    private void pointsWrite() {
-        Toast.makeText(this, "Write points.", Toast.LENGTH_SHORT).show();
     }
 
     /*

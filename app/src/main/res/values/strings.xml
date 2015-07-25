@@ -13,10 +13,9 @@
     <string name="gpx_write_cancel">Cancel</string>
 
     <!-- Menu items -->
-    <string name="action_points_read">Load points</string>
-    <string name="action_points_write">Write points</string>
-    <string name="action_gpx_read">Load GPX</string>
-    <string name="action_gpx_write">Write GPX</string>
+    <string name="action_points_read">Read local points</string>
+    <string name="action_gpx_read">Read GPX waypoints</string>
+    <string name="action_gpx_write">Write GPX waypoints</string>
     <string name="action_test">Run test</string>
     <string name="action_settings">Settings</string>
 
