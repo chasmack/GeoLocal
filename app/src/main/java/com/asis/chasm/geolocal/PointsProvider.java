@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import com.asis.chasm.geolocal.PointsContract.Points;
+import com.asis.chasm.geolocal.PointsContract.GeoPoints;
 import com.asis.chasm.geolocal.PointsContract.Projections;
 
 public class PointsProvider extends ContentProvider {
@@ -35,8 +36,10 @@ public class PointsProvider extends ContentProvider {
     // Constants for UriMatcher to return for matched Uris
     private static final int POINTS = 1;
     private static final int POINTS_ID = 2;
-    private static final int PROJECTIONS = 3;
-    private static final int PROJECTIONS_ID = 4;
+    private static final int GEOPOINTS = 3;
+    private static final int GEOPOINTS_ID = 4;
+    private static final int PROJECTIONS = 5;
+    private static final int PROJECTIONS_ID = 6;
 
     static {
 
@@ -46,59 +49,28 @@ public class PointsProvider extends ContentProvider {
         // Add Uris for Points, CoordSystems and Transforms
         sUriMatcher.addURI(PointsContract.AUTHORITY, Points.CONTENT_PATH, POINTS);
         sUriMatcher.addURI(PointsContract.AUTHORITY, Points.CONTENT_PATH + "/#", POINTS_ID);
+        sUriMatcher.addURI(PointsContract.AUTHORITY, GeoPoints.CONTENT_PATH, GEOPOINTS);
+        sUriMatcher.addURI(PointsContract.AUTHORITY, GeoPoints.CONTENT_PATH + "/#", GEOPOINTS_ID);
         sUriMatcher.addURI(PointsContract.AUTHORITY, Projections.CONTENT_PATH, PROJECTIONS);
         sUriMatcher.addURI(PointsContract.AUTHORITY, Projections.CONTENT_PATH + "/#", PROJECTIONS_ID);
     }
 
     class PointsDbHelper extends SQLiteOpenHelper {
 
-        public static final String DATABASE_NAME = "points.db";
-        public static final int DATABASE_VERSION = 1;
-
-        private static final String COMMA_SEP = ", ";
-
-        private static final String SQL_CREATE_POINTS =
-                "CREATE TABLE " + Points.TABLE + " ("
-                        + Points._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                        + Points.COLUMN_NAME + " TEXT" + COMMA_SEP
-                        + Points.COLUMN_DESC + " TEXT" + COMMA_SEP
-                        + Points.COLUMN_TYPE + " INTEGER" + COMMA_SEP
-                        + Points.COLUMN_X + " REAL" + COMMA_SEP
-                        + Points.COLUMN_Y + " REAL" + ")";
-
-        private static final String SQL_CREATE_PROJECTIONS =
-                "CREATE TABLE " + PointsContract.Projections.TABLE + " ("
-                        + Projections._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                        + Projections.COLUMN_CODE + " TEXT" + COMMA_SEP
-                        + Projections.COLUMN_DESC + " TEXT" + COMMA_SEP
-                        + Projections.COLUMN_SYSTEM + " TEXT" + COMMA_SEP
-                        + Projections.COLUMN_TYPE + " TEXT" + COMMA_SEP
-                        + Projections.COLUMN_P0 + " REAL" + COMMA_SEP
-                        + Projections.COLUMN_M0 + " REAL" + COMMA_SEP
-                        + Projections.COLUMN_X0 + " REAL" + COMMA_SEP
-                        + Projections.COLUMN_Y0 + " REAL" + COMMA_SEP
-                        + Projections.COLUMN_P1 + " REAL" + COMMA_SEP
-                        + Projections.COLUMN_P2 + " REAL" + COMMA_SEP
-                        + Projections.COLUMN_K0 + " REAL" + ")";
-
-        private static final String SQL_DROP_POINTS =
-                "DROP TABLE IF EXISTS " + Points.TABLE;
-
-        private static final String SQL_DROP_PROJECTIONS =
-                "DROP TABLE IF EXISTS " + Projections.TABLE;
-
         public PointsDbHelper(Context context) {
-            super(context, DATABASE_NAME, null, DATABASE_VERSION);
+            super(context, PointsContract.DATABASE_NAME, null, PointsContract.DATABASE_VERSION);
         }
 
         public void onCreate(SQLiteDatabase db){
-            db.execSQL(SQL_CREATE_POINTS);
-            db.execSQL(SQL_CREATE_PROJECTIONS);
+            db.execSQL(Points.SQL_CREATE_TABLE);
+            db.execSQL(GeoPoints.SQL_CREATE_TABLE);
+            db.execSQL(Projections.SQL_CREATE_TABLE);
         }
 
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-            db.execSQL(SQL_DROP_POINTS);
-            db.execSQL(SQL_DROP_PROJECTIONS);
+            db.execSQL(Points.SQL_DROP_TABLE);
+            db.execSQL(GeoPoints.SQL_DROP_TABLE);
+            db.execSQL(Projections.SQL_DROP_TABLE);
             onCreate(db);
         }
 
@@ -186,6 +158,23 @@ public class PointsProvider extends ContentProvider {
                 }
                 break;
 
+            case GEOPOINTS:
+                table = GeoPoints.TABLE;
+                fullSelect = select;
+                if (sort == null || sort.isEmpty()) {
+                    orderBy = GeoPoints.DEFAULT_ORDER_BY;
+                } else {
+                    orderBy = sort;
+                }
+                break;
+            case GEOPOINTS_ID:
+                table = GeoPoints.TABLE;
+                fullSelect = GeoPoints._ID + "=" + uri.getLastPathSegment();
+                if (select != null && !select.isEmpty()) {
+                    fullSelect = select + " AND " + fullSelect;
+                }
+                break;
+
             case PROJECTIONS:
                 table = Projections.TABLE;
                 fullSelect = select;
@@ -238,6 +227,10 @@ public class PointsProvider extends ContentProvider {
                 return Points.CONTENT_TYPE;
             case POINTS_ID:
                 return Points.CONTENT_TYPE_ITEM;
+            case GEOPOINTS:
+                return GeoPoints.CONTENT_TYPE;
+            case GEOPOINTS_ID:
+                return GeoPoints.CONTENT_TYPE_ITEM;
             case PROJECTIONS:
                 return Projections.CONTENT_TYPE;
             case PROJECTIONS_ID:
@@ -254,6 +247,9 @@ public class PointsProvider extends ContentProvider {
         switch (sUriMatcher.match(uri)) {
             case POINTS:
                 table = Points.TABLE;
+                break;
+            case GEOPOINTS:
+                table = GeoPoints.TABLE;
                 break;
             case PROJECTIONS:
                 table = Projections.TABLE;
@@ -280,6 +276,9 @@ public class PointsProvider extends ContentProvider {
         switch (sUriMatcher.match(uri)) {
             case POINTS:
                 table = Points.TABLE;
+                break;
+            case GEOPOINTS:
+                table = GeoPoints.TABLE;
                 break;
             case PROJECTIONS:
                 table = Projections.TABLE;
@@ -323,6 +322,18 @@ public class PointsProvider extends ContentProvider {
                     fullSelect = select + " AND " + fullSelect;
                 }
                 rows = db.delete(Points.TABLE, fullSelect, selectArgs);
+                break;
+
+            case GEOPOINTS:
+                rows = db.delete(GeoPoints.TABLE, select, selectArgs);
+                break;
+
+            case GEOPOINTS_ID:
+                fullSelect = GeoPoints._ID + "=" + uri.getLastPathSegment();
+                if (select != null && !select.isEmpty()) {
+                    fullSelect = select + " AND " + fullSelect;
+                }
+                rows = db.delete(GeoPoints.TABLE, fullSelect, selectArgs);
                 break;
 
             case PROJECTIONS:

@@ -40,6 +40,7 @@ import java.util.List;
 
 import com.asis.chasm.geolocal.Settings.Params;
 import com.asis.chasm.geolocal.PointsContract.Points;
+import com.asis.chasm.geolocal.PointsContract.GeoPoints;
 import com.asis.chasm.geolocal.PointsContract.Projections;
 
 import org.xmlpull.v1.XmlPullParserException;
@@ -181,6 +182,8 @@ public class MainActivity extends Activity implements
 
         final String INFILE = "Waypoints-01.gpx";
 
+        // Read the GPX file extracting the waypoints into a list.
+        List<GpxParser.Waypoint> wpts;
         InputStream stream = null;
         try {
             String path = Environment.getExternalStoragePublicDirectory(
@@ -189,15 +192,42 @@ public class MainActivity extends Activity implements
 
             File infile = new File(path, INFILE);
             stream = new FileInputStream(infile);
-            List<GpxParser.Waypoint> wpts = new GpxParser().parse(stream);
-
-            for (GpxParser.Waypoint wpt : wpts) {
-                Log.d(TAG, wpt.toString());
-            }
+            wpts = new GpxParser().parse(stream);
 
         } finally {
             if (stream != null) stream.close();
         }
+
+        // Write list of waypoints to the database.
+        ContentResolver resolver = getContentResolver();
+        ArrayList<ContentValues> valuesList = new ArrayList<ContentValues>();
+
+        final Uri GEOPOINTS_URI = Uri.parse(GeoPoints.CONTENT_URI);
+
+        // Delete any points already in the Points table.
+        int deleted = getContentResolver().delete(GEOPOINTS_URI, null, null);
+        Log.d(TAG, "GeoPoints deleted: " + deleted);
+
+        for (GpxParser.Waypoint wpt : wpts) {
+            Log.d(TAG, wpt.toString());
+
+            ContentValues values = new ContentValues();
+
+            values.put(GeoPoints.COLUMN_LAT, wpt.lat);
+            values.put(GeoPoints.COLUMN_LON, wpt.lon);
+            values.put(GeoPoints.COLUMN_TIME, wpt.time);
+            values.put(GeoPoints.COLUMN_NAME, wpt.name);
+            values.put(GeoPoints.COLUMN_CMT,  wpt.cmt);
+            values.put(GeoPoints.COLUMN_DESC, wpt.desc);
+            values.put(GeoPoints.COLUMN_SYMBOL, wpt.symbol);
+            values.put(GeoPoints.COLUMN_SAMPLES, wpt.samples);
+
+            valuesList.add(values);
+        }
+
+        // Send the bulk insert to the content provider.
+        int inserted = resolver.bulkInsert(GEOPOINTS_URI, valuesList.toArray(new ContentValues[0]));
+        Log.d(TAG, "GeoPoints inserted: " + inserted);
     }
 
     /*
@@ -297,12 +327,13 @@ public class MainActivity extends Activity implements
                     .toGeo();
 
             wpts.add(new GpxParser.Waypoint(
-                    c.getString(Points.INDEX_NAME),
                     String.format(p.getGeographicUnitsFormat(), geo.getLat()),
                     String.format(p.getGeographicUnitsFormat(), geo.getLon()),
                     null,
+                    c.getString(Points.INDEX_NAME),
                     c.getString(Points.INDEX_DESC),
                     c.getString(Points.INDEX_DESC),
+                    null,
                     0));
 
         } while (c.moveToNext());
@@ -410,7 +441,6 @@ public class MainActivity extends Activity implements
 
                     // Skipping Z (elevation)
                     values.put(Points.COLUMN_DESC, parts[4]);
-                    values.put(Points.COLUMN_TYPE, Points.TYPE_LOCAL);
 
                     valuesList.add(values);
                 }

@@ -101,21 +101,26 @@ public class GpxParser {
     }
 
     public static class Waypoint {
+        public final double lat;
+        public final double lon;
         public final String time;
         public final String name;
         public final String cmt;
         public final String desc;
-        public final double lat;
-        public final double lon;
+        public final String symbol;
         public final int samples;
 
-        public Waypoint(String name, String lat, String lon, String time, String cmt, String desc, int samples) {
-            this.name = name;
+        public Waypoint(String lat, String lon,
+                        String time, String name, String cmt, String desc,
+                        String symbol, int samples) {
+
             this.lat = Double.parseDouble(lat);
             this.lon = Double.parseDouble(lon);
             this.time = time;
+            this.name = name;
             this.cmt = cmt;
             this.desc = desc;
+            this.symbol = symbol;
             this.samples = samples;
         }
 
@@ -135,11 +140,12 @@ public class GpxParser {
         parser.require(XmlPullParser.START_TAG, null, "wpt");
         String lat = parser.getAttributeValue(null, "lat");
         String lon = parser.getAttributeValue(null, "lon");
-        int samples = 0;
         String time = null;
         String name = null;
         String cmt = null;
         String desc = null;
+        String symbol = null;
+        int samples = 0;
 
         while (parser.next() != XmlPullParser.END_TAG) {
             if (parser.getEventType() != XmlPullParser.START_TAG) {
@@ -162,7 +168,7 @@ public class GpxParser {
                     desc = readDesc(parser);
                     break;
                 case "sym":
-                    skip(parser);
+                    desc = readSym(parser);
                     break;
                 case "extensions":
                     samples = readExtensions(parser);
@@ -172,7 +178,7 @@ public class GpxParser {
                     break;
             }
         }
-        Waypoint wpt =  new Waypoint(name, lat, lon, time, cmt, desc, samples);
+        Waypoint wpt =  new Waypoint(lat, lon, time, name, cmt, desc, symbol, samples);
         return wpt;
     }
 
@@ -205,6 +211,14 @@ public class GpxParser {
         parser.require(XmlPullParser.START_TAG, null, "desc");
         String desc = readText(parser);
         parser.require(XmlPullParser.END_TAG, null, "desc");
+        return desc;
+    }
+
+    // Processes sym tags in the waypoint.
+    private String readSym(XmlPullParser parser) throws IOException, XmlPullParserException {
+        parser.require(XmlPullParser.START_TAG, null, "sym");
+        String desc = readText(parser);
+        parser.require(XmlPullParser.END_TAG, null, "sym");
         return desc;
     }
 
