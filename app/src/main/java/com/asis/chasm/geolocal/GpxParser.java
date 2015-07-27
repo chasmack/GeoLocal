@@ -101,33 +101,33 @@ public class GpxParser {
     }
 
     public static class Waypoint {
+        public final String name;
         public final double lat;
         public final double lon;
-        public final String time;
-        public final String name;
-        public final String cmt;
         public final String desc;
+        public final String cmt;
+        public final String time;
         public final String symbol;
         public final int samples;
 
-        public Waypoint(String lat, String lon,
-                        String time, String name, String cmt, String desc,
-                        String symbol, int samples) {
+        public Waypoint(String name, double lat, double lon, String desc,
+                        String cmt, String time, String symbol, int samples) {
 
-            this.lat = Double.parseDouble(lat);
-            this.lon = Double.parseDouble(lon);
-            this.time = time;
             this.name = name;
-            this.cmt = cmt;
+            this.lat = lat;
+            this.lon = lon;
             this.desc = desc;
+            this.cmt = cmt;
+            this.time = time;
             this.symbol = symbol;
             this.samples = samples;
         }
 
         @Override
         public String toString() {
-            return String.format("wpt %s: %s, lat/lon: %.6f, %.6f%s",
-                    name,
+            return String.format("wpt name=%s desc=%s cmt=%s lat/lon=%.6f/%.6f%s",
+                    (name != null ? name : "<null>"),
+                    (desc != null ? desc : "<null>"),
                     (cmt != null ? cmt : "<null>"),
                     lat, lon,
                     (samples > 0 ? ", samples:" + Integer.toString(samples) : ""));
@@ -137,14 +137,16 @@ public class GpxParser {
     // Parses the contents of a waypoint. If it encounters a name, etc. tag, hands them off
     // to their respective "read" methods for processing. Otherwise, skips the tag.
     private Waypoint readWpt(XmlPullParser parser) throws XmlPullParserException, IOException {
+
         parser.require(XmlPullParser.START_TAG, null, "wpt");
-        String lat = parser.getAttributeValue(null, "lat");
-        String lon = parser.getAttributeValue(null, "lon");
-        String time = null;
+        double lat = Double.parseDouble(parser.getAttributeValue(null, "lat"));
+        double lon = Double.parseDouble(parser.getAttributeValue(null, "lon"));
+
         String name = null;
-        String cmt = null;
         String desc = null;
-        String symbol = null;
+        String cmt = null;
+        String time = null;
+        String sym = null;
         int samples = 0;
 
         while (parser.next() != XmlPullParser.END_TAG) {
@@ -168,7 +170,7 @@ public class GpxParser {
                     desc = readDesc(parser);
                     break;
                 case "sym":
-                    desc = readSym(parser);
+                    sym = readSym(parser);
                     break;
                 case "extensions":
                     samples = readExtensions(parser);
@@ -178,7 +180,7 @@ public class GpxParser {
                     break;
             }
         }
-        Waypoint wpt =  new Waypoint(lat, lon, time, name, cmt, desc, symbol, samples);
+        Waypoint wpt =  new Waypoint(name, lat, lon, desc, cmt, time, sym, samples);
         return wpt;
     }
 

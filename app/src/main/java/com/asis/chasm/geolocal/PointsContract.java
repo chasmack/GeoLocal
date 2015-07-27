@@ -41,88 +41,70 @@ public final class PointsContract {
 
         public static final String TABLE = "points";
 
+        // Common field names.
         public static final String COLUMN_NAME = "name";
         public static final String COLUMN_DESC = "desc";
-        public static final String COLUMN_X = "x";
-        public static final String COLUMN_Y = "y";
+        public static final String COLUMN_COORD1 = "coord1";
+        public static final String COLUMN_COORD2 = "coord2";
+        public static final String COLUMN_TYPE = "type";
+        public static final String COLUMN_SAMPLES = "samples";
+        public static final String COLUMN_CMT = "cmt";
+        public static final String COLUMN_TIME = "time";
+        public static final String COLUMN_SYMBOL = "symbol";
 
-        public static final int INDEX_ID = 0;
-        public static final int INDEX_NAME = 1;
-        public static final int INDEX_DESC = 2;
-        public static final int INDEX_X = 3;
-        public static final int INDEX_Y = 4;
+        // Coordinate fields for points.
+        public static final String COLUMN_X = COLUMN_COORD1;
+        public static final String COLUMN_Y = COLUMN_COORD2;
+
+        // Coordinate fields for geopoints (waypoints).
+        public static final String COLUMN_LAT = COLUMN_COORD1;
+        public static final String COLUMN_LON = COLUMN_COORD2;
 
         public static final String SQL_CREATE_TABLE=
                 "CREATE TABLE " + Points.TABLE + " ("
                         + _ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                        + COLUMN_NAME + " TEXT" + COMMA_SEP
-                        + COLUMN_DESC + " TEXT" + COMMA_SEP
-                        + COLUMN_X    + " REAL" + COMMA_SEP
-                        + COLUMN_Y    + " REAL" + ")";
+                        + COLUMN_NAME    + " TEXT" + COMMA_SEP
+                        + COLUMN_DESC    + " TEXT" + COMMA_SEP
+                        + COLUMN_COORD1  + " REAL" + COMMA_SEP
+                        + COLUMN_COORD2  + " REAL" + COMMA_SEP
+                        + COLUMN_TYPE    + " INTEGER" + COMMA_SEP
+                        + COLUMN_SAMPLES + " INTEGER" + COMMA_SEP
+                        + COLUMN_CMT     + " TEXT" + COMMA_SEP
+                        + COLUMN_TIME    + " TEXT" + COMMA_SEP
+                        + COLUMN_SYMBOL  + " TEXT" + ")";
 
         public static final String SQL_DROP_TABLE =
                 "DROP TABLE IF EXISTS " + Points.TABLE;
 
-        public static final int TYPE_LOCAL = 0;
-        public static final int TYPE_GEOGRAPHIC = 1;
+        public static final int INDEX_ID = 0;
+        public static final int INDEX_NAME = 1;
+        public static final int INDEX_DESC = 2;
+        public static final int INDEX_COORD1 = 3;
+        public static final int INDEX_COORD2 = 4;
+        public static final int INDEX_TYPE = 5;
+        public static final int INDEX_SAMPLES = 6;
+        public static final int INDEX_CMT = 7;
+        public static final int INDEX_TIME = 8;
+        public static final int INDEX_SYMBOL = 9;
 
-        public static final String[] PROJECTION = {
-                _ID, COLUMN_NAME, COLUMN_DESC, COLUMN_X, COLUMN_Y
+        public static final int INDEX_X = INDEX_COORD1;
+        public static final int INDEX_Y = INDEX_COORD2;
+
+        public static final int INDEX_LAT = INDEX_COORD1;
+        public static final int INDEX_LON = INDEX_COORD2;
+
+        public static final int TYPE_LOCAL = 0;
+        public static final int TYPE_GRID = 1;
+        public static final int TYPE_GEOGRAPHIC = 2;
+
+        public static final String[] PROJECTION_SHORT = {
+                _ID, COLUMN_NAME, COLUMN_DESC, COLUMN_COORD1, COLUMN_COORD2, COLUMN_TYPE
         };
 
-        // Default sort order sorts numerically.
-        public static final String DEFAULT_ORDER_BY = "CAST(" + COLUMN_NAME + " AS INTEGER), "
-                + "SUBSTR(" + COLUMN_NAME + ",1,1), "
-                + "CAST(SUBSTR(" + COLUMN_NAME + ",2) AS INTEGER), "
-                + COLUMN_NAME;
-    }
-
-    /*
-    * GeoPoints table definitions.
-    */
-
-    public static abstract class GeoPoints implements BaseColumns {
-
-        public static final String CONTENT_PATH = "geopoints";
-        public static final String CONTENT_URI = BASE_URI + CONTENT_PATH;
-        public static final String CONTENT_TYPE = "vnd.android.cursor.dir/vnd.chasm.geopoint";
-        public static final String CONTENT_TYPE_ITEM = "vnd.android.cursor.item/vnd.chasm.geopoint";
-
-        public static final String TABLE = "geopoints";
-
-        public static final String COLUMN_LAT = "lat";
-        public static final String COLUMN_LON = "lon";
-        public static final String COLUMN_TIME = "time";
-        public static final String COLUMN_NAME = "name";
-        public static final String COLUMN_CMT = "cmt";
-        public static final String COLUMN_DESC = "desc";
-        public static final String COLUMN_SYMBOL = "symbol";
-        public static final String COLUMN_SAMPLES = "samples";
-
-        public static final String SQL_CREATE_TABLE =
-                "CREATE TABLE " + GeoPoints.TABLE + " ("
-                        + _ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                        + COLUMN_LAT     + " REAL" + COMMA_SEP
-                        + COLUMN_LON     + " REAL" + COMMA_SEP
-                        + COLUMN_TIME    + " TEXT" + COMMA_SEP
-                        + COLUMN_NAME    + " TEXT" + COMMA_SEP
-                        + COLUMN_CMT     + " TEXT" + COMMA_SEP
-                        + COLUMN_DESC    + " TEXT" + COMMA_SEP
-                        + COLUMN_SYMBOL  + " TEXT" + COMMA_SEP
-                        + COLUMN_SAMPLES + " INTEGER" + ")";
-
-        public static final String SQL_DROP_TABLE =
-                "DROP TABLE IF EXISTS " + GeoPoints.TABLE;
-
-        public static final int INDEX_ID = 0;
-        public static final int INDEX_LAT = 1;
-        public static final int INDEX_LON = 2;
-        public static final int INDEX_TIME = 3;
-        public static final int INDEX_NAME = 4;
-        public static final int INDEX_CMT = 5;
-        public static final int INDEX_DESC = 6;
-        public static final int INDEX_SYMBOL = 7;
-        public static final int INDEX_SAMPLES = 8;
+        public static final String[] PROJECTION_FULL = {
+                _ID, COLUMN_NAME, COLUMN_DESC, COLUMN_COORD1, COLUMN_COORD2, COLUMN_TYPE,
+                COLUMN_SAMPLES, COLUMN_CMT, COLUMN_TIME, COLUMN_SYMBOL
+        };
 
         // Default sort order sorts numerically.
         public static final String DEFAULT_ORDER_BY = "CAST(" + COLUMN_NAME + " AS INTEGER), "

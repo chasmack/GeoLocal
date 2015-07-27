@@ -39,8 +39,8 @@ public class PointsList extends ListFragment
     private static final String TAG = "PointsList";
 
     // Points type to display in points list.
-    private static final int COORDINATE_TYPE_LOCAL = 1;
-    private static final int COORDINATE_TYPE_GEOGRAPHIC = 2;
+    private static final int COORDINATE_LIST_LOCAL = 1;
+    private static final int COORDINATE_LIST_GEOGRAPHIC = 2;
 
     // This is the Adapter being used to display the list's data.
     private PointsCursorAdapter mAdapter;
@@ -112,14 +112,14 @@ public class PointsList extends ListFragment
         RadioButton local = (RadioButton) getActivity().findViewById(R.id.radio_local);
         local.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
-                mAdapter.setCoordinateType(COORDINATE_TYPE_LOCAL);
+                mAdapter.setCoordinateType(COORDINATE_LIST_LOCAL);
             }
         });
 
         RadioButton geo = (RadioButton) getActivity().findViewById(R.id.radio_geographic);
         geo.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
-                mAdapter.setCoordinateType(COORDINATE_TYPE_GEOGRAPHIC);
+                mAdapter.setCoordinateType(COORDINATE_LIST_GEOGRAPHIC);
             }
         });
 
@@ -140,14 +140,14 @@ public class PointsList extends ListFragment
         int checked = group.getCheckedRadioButtonId();
         switch (group.getCheckedRadioButtonId()) {
             case R.id.radio_local:
-                mAdapter.setCoordinateType(COORDINATE_TYPE_LOCAL);
+                mAdapter.setCoordinateType(COORDINATE_LIST_LOCAL);
                 break;
             case R.id.radio_geographic:
-                mAdapter.setCoordinateType(COORDINATE_TYPE_GEOGRAPHIC);
+                mAdapter.setCoordinateType(COORDINATE_LIST_GEOGRAPHIC);
                 break;
             default:
                 group.check(R.id.radio_local);
-                mAdapter.setCoordinateType(COORDINATE_TYPE_LOCAL);
+                mAdapter.setCoordinateType(COORDINATE_LIST_LOCAL);
                 break;
         }
 
@@ -215,8 +215,12 @@ public class PointsList extends ListFragment
     private static class PointsCursorAdapter extends CursorAdapter {
 
         private LayoutInflater mInflater;
-        private int mCoordType;
+        private int mCoordListType;
+        private String mCoordPrefix;
         private String mCoordFormat;
+
+        private final String COORD_PREFIX_LOCAL = "N/E:";
+        private final String COORD_PREFIX_GEOGRAPHIC = "lat/lon:";
 
         public PointsCursorAdapter(Context context, Cursor c, int flags) {
             super(context, c, flags);
@@ -228,47 +232,98 @@ public class PointsList extends ListFragment
             super.notifyDataSetChanged();
         }
 
+        // Set coordinate list type to local/geographic.
         private void setCoordinateType(int type) {
-            mCoordType = type;
+            mCoordListType = type;
+
             Params p = Params.getParams();
-            if (type == COORDINATE_TYPE_GEOGRAPHIC) {
-                mCoordFormat = p.getGeographicUnitsFormat() + ", " + p.getGeographicUnitsFormat();
-            } else {
+            if (type == COORDINATE_LIST_LOCAL) {
+                mCoordPrefix = COORD_PREFIX_LOCAL;
                 mCoordFormat = p.getLocalUnitsFormat() + ", " + p.getLocalUnitsFormat();
+
+            } else {
+                mCoordPrefix = COORD_PREFIX_GEOGRAPHIC;
+                mCoordFormat = p.getGeographicUnitsFormat() + ", " + p.getGeographicUnitsFormat();
             }
+
             notifyDataSetChanged();
         }
 
         @Override
-        public void bindView(View view, Context context, Cursor cursor) {
-            TextView tv;
-            tv = (TextView) view.findViewById(R.id.name);
-            tv.setText(cursor.getString(Points.INDEX_NAME));
-            tv = (TextView) view.findViewById(R.id.desc);
-            tv.setText(cursor.getString(Points.INDEX_DESC));
+        public void bindView(View view, Context context, Cursor c) {
 
-            Params p = Params.getParams();
-            switch (mCoordType) {
+            int pointType = c.getInt(Points.INDEX_TYPE);
 
-                case COORDINATE_TYPE_GEOGRAPHIC:
-                    GeoPoint geo = new LocalPoint(
-                            cursor.getDouble(Points.INDEX_X),
-                            cursor.getDouble(Points.INDEX_Y)).toGeo();
-                    tv = (TextView) view.findViewById(R.id.coord_values);
-                    tv.setText(String.format(mCoordFormat, geo.getLat(), geo.getLon()));
-                    tv = (TextView) view.findViewById(R.id.coord_prefix);
-                    tv.setText("lat/lon:");
+            // Name of the point.
+            String name = c.getString(Points.INDEX_NAME);
+            ((TextView) view.findViewById(R.id.name)).setText(name);
+
+            // Description for local points and waypoints.
+            String desc;
+            switch (pointType) {
+                case Points.TYPE_LOCAL:
+                case Points.TYPE_GRID:
+                    desc = c.getString(Points.INDEX_DESC);
                     break;
 
-                case COORDINATE_TYPE_LOCAL:
-                    tv = (TextView) view.findViewById(R.id.coord_values);
-                    tv.setText(String.format(mCoordFormat,
-                            cursor.getDouble(Points.INDEX_Y) * p.getUnitsFactor(),
-                            cursor.getDouble(Points.INDEX_X) * p.getUnitsFactor()));
-                    tv =(TextView) view.findViewById(R.id.coord_prefix);
-                    tv.setText("N/E:");
+                case Points.TYPE_GEOGRAPHIC:
+                    desc = c.getString(Points.INDEX_CMT);
+                    if (desc == null) desc = c.getString(Points.INDEX_DESC);
+                    if (desc == null) desc = c.getString(Points.INDEX_TIME);
+                    if (desc == null) desc = "waypoint";
                     break;
+
+                default:
+                    throw new IllegalStateException("bad point type: " + pointType);
             }
+            ((TextView) view.findViewById(R.id.desc)).setText(desc);
+
+            // Prefix for the value field.
+            ((TextView) view.findViewById(R.id.coord_prefix)).setText(mCoordPrefix);
+
+            // Values string.
+            double first = 0, second = 0;
+            if (mCoordListType == COORDINATE_LIST_LOCAL) {
+
+                // Display local/grid coordinate list.
+                double unitsFactor = Params.getParams().getUnitsFactor();
+                switch (pointType) {
+                    case Points.TYPE_LOCAL:
+                    case Points.TYPE_GRID:
+                        first  = c.getDouble(Points.INDEX_Y) * unitsFactor;
+                        second = c.getDouble(Points.INDEX_X) * unitsFactor;
+                        break;
+
+                    case Points.TYPE_GEOGRAPHIC:
+                        LocalPoint local = new GeoPoint(
+                                c.getDouble(Points.INDEX_LAT),
+                                c.getDouble(Points.INDEX_LON)).toLocal();
+                        first  = local.getY() * unitsFactor;
+                        second = local.getX() * unitsFactor;
+                        break;
+                }
+
+            } else {
+
+                // Display geographic coordinate list.
+                switch (pointType) {
+                    case Points.TYPE_LOCAL:
+                    case Points.TYPE_GRID:
+                        GeoPoint geo = new LocalPoint(
+                                c.getDouble(Points.INDEX_X),
+                                c.getDouble(Points.INDEX_Y)).toGeo();
+                        first  = geo.getLat();
+                        second = geo.getLon();
+                        break;
+
+                    case Points.TYPE_GEOGRAPHIC:
+                        first  = c.getDouble(Points.INDEX_LAT);
+                        second = c.getDouble(Points.INDEX_LON);
+                        break;
+                }
+            }
+            ((TextView) view.findViewById(R.id.coord_values))
+                    .setText(String.format(mCoordFormat, first, second));
         }
 
         @Override
@@ -292,13 +347,11 @@ public class PointsList extends ListFragment
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 
         Log.d(TAG, "LoaderManager.LoaderCallbacks<?>.onCreateLoader id=" + id);
-        CursorLoader loader =  new CursorLoader(
-                getActivity(),          // Parent activity context
+        CursorLoader loader =  new CursorLoader(getActivity(),
                 Uri.parse(Points.CONTENT_URI),
-                Points.PROJECTION,      // Projection to return
-                null,                   // No selection clause
-                null,                   // No selection arguments
-                null                    // Default sort order
+                Points.PROJECTION_FULL,
+                null, null,
+                Points.DEFAULT_ORDER_BY
         );
 
         // The loader will wait 0.5 seconds between requerys.

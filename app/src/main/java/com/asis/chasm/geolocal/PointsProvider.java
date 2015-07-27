@@ -11,12 +11,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 import com.asis.chasm.geolocal.PointsContract.Points;
-import com.asis.chasm.geolocal.PointsContract.GeoPoints;
 import com.asis.chasm.geolocal.PointsContract.Projections;
 
 public class PointsProvider extends ContentProvider {
@@ -36,10 +33,8 @@ public class PointsProvider extends ContentProvider {
     // Constants for UriMatcher to return for matched Uris
     private static final int POINTS = 1;
     private static final int POINTS_ID = 2;
-    private static final int GEOPOINTS = 3;
-    private static final int GEOPOINTS_ID = 4;
-    private static final int PROJECTIONS = 5;
-    private static final int PROJECTIONS_ID = 6;
+    private static final int PROJECTIONS = 3;
+    private static final int PROJECTIONS_ID = 4;
 
     static {
 
@@ -49,8 +44,6 @@ public class PointsProvider extends ContentProvider {
         // Add Uris for Points, CoordSystems and Transforms
         sUriMatcher.addURI(PointsContract.AUTHORITY, Points.CONTENT_PATH, POINTS);
         sUriMatcher.addURI(PointsContract.AUTHORITY, Points.CONTENT_PATH + "/#", POINTS_ID);
-        sUriMatcher.addURI(PointsContract.AUTHORITY, GeoPoints.CONTENT_PATH, GEOPOINTS);
-        sUriMatcher.addURI(PointsContract.AUTHORITY, GeoPoints.CONTENT_PATH + "/#", GEOPOINTS_ID);
         sUriMatcher.addURI(PointsContract.AUTHORITY, Projections.CONTENT_PATH, PROJECTIONS);
         sUriMatcher.addURI(PointsContract.AUTHORITY, Projections.CONTENT_PATH + "/#", PROJECTIONS_ID);
     }
@@ -63,13 +56,11 @@ public class PointsProvider extends ContentProvider {
 
         public void onCreate(SQLiteDatabase db){
             db.execSQL(Points.SQL_CREATE_TABLE);
-            db.execSQL(GeoPoints.SQL_CREATE_TABLE);
             db.execSQL(Projections.SQL_CREATE_TABLE);
         }
 
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
             db.execSQL(Points.SQL_DROP_TABLE);
-            db.execSQL(GeoPoints.SQL_DROP_TABLE);
             db.execSQL(Projections.SQL_DROP_TABLE);
             onCreate(db);
         }
@@ -158,23 +149,6 @@ public class PointsProvider extends ContentProvider {
                 }
                 break;
 
-            case GEOPOINTS:
-                table = GeoPoints.TABLE;
-                fullSelect = select;
-                if (sort == null || sort.isEmpty()) {
-                    orderBy = GeoPoints.DEFAULT_ORDER_BY;
-                } else {
-                    orderBy = sort;
-                }
-                break;
-            case GEOPOINTS_ID:
-                table = GeoPoints.TABLE;
-                fullSelect = GeoPoints._ID + "=" + uri.getLastPathSegment();
-                if (select != null && !select.isEmpty()) {
-                    fullSelect = select + " AND " + fullSelect;
-                }
-                break;
-
             case PROJECTIONS:
                 table = Projections.TABLE;
                 fullSelect = select;
@@ -227,10 +201,6 @@ public class PointsProvider extends ContentProvider {
                 return Points.CONTENT_TYPE;
             case POINTS_ID:
                 return Points.CONTENT_TYPE_ITEM;
-            case GEOPOINTS:
-                return GeoPoints.CONTENT_TYPE;
-            case GEOPOINTS_ID:
-                return GeoPoints.CONTENT_TYPE_ITEM;
             case PROJECTIONS:
                 return Projections.CONTENT_TYPE;
             case PROJECTIONS_ID:
@@ -247,9 +217,6 @@ public class PointsProvider extends ContentProvider {
         switch (sUriMatcher.match(uri)) {
             case POINTS:
                 table = Points.TABLE;
-                break;
-            case GEOPOINTS:
-                table = GeoPoints.TABLE;
                 break;
             case PROJECTIONS:
                 table = Projections.TABLE;
@@ -276,9 +243,6 @@ public class PointsProvider extends ContentProvider {
         switch (sUriMatcher.match(uri)) {
             case POINTS:
                 table = Points.TABLE;
-                break;
-            case GEOPOINTS:
-                table = GeoPoints.TABLE;
                 break;
             case PROJECTIONS:
                 table = Projections.TABLE;
@@ -322,18 +286,6 @@ public class PointsProvider extends ContentProvider {
                     fullSelect = select + " AND " + fullSelect;
                 }
                 rows = db.delete(Points.TABLE, fullSelect, selectArgs);
-                break;
-
-            case GEOPOINTS:
-                rows = db.delete(GeoPoints.TABLE, select, selectArgs);
-                break;
-
-            case GEOPOINTS_ID:
-                fullSelect = GeoPoints._ID + "=" + uri.getLastPathSegment();
-                if (select != null && !select.isEmpty()) {
-                    fullSelect = select + " AND " + fullSelect;
-                }
-                rows = db.delete(GeoPoints.TABLE, fullSelect, selectArgs);
                 break;
 
             case PROJECTIONS:
