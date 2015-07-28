@@ -10,9 +10,20 @@
         android:layout_height="fill_parent"
         android:layout_alignParentBottom="true"
         android:layout_alignParentTop="true"
-        android:layout_marginRight="6dip"
-        android:contentDescription="TODO"
-        android:src="@mipmap/ic_launcher" />
+        android:layout_marginRight="6dp" />
+
+    <TextView
+        android:id="@+id/samples"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@id/icon"
+        android:layout_alignEnd="@id/icon"
+        android:layout_alignBottom="@id/icon"
+        android:paddingBottom="8.5dp"
+        android:gravity="center_horizontal"
+        android:textSize="10sp"
+        android:textStyle="bold"
+        android:textColor="#007766"/>
 
     <TextView
         android:id="@+id/name"
@@ -27,14 +38,13 @@
 
     <TextView
         android:id="@+id/desc"
-        android:layout_width="fill_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_toEndOf="@id/name"
         android:layout_marginLeft="10dp"
         android:gravity="center_vertical"
         android:singleLine="true"
         android:ellipsize="end"
-        android:text="Description is too long and needs to be ellipsized."
         android:textSize="16sp" />
 
     <TextView

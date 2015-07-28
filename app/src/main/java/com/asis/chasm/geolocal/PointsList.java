@@ -6,6 +6,8 @@ import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Loader;
 import android.database.Cursor;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.ListFragment;
@@ -17,6 +19,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CursorAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -216,6 +219,7 @@ public class PointsList extends ListFragment
 
         private LayoutInflater mInflater;
         private int mCoordListType;
+        private Drawable mIconLocal, mIconGeographic;
         private String mCoordPrefix;
         private String mCoordFormat;
 
@@ -224,6 +228,10 @@ public class PointsList extends ListFragment
 
         public PointsCursorAdapter(Context context, Cursor c, int flags) {
             super(context, c, flags);
+            mIconLocal = context.getResources()
+                    .getDrawable(R.drawable.ic_list_item_local);
+            mIconGeographic = context.getResources()
+                    .getDrawable(R.drawable.ic_list_item_geographic);
             mInflater = LayoutInflater.from(context);
         }
 
@@ -254,15 +262,15 @@ public class PointsList extends ListFragment
 
             int pointType = c.getInt(Points.INDEX_TYPE);
 
-            // Name of the point.
-            String name = c.getString(Points.INDEX_NAME);
-            ((TextView) view.findViewById(R.id.name)).setText(name);
-
-            // Description for local points and waypoints.
+            // Set item name, description and icon.
+            String name = c.getString(Points.INDEX_NAME);;
             String desc;
+            Drawable icon;
+            String samples = "";
             switch (pointType) {
                 case Points.TYPE_LOCAL:
                 case Points.TYPE_GRID:
+                    icon = mIconLocal;
                     desc = c.getString(Points.INDEX_DESC);
                     break;
 
@@ -271,12 +279,18 @@ public class PointsList extends ListFragment
                     if (desc == null) desc = c.getString(Points.INDEX_DESC);
                     if (desc == null) desc = c.getString(Points.INDEX_TIME);
                     if (desc == null) desc = "waypoint";
+                    icon = mIconGeographic;
+                    if (c.getInt(Points.INDEX_SAMPLES) > 0)
+                        samples = Integer.toString(c.getInt(Points.INDEX_SAMPLES));
                     break;
 
                 default:
                     throw new IllegalStateException("bad point type: " + pointType);
             }
+            ((TextView) view.findViewById(R.id.name)).setText(name);
             ((TextView) view.findViewById(R.id.desc)).setText(desc);
+            ((TextView) view.findViewById(R.id.samples)).setText(samples);
+            ((ImageView) view.findViewById(R.id.icon)).setImageDrawable(icon);
 
             // Prefix for the value field.
             ((TextView) view.findViewById(R.id.coord_prefix)).setText(mCoordPrefix);
