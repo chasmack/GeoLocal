@@ -219,7 +219,6 @@ public class PointsList extends ListFragment
 
         private LayoutInflater mInflater;
         private int mCoordListType;
-        private Drawable mIconLocal, mIconGeographic;
         private String mCoordPrefix;
         private String mCoordFormat;
 
@@ -228,10 +227,6 @@ public class PointsList extends ListFragment
 
         public PointsCursorAdapter(Context context, Cursor c, int flags) {
             super(context, c, flags);
-            mIconLocal = context.getResources()
-                    .getDrawable(R.drawable.ic_list_item_local);
-            mIconGeographic = context.getResources()
-                    .getDrawable(R.drawable.ic_list_item_geographic);
             mInflater = LayoutInflater.from(context);
         }
 
@@ -262,16 +257,16 @@ public class PointsList extends ListFragment
 
             int pointType = c.getInt(Points.INDEX_TYPE);
 
-            // Set item name, description and icon.
+            // Set item type, name and description.
             String name = c.getString(Points.INDEX_NAME);;
             String desc;
-            Drawable icon;
+            String type = "";
             String samples = "";
             switch (pointType) {
                 case Points.TYPE_LOCAL:
                 case Points.TYPE_GRID:
-                    icon = mIconLocal;
                     desc = c.getString(Points.INDEX_DESC);
+                    type = "LOCAL";
                     break;
 
                 case Points.TYPE_GEOGRAPHIC:
@@ -279,9 +274,9 @@ public class PointsList extends ListFragment
                     if (desc == null) desc = c.getString(Points.INDEX_DESC);
                     if (desc == null) desc = c.getString(Points.INDEX_TIME);
                     if (desc == null) desc = "waypoint";
-                    icon = mIconGeographic;
+                    type = "GPX";
                     if (c.getInt(Points.INDEX_SAMPLES) > 0)
-                        samples = Integer.toString(c.getInt(Points.INDEX_SAMPLES));
+                        type += "-" + Integer.toString(c.getInt(Points.INDEX_SAMPLES));
                     break;
 
                 default:
@@ -289,8 +284,7 @@ public class PointsList extends ListFragment
             }
             ((TextView) view.findViewById(R.id.name)).setText(name);
             ((TextView) view.findViewById(R.id.desc)).setText(desc);
-            ((TextView) view.findViewById(R.id.samples)).setText(samples);
-            ((ImageView) view.findViewById(R.id.icon)).setImageDrawable(icon);
+            ((TextView) view.findViewById(R.id.point_type)).setText(type);
 
             // Prefix for the value field.
             ((TextView) view.findViewById(R.id.coord_prefix)).setText(mCoordPrefix);

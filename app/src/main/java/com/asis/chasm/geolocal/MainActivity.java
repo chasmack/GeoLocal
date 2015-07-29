@@ -179,15 +179,14 @@ public class MainActivity extends Activity implements
     private void gpxRead() throws IOException, XmlPullParserException {
         Toast.makeText(this, "gpxRead", Toast.LENGTH_SHORT).show();
 
-        final String INFILE = "Waypoints-01.gpx";
+        final String INFILE = "gpx-in.gpx";
 
         // Read the GPX file extracting the waypoints into a list.
         List<GpxParser.Waypoint> wpts;
         InputStream stream = null;
         try {
             String path = Environment.getExternalStoragePublicDirectory(
-                    Environment.DIRECTORY_DOWNLOADS) + "/SPCS";
-            Log.d(TAG, "path: " + path);
+                    Environment.DIRECTORY_DOWNLOADS).toString();
 
             File infile = new File(path, INFILE);
             stream = new FileInputStream(infile);
